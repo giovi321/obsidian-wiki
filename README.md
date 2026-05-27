@@ -86,7 +86,17 @@ Every wiki ends up with the same shape on disk. Names of the folders are configu
 
 ## Concepts in plain English
 
-If you've never used an agent that maintains a wiki, three ideas are worth unpacking before you install: **structured knowledge**, **page lifecycle**, and **lint**.
+If you've never used an agent that maintains a wiki, five ideas are worth unpacking before you install: **entry points**, **structured knowledge**, **page lifecycle**, **provenance**, and **lint**.
+
+### Entry points
+
+The folders you drop sources into. They are the "in" tray. Each entry point is configured with three things:
+
+1. **Source type**: tells the agent what kind of content to expect (`quick-note`, `article`, `voice-transcript`, `claude-chat`, `image`, etc.). The source type determines how the source is parsed and what the default quality score is.
+2. **Default quality**: a 0.0 to 1.0 number reflecting how trustworthy this source is on average. A research-paper folder defaults higher (0.9 to 1.0) than a quick-notes folder (0.5) or a chat-export folder (0.3).
+3. **Post-ingest rule**: either `move` (file relocates to `_service/entry-points/<entry-point>/<YYYY-MM>/` after being processed, keeping the original folder clean) or `keep` (file stays in place and only gets a `processed: true` frontmatter flag).
+
+Entry points are the boundary between "things you saved" and "things the agent has read". Anything you put into an entry point will be visible to `/ingest` the next time it runs. You can have as many entry points as you want; they are declared in the wiki's `CLAUDE.md`. Common ones are quick-notes, articles and PDFs, voice transcripts, conversation exports, and image dumps.
 
 ### Structured knowledge
 
@@ -109,6 +119,18 @@ Every page in the wiki carries a `lifecycle` field in its frontmatter. It is the
 There is also a read-time overlay, `stale`, computed as `(today - updated) > 90 days`. It does not change the lifecycle state; it just flags that the page has not been touched in a while.
 
 The lifecycle solves two failure modes that any wiki agent will eventually hit. First, an agent that re-writes everything on every ingest will silently overwrite your manual edits, and you lose work. Second, an agent that refuses to update anything is useless, because new information cannot get in. The lifecycle is the middle path: anything you have not touched is `draft` and the agent is free to refine it; anything you have touched is `reviewed` or higher and the agent merges new sources in rather than overwriting your text. The state itself is just a frontmatter field. You change it by editing the file.
+
+### Provenance
+
+When the agent writes a page, every individual claim is marked with how confident the agent is that the claim is *what the source actually said* versus *what the agent inferred*. Three states:
+
+- No marker: the agent is paraphrasing something a source states directly. This is the default.
+- `^[inferred]`: the agent connected dots between sources or made a generalization the sources do not state outright.
+- `^[ambiguous]`: sources disagree, or the source language is unclear.
+
+This matters because LLMs sound confident regardless of whether they have evidence. Without provenance markers, you cannot tell whether a sentence is a direct paraphrase of a source or a plausible-sounding confabulation. With them, a reader (you, six months from now) can decide at a glance which claims to trust and which to verify. The page's frontmatter records the aggregate mix as fractions (extracted, inferred, ambiguous), and `/lint` flags pages where the actual mix on the page has drifted from what the frontmatter claims.
+
+Provenance markers are the agent's accountability mechanism. They turn the wiki from a confident-sounding text blob into a trail you can audit.
 
 ### Lint
 
