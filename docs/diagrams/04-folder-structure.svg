@@ -89,7 +89,7 @@
   <text x="260" y="692" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">latest /lint report, per-day file</text>
 
   <text x="56" y="712" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">../_custom/</text>
-  <text x="260" y="712" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">optional: per-wiki custom procedure files (notion-sync, task-extraction, ...)</text>
+  <text x="260" y="712" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">optional: per-wiki custom procedure files (task-extraction, ...)</text>
 
   <text x="56" y="740" fill="#52534e" font-size="10" font-family="'Geist', sans-serif" font-style="italic">Everything in _service/ is regenerable from sources via /rebuild, except feedback.md.</text>
 </svg>
