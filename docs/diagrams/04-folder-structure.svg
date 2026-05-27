@@ -86,4 +86,4 @@
   <text x="260" y="712" fill="#8e96aa" font-size="11" font-family="'Geist', sans-serif">optional: per-wiki procedure files (task-extraction, ...). User-authored.</text>
 
   <text x="56" y="740" fill="#8e96aa" font-size="10" font-family="'Geist', sans-serif" font-style="italic">Everything in _service/ is regenerable from sources via /rebuild, except feedback.md.</text>
-</sv
+</svg>

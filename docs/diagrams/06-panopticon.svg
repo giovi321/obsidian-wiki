@@ -146,4 +146,13 @@
   <text x="620" y="660" fill="#e8eaef" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Use and refine</text>
   <text x="620" y="680" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/query [--visibility ...]</text>
   <text x="620" y="694" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/update</text>
-  <text x="620" y="708" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anch
+  <text x="620" y="708" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/research</text>
+  <text x="620" y="722" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/project (list|new|archive)</text>
+
+  <rect x="748" y="640" width="212" height="92" rx="6" fill="rgba(240,130,84,0.18)" stroke="#f08254"/>
+  <text x="854" y="660" fill="#e8eaef" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Setup and teach</text>
+  <text x="854" y="680" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/setup-wiki</text>
+  <text x="854" y="694" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/upgrade, /update-docs</text>
+  <text x="854" y="708" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/feedback</text>
+  <text x="854" y="722" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/daily-note</text>
+</svg>
