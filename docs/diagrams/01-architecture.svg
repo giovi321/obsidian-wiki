@@ -1,111 +1,111 @@
 <svg viewBox="0 0 800 620" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/>
+      <polygon points="0 0, 8 3, 0 6" fill="#8e96aa"/>
     </marker>
     <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/>
+      <polygon points="0 0, 8 3, 0 6" fill="#f08254"/>
     </marker>
   </defs>
-  <rect width="100%" height="100%" fill="#f5f5f5"/>
+  <rect width="100%" height="100%" fill="#14171f"/>
 
   <!-- Zone band: entry points -->
-  <text x="40" y="32" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 1, ENTRY POINTS</text>
-  <line x1="40" y1="40" x2="760" y2="40" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+  <text x="40" y="32" fill="#6c7587" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 1, ENTRY POINTS</text>
+  <line x1="40" y1="40" x2="760" y2="40" stroke="rgba(232,234,239,0.12)" stroke-width="0.8"/>
 
   <!-- Arrows: entry points -> ingest engine (4 arrows, evenly distributed landings) -->
-  <path d="M 112 152 L 340 232" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
-  <path d="M 304 152 L 380 232" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
-  <path d="M 496 152 L 420 232" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
-  <path d="M 688 152 L 460 232" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 112 152 L 340 232" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 304 152 L 380 232" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 496 152 L 420 232" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 688 152 L 460 232" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
 
   <!-- Arrows: ingest engine -> structured knowledge (5 arrows, end above the zone header at y=344) -->
-  <path d="M 332 296 L 104 328" stroke="#eb6c36" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
-  <path d="M 368 296 L 252 328" stroke="#eb6c36" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
-  <path d="M 400 296 L 400 328" stroke="#eb6c36" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
-  <path d="M 432 296 L 548 328" stroke="#eb6c36" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
-  <path d="M 468 296 L 696 328" stroke="#eb6c36" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 332 296 L 104 328" stroke="#f08254" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 368 296 L 252 328" stroke="#f08254" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 400 296 L 400 328" stroke="#f08254" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 432 296 L 548 328" stroke="#f08254" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 468 296 L 696 328" stroke="#f08254" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
 
   <!-- Entry-point boxes -->
-  <rect x="32" y="72" width="160" height="80" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)"/>
-  <text x="112" y="108" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Quick-notes</text>
-  <text x="112" y="128" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: quick-note</text>
+  <rect x="32" y="72" width="160" height="80" rx="6" fill="rgba(232,234,239,0.06)" stroke="rgba(232,234,239,0.30)"/>
+  <text x="112" y="108" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Quick-notes</text>
+  <text x="112" y="128" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: quick-note</text>
 
-  <rect x="224" y="72" width="160" height="80" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)"/>
-  <text x="304" y="108" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Articles, PDFs</text>
-  <text x="304" y="128" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: article</text>
+  <rect x="224" y="72" width="160" height="80" rx="6" fill="rgba(232,234,239,0.06)" stroke="rgba(232,234,239,0.30)"/>
+  <text x="304" y="108" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Articles, PDFs</text>
+  <text x="304" y="128" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: article</text>
 
-  <rect x="416" y="72" width="160" height="80" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)"/>
-  <text x="496" y="108" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Transcripts</text>
-  <text x="496" y="128" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: voice-transcript</text>
+  <rect x="416" y="72" width="160" height="80" rx="6" fill="rgba(232,234,239,0.06)" stroke="rgba(232,234,239,0.30)"/>
+  <text x="496" y="108" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Transcripts</text>
+  <text x="496" y="128" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: voice-transcript</text>
 
-  <rect x="608" y="72" width="160" height="80" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)"/>
-  <text x="688" y="108" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">LLM conversations</text>
-  <text x="688" y="128" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: claude-chat</text>
+  <rect x="608" y="72" width="160" height="80" rx="6" fill="rgba(232,234,239,0.06)" stroke="rgba(232,234,239,0.30)"/>
+  <text x="688" y="108" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">LLM conversations</text>
+  <text x="688" y="128" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: claude-chat</text>
 
   <!-- Ingest engine, focal -->
-  <rect x="320" y="232" width="160" height="64" rx="6" fill="#f5f5f5"/>
-  <rect x="320" y="232" width="160" height="64" rx="6" fill="rgba(235,108,54,0.08)" stroke="#eb6c36"/>
-  <text x="400" y="260" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">/ingest</text>
-  <text x="400" y="280" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">classify, dedup, distill</text>
+  <rect x="320" y="232" width="160" height="64" rx="6" fill="#14171f"/>
+  <rect x="320" y="232" width="160" height="64" rx="6" fill="rgba(240,130,84,0.18)" stroke="#f08254"/>
+  <text x="400" y="260" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">/ingest</text>
+  <text x="400" y="280" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">classify, dedup, distill</text>
 
   <!-- Zone band: structured knowledge -->
-  <text x="40" y="344" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 2, STRUCTURED KNOWLEDGE</text>
-  <line x1="40" y1="352" x2="760" y2="352" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+  <text x="40" y="344" fill="#6c7587" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 2, STRUCTURED KNOWLEDGE</text>
+  <line x1="40" y1="352" x2="760" y2="352" stroke="rgba(232,234,239,0.12)" stroke-width="0.8"/>
 
-  <rect x="40" y="360" width="128" height="72" rx="6" fill="#ffffff" stroke="#2d3142"/>
-  <text x="104" y="392" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Projects</text>
-  <text x="104" y="412" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">active work</text>
+  <rect x="40" y="360" width="128" height="72" rx="6" fill="#1d2030" stroke="#e8eaef"/>
+  <text x="104" y="392" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Projects</text>
+  <text x="104" y="412" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">active work</text>
 
-  <rect x="188" y="360" width="128" height="72" rx="6" fill="#ffffff" stroke="#2d3142"/>
-  <text x="252" y="392" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Documentation</text>
-  <text x="252" y="412" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">curated articles</text>
+  <rect x="188" y="360" width="128" height="72" rx="6" fill="#1d2030" stroke="#e8eaef"/>
+  <text x="252" y="392" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Documentation</text>
+  <text x="252" y="412" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">curated articles</text>
 
-  <rect x="336" y="360" width="128" height="72" rx="6" fill="#ffffff" stroke="#2d3142"/>
-  <text x="400" y="392" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Resources</text>
-  <text x="400" y="412" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">references, lists</text>
+  <rect x="336" y="360" width="128" height="72" rx="6" fill="#1d2030" stroke="#e8eaef"/>
+  <text x="400" y="392" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Resources</text>
+  <text x="400" y="412" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">references, lists</text>
 
-  <rect x="484" y="360" width="128" height="72" rx="6" fill="#ffffff" stroke="#2d3142"/>
-  <text x="548" y="392" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">People</text>
-  <text x="548" y="412" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">person pages</text>
+  <rect x="484" y="360" width="128" height="72" rx="6" fill="#1d2030" stroke="#e8eaef"/>
+  <text x="548" y="392" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">People</text>
+  <text x="548" y="412" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">person pages</text>
 
-  <rect x="632" y="360" width="128" height="72" rx="6" fill="#ffffff" stroke="#2d3142"/>
-  <text x="696" y="392" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Concepts</text>
-  <text x="696" y="412" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">companies, frameworks</text>
+  <rect x="632" y="360" width="128" height="72" rx="6" fill="#1d2030" stroke="#e8eaef"/>
+  <text x="696" y="392" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Concepts</text>
+  <text x="696" y="412" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">companies, frameworks</text>
 
   <!-- Zone band: service -->
-  <text x="40" y="468" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 3, SERVICE, READ AND WRITTEN BY EVERY COMMAND</text>
-  <line x1="40" y1="476" x2="760" y2="476" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+  <text x="40" y="468" fill="#6c7587" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 3, SERVICE, READ AND WRITTEN BY EVERY COMMAND</text>
+  <line x1="40" y1="476" x2="760" y2="476" stroke="rgba(232,234,239,0.12)" stroke-width="0.8"/>
 
-  <rect x="40" y="488" width="100" height="64" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75"/>
-  <text x="90" y="516" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">manifest</text>
-  <text x="90" y="534" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">sha256 ledger</text>
+  <rect x="40" y="488" width="100" height="64" rx="6" fill="rgba(232,234,239,0.08)" stroke="#8e96aa"/>
+  <text x="90" y="516" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">manifest</text>
+  <text x="90" y="534" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">sha256 ledger</text>
 
-  <rect x="164" y="488" width="100" height="64" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75"/>
-  <text x="214" y="516" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">log</text>
-  <text x="214" y="534" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">append-only</text>
+  <rect x="164" y="488" width="100" height="64" rx="6" fill="rgba(232,234,239,0.08)" stroke="#8e96aa"/>
+  <text x="214" y="516" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">log</text>
+  <text x="214" y="534" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">append-only</text>
 
-  <rect x="288" y="488" width="100" height="64" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75"/>
-  <text x="338" y="516" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">hot.md</text>
-  <text x="338" y="534" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">last 20 touches</text>
+  <rect x="288" y="488" width="100" height="64" rx="6" fill="rgba(232,234,239,0.08)" stroke="#8e96aa"/>
+  <text x="338" y="516" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">hot.md</text>
+  <text x="338" y="534" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">last 20 touches</text>
 
-  <rect x="412" y="488" width="100" height="64" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75"/>
-  <text x="462" y="516" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">sources</text>
-  <text x="462" y="534" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">per-source pages</text>
+  <rect x="412" y="488" width="100" height="64" rx="6" fill="rgba(232,234,239,0.08)" stroke="#8e96aa"/>
+  <text x="462" y="516" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">sources</text>
+  <text x="462" y="534" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">per-source pages</text>
 
-  <rect x="536" y="488" width="100" height="64" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75"/>
-  <text x="586" y="516" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">archives</text>
-  <text x="586" y="534" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">snapshots</text>
+  <rect x="536" y="488" width="100" height="64" rx="6" fill="rgba(232,234,239,0.08)" stroke="#8e96aa"/>
+  <text x="586" y="516" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">archives</text>
+  <text x="586" y="534" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">snapshots</text>
 
-  <rect x="660" y="488" width="100" height="64" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75"/>
-  <text x="710" y="516" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">feedback</text>
-  <text x="710" y="534" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">behavioral rules</text>
+  <rect x="660" y="488" width="100" height="64" rx="6" fill="rgba(232,234,239,0.08)" stroke="#8e96aa"/>
+  <text x="710" y="516" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">feedback</text>
+  <text x="710" y="534" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">behavioral rules</text>
 
   <!-- Legend -->
-  <line x1="40" y1="580" x2="760" y2="580" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
-  <text x="40" y="600" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
-  <line x1="120" y1="596" x2="148" y2="596" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
-  <text x="156" y="600" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">read</text>
-  <line x1="220" y1="596" x2="248" y2="596" stroke="#eb6c36" stroke-width="1" marker-end="url(#arrow-accent)"/>
-  <text x="256" y="600" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace">write</text>
+  <line x1="40" y1="580" x2="760" y2="580" stroke="rgba(232,234,239,0.12)" stroke-width="0.8"/>
+  <text x="40" y="600" fill="#8e96aa" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+  <line x1="120" y1="596" x2="148" y2="596" stroke="#8e96aa" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="156" y="600" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace">read</text>
+  <line x1="220" y1="596" x2="248" y2="596" stroke="#f08254" stroke-width="1" marker-end="url(#arrow-accent)"/>
+  <text x="256" y="600" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace">write</text>
 </svg>
