@@ -176,9 +176,11 @@ The plugin files are cloned to `~/.claude/plugins/obsidian-wiki/` on your machin
 Cowork is the desktop app for Claude. It does NOT support the `/plugin` slash command. Plugins install through Cowork's UI.
 
 1. Open Cowork.
-2. Open the plugin manager from the UI (settings panel, plugin button, or wherever your Cowork version exposes it).
-3. Add a marketplace: paste `giovi321/obsidian-wiki` as the marketplace source.
-4. Install the `obsidian-wiki` plugin from the listing.
+2. Open **Customize** from the menu.
+3. Go to **Personal plugins**.
+4. Click **Browse plugins**.
+5. Add the marketplace by pasting `giovi321/obsidian-wiki` as the marketplace source.
+6. Install the `obsidian-wiki` plugin from the listing under the **Personal** section.
 
 The plugin files are cloned to your local Cowork plugin folder (typically under `~/.claude/plugins/` or the platform-specific equivalent shown by Cowork). The plugin lives on your computer; no part of it runs on a remote server.
 
