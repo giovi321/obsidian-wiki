@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>obsidian-wiki — three-zone architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; padding: 2.5rem; background: #faf7f2; font-family: 'Geist', sans-serif; color: #1c1917; }
+  .container { max-width: 900px; margin: 0 auto; }
+  .eyebrow { font-family: 'Geist Mono', monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.14em; color: #65655c; margin-bottom: 0.5rem; }
+  h1 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 1.75rem; margin: 0 0 2rem; }
+  .diagram-frame { background: #efeee5; border: 1px solid rgba(11,13,11,0.12); border-radius: 8px; padding: 1.5rem; overflow-x: auto; }
+  svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <p class="eyebrow">Architecture</p>
+    <h1>Three zones per wiki</h1>
+    <div class="diagram-frame">
+<svg viewBox="0 0 800 560" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="0.9" fill="rgba(11,13,11,0.10)"/>
+    </pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#52534e"/>
+    </marker>
+    <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#b5523a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#faf7f2"/>
+  <rect width="100%" height="100%" fill="url(#dots)" opacity="0.5"/>
+
+  <!-- Zone band: entry points -->
+  <text x="40" y="48" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 1, ENTRY POINTS</text>
+  <line x1="40" y1="56" x2="760" y2="56" stroke="rgba(11,13,11,0.10)" stroke-width="0.8"/>
+
+  <rect x="40" y="72" width="160" height="80" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
+  <text x="120" y="106" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Quick-notes</text>
+  <text x="120" y="124" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: quick-note</text>
+
+  <rect x="220" y="72" width="160" height="80" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
+  <text x="300" y="106" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Articles, PDFs</text>
+  <text x="300" y="124" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: article</text>
+
+  <rect x="400" y="72" width="160" height="80" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
+  <text x="480" y="106" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Transcripts</text>
+  <text x="480" y="124" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: voice-transcript</text>
+
+  <rect x="580" y="72" width="180" height="80" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
+  <text x="670" y="106" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">LLM conversations</text>
+  <text x="670" y="124" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">source: claude-chat</text>
+
+  <!-- Arrows from entry points to ingest -->
+  <path d="M 120 152 L 380 230" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 300 152 L 400 230" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 480 152 L 420 230" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 670 152 L 440 230" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Ingest engine focal node -->
+  <rect x="320" y="232" width="160" height="64" rx="6" fill="#faf7f2"/>
+  <rect x="320" y="232" width="160" height="64" rx="6" fill="rgba(181,82,58,0.08)" stroke="#b5523a"/>
+  <text x="400" y="262" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">/ingest</text>
+  <text x="400" y="280" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">classify, dedup, distill</text>
+
+  <!-- Arrows ingest to structured knowledge -->
+  <path d="M 360 296 L 200 360" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 400 296 L 400 360" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 440 296 L 600 360" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+
+  <!-- Zone band: structured knowledge -->
+  <text x="40" y="344" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 2, STRUCTURED KNOWLEDGE</text>
+  <line x1="40" y1="352" x2="760" y2="352" stroke="rgba(11,13,11,0.10)" stroke-width="0.8"/>
+
+  <rect x="40" y="360" width="140" height="64" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="110" y="390" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Projects</text>
+  <text x="110" y="408" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">active work</text>
+
+  <rect x="200" y="360" width="140" height="64" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="270" y="390" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Documentation</text>
+  <text x="270" y="408" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">curated articles</text>
+
+  <rect x="360" y="360" width="120" height="64" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="420" y="390" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Resources</text>
+  <text x="420" y="408" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">references</text>
+
+  <rect x="500" y="360" width="120" height="64" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="560" y="390" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">People</text>
+  <text x="560" y="408" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">person pages</text>
+
+  <rect x="640" y="360" width="120" height="64" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="700" y="390" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Concepts</text>
+  <text x="700" y="408" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">companies, frameworks</text>
+
+  <!-- Zone band: service -->
+  <text x="40" y="456" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 3, SERVICE</text>
+  <line x1="40" y1="464" x2="760" y2="464" stroke="rgba(11,13,11,0.10)" stroke-width="0.8"/>
+
+  <rect x="40" y="476" width="116" height="56" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="98" y="500" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">manifest</text>
+  <text x="98" y="516" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">sha256 dedup</text>
+
+  <rect x="172" y="476" width="116" height="56" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="230" y="500" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">log</text>
+  <text x="230" y="516" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">append-only</text>
+
+  <rect x="304" y="476" width="116" height="56" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="362" y="500" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">hot.md</text>
+  <text x="362" y="516" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">last 20 touches</text>
+
+  <rect x="436" y="476" width="116" height="56" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="494" y="500" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">sources</text>
+  <text x="494" y="516" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">per-source summary</text>
+
+  <rect x="568" y="476" width="92" height="56" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="614" y="500" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">archives</text>
+  <text x="614" y="516" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">snapshots</text>
+
+  <rect x="676" y="476" width="84" height="56" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="718" y="500" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">feedback</text>
+  <text x="718" y="516" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">behavioral rules</text>
+</svg>
+    </div>
+  </div>
+</body>
+</html>

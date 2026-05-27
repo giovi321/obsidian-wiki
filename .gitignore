@@ -1,0 +1,15 @@
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Local dev artifacts
+*.log
+tmp/
+test_write
+
+# Don't track local wiki registries (per-user)
+wiki-registry.local.json

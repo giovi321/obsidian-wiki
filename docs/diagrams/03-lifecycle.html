@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>obsidian-wiki — page lifecycle</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; padding: 2.5rem; background: #faf7f2; font-family: 'Geist', sans-serif; color: #1c1917; }
+  .container { max-width: 900px; margin: 0 auto; }
+  .eyebrow { font-family: 'Geist Mono', monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.14em; color: #65655c; margin-bottom: 0.5rem; }
+  h1 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 1.75rem; margin: 0 0 2rem; }
+  .diagram-frame { background: #efeee5; border: 1px solid rgba(11,13,11,0.12); border-radius: 8px; padding: 1.5rem; overflow-x: auto; }
+  svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <p class="eyebrow">State machine</p>
+    <h1>Page lifecycle</h1>
+    <div class="diagram-frame">
+<svg viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="0.9" fill="rgba(11,13,11,0.10)"/>
+    </pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#52534e"/>
+    </marker>
+    <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#b5523a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#faf7f2"/>
+  <rect width="100%" height="100%" fill="url(#dots)" opacity="0.5"/>
+
+  <!-- Arrows (drawn first) -->
+  <!-- ingest -> draft -->
+  <path d="M 152 120 L 232 120" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <rect x="156" y="100" width="72" height="14" rx="2" fill="#faf7f2"/>
+  <text x="192" y="111" fill="#65655c" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">/INGEST /CAPTURE</text>
+
+  <!-- draft -> reviewed -->
+  <path d="M 352 120 L 432 120" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <rect x="356" y="100" width="72" height="14" rx="2" fill="#faf7f2"/>
+  <text x="392" y="111" fill="#65655c" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">HUMAN EDIT</text>
+
+  <!-- reviewed -> verified -->
+  <path d="M 552 120 L 632 120" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <rect x="556" y="100" width="72" height="14" rx="2" fill="#faf7f2"/>
+  <text x="592" y="111" fill="#65655c" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">HUMAN EDIT</text>
+
+  <!-- draft -> disputed -->
+  <path d="M 292 152 L 292 232" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <rect x="296" y="180" width="80" height="14" rx="2" fill="#faf7f2"/>
+  <text x="336" y="191" fill="#65655c" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CONTRADICTION</text>
+
+  <!-- reviewed/verified -> archived -->
+  <path d="M 492 152 L 492 332" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <rect x="496" y="220" width="84" height="14" rx="2" fill="#faf7f2"/>
+  <text x="538" y="231" fill="#65655c" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">SUPERSEDED_BY</text>
+
+  <!-- Update from any state -->
+  <path d="M 292 232 L 292 168" stroke="#52534e" stroke-width="1" fill="none" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+
+  <!-- States -->
+  <!-- initial node -->
+  <circle cx="120" cy="120" r="10" fill="#1c1917"/>
+  <text x="120" y="148" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">new source</text>
+
+  <!-- draft -->
+  <rect x="232" y="92" width="120" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="232" y="92" width="120" height="56" rx="6" fill="rgba(181,82,58,0.08)" stroke="#b5523a"/>
+  <text x="292" y="116" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">draft</text>
+  <text x="292" y="134" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">agent-written</text>
+
+  <!-- reviewed -->
+  <rect x="432" y="92" width="120" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="432" y="92" width="120" height="56" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="492" y="116" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">reviewed</text>
+  <text x="492" y="134" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">human-edited</text>
+
+  <!-- verified -->
+  <rect x="632" y="92" width="120" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="632" y="92" width="120" height="56" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="692" y="116" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">verified</text>
+  <text x="692" y="134" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">human-confirmed</text>
+
+  <!-- disputed -->
+  <rect x="232" y="232" width="120" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="232" y="232" width="120" height="56" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="292" y="256" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">disputed</text>
+  <text x="292" y="274" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">sources disagree</text>
+
+  <!-- archived (terminal) -->
+  <rect x="432" y="332" width="120" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="432" y="332" width="120" height="56" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="492" y="356" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">archived</text>
+  <text x="492" y="374" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">terminal</text>
+
+  <!-- Overlay: stale -->
+  <line x1="40" y1="432" x2="760" y2="432" stroke="rgba(11,13,11,0.10)" stroke-width="0.8"/>
+  <text x="40" y="424" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">OVERLAY, NOT A STATE</text>
+
+  <rect x="40" y="448" width="720" height="48" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)" stroke-dasharray="4,3"/>
+  <text x="60" y="472" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif">stale</text>
+  <text x="60" y="488" fill="#52534e" font-size="10" font-family="'Geist Mono', monospace">is_stale = (today - updated) &gt; 90 days. Computed at read time. Any state can be stale.</text>
+</svg>
+    </div>
+  </div>
+</body>
+</html>

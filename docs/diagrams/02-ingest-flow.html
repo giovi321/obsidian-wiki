@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>obsidian-wiki — ingest flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; padding: 2.5rem; background: #faf7f2; font-family: 'Geist', sans-serif; color: #1c1917; }
+  .container { max-width: 900px; margin: 0 auto; }
+  .eyebrow { font-family: 'Geist Mono', monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.14em; color: #65655c; margin-bottom: 0.5rem; }
+  h1 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 1.75rem; margin: 0 0 2rem; }
+  .diagram-frame { background: #efeee5; border: 1px solid rgba(11,13,11,0.12); border-radius: 8px; padding: 1.5rem; overflow-x: auto; }
+  svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <p class="eyebrow">Flowchart</p>
+    <h1>What /ingest does to one source</h1>
+    <div class="diagram-frame">
+<svg viewBox="0 0 800 720" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="0.9" fill="rgba(11,13,11,0.10)"/>
+    </pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#52534e"/>
+    </marker>
+    <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#b5523a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#faf7f2"/>
+  <rect width="100%" height="100%" fill="url(#dots)" opacity="0.5"/>
+
+  <!-- Arrows first (so they render behind boxes) -->
+  <path d="M 400 76 L 400 116" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 400 172 L 400 212" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 460 240 L 660 240" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)" stroke-dasharray="5,4"/>
+  <path d="M 400 268 L 400 308" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 400 364 L 400 404" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 400 460 L 400 500" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 400 556 L 400 596" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 400 652 L 400 692" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Arrow label: skip path -->
+  <rect x="525" y="226" width="70" height="14" rx="2" fill="#faf7f2"/>
+  <text x="560" y="237" fill="#65655c" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">HASH MATCH</text>
+
+  <!-- Node 1: source dropped -->
+  <rect x="320" y="36" width="160" height="40" rx="6" fill="#faf7f2"/>
+  <rect x="320" y="36" width="160" height="40" rx="6" fill="rgba(28,25,23,0.10)" stroke="#65655c"/>
+  <text x="400" y="61" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">file dropped in entry point</text>
+
+  <!-- Node 2: SHA-256 check -->
+  <rect x="320" y="116" width="160" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="320" y="116" width="160" height="56" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="400" y="140" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">compute SHA-256</text>
+  <text x="400" y="158" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">compare to manifest</text>
+
+  <!-- Node 3: skip (right side) -->
+  <rect x="660" y="212" width="120" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="660" y="212" width="120" height="56" rx="6" fill="rgba(28,25,23,0.05)" stroke="rgba(28,25,23,0.30)" stroke-dasharray="4,3"/>
+  <text x="720" y="236" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">skip</text>
+  <text x="720" y="254" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">no-op</text>
+
+  <!-- Node 4: classify source -->
+  <rect x="320" y="212" width="160" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="320" y="212" width="160" height="56" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="400" y="236" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">classify source</text>
+  <text x="400" y="254" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">assign source_quality</text>
+
+  <!-- Node 5: extract items -->
+  <rect x="320" y="308" width="160" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="320" y="308" width="160" height="56" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="400" y="332" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">extract knowledge items</text>
+  <text x="400" y="350" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">entities, claims, links</text>
+
+  <!-- Node 6: route per CLAUDE.md -->
+  <rect x="320" y="404" width="160" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="320" y="404" width="160" height="56" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="400" y="428" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">route per CLAUDE.md</text>
+  <text x="400" y="446" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">projects, docs, resources...</text>
+
+  <!-- Node 7: write or update page (focal) -->
+  <rect x="320" y="500" width="160" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="320" y="500" width="160" height="56" rx="6" fill="rgba(181,82,58,0.08)" stroke="#b5523a"/>
+  <text x="400" y="524" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">write or update page</text>
+  <text x="400" y="542" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">frontmatter, provenance, links</text>
+
+  <!-- Node 8: post-ingest -->
+  <rect x="320" y="596" width="160" height="56" rx="6" fill="#faf7f2"/>
+  <rect x="320" y="596" width="160" height="56" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="400" y="620" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">post-ingest</text>
+  <text x="400" y="638" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">processed: true, move or keep</text>
+
+  <!-- Node 9: update tracking -->
+  <rect x="280" y="692" width="240" height="24" rx="6" fill="#faf7f2"/>
+  <rect x="280" y="692" width="240" height="24" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="400" y="708" fill="#1c1917" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">update manifest, log, hot.md</text>
+</svg>
+    </div>
+  </div>
+</body>
+</html>

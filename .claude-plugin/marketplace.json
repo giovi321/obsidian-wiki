@@ -1,0 +1,13 @@
+{
+  "name": "obsidian-wiki",
+  "owner": {
+    "name": "giovi321"
+  },
+  "plugins": [
+    {
+      "name": "obsidian-wiki",
+      "source": ".",
+      "description": "Multi-wiki knowledge manager for Obsidian vaults"
+    }
+  ]
+}

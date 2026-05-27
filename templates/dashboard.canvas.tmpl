@@ -1,0 +1,12 @@
+{
+	"nodes":[
+		{"id":"overdue","type":"text","text":"# Overdue\n```tasks\nnot done\ndue before today\npath includes {{wiki_root_basename}}/\npath does not include {{transcripts_exclude_path}}\npath does not include {{conversations_exclude_path}}\nsort by priority\nsort by due\nshort mode\n```","x":-1380,"y":-1300,"width":440,"height":380,"color":"1"},
+		{"id":"due_today","type":"text","text":"# Due today\n```tasks\nnot done\ndue today\npath includes {{wiki_root_basename}}/\npath does not include {{transcripts_exclude_path}}\npath does not include {{conversations_exclude_path}}\nsort by priority\nshort mode\n```","x":-920,"y":-1300,"width":440,"height":380,"color":"2"},
+		{"id":"this_week","type":"text","text":"# This week, high priority\n```tasks\nnot done\ndue before in 7 days\ndue after today\npriority is above medium\npath includes {{wiki_root_basename}}/\npath does not include {{transcripts_exclude_path}}\npath does not include {{conversations_exclude_path}}\nsort by due\nsort by priority\nshort mode\n```","x":-460,"y":-1300,"width":440,"height":380,"color":"3"},
+		{"id":"projects_table","type":"text","text":"# Active projects\n```dataview\nTABLE WITHOUT ID\n  file.link AS \"Project\",\n  file.mtime AS \"Last modified\"\nFROM \"{{projects_path_quoted}}\"\nWHERE file.name = regexreplace(file.folder, \".+/\", \"\")\n  AND !contains(file.path, \"/_old/\")\nSORT file.mtime DESC\n```","x":-1380,"y":-420,"width":440,"height":480,"color":"4"},
+		{"id":"recent_transcripts","type":"text","text":"# Latest transcripts\n```dataview\nTABLE WITHOUT ID\n  file.link AS \"Transcript\",\n  file.ctime AS \"Recorded\"\nFROM \"{{transcripts_path_quoted}}\"\nWHERE file.name != \"README\"\nSORT file.ctime DESC\nLIMIT 6\n```","x":-920,"y":-420,"width":440,"height":480,"color":"6"},
+		{"id":"stale_tasks","type":"text","text":"# Stale open tasks (>14d or no due)\n```tasks\nnot done\nno due date\ncreated before 14 days ago\npath includes {{wiki_root_basename}}/\npath does not include {{transcripts_exclude_path}}\npath does not include {{conversations_exclude_path}}\nsort by created\nshort mode\n```","x":-460,"y":-420,"width":440,"height":480},
+		{"id":"all_open_by_proj","type":"text","text":"# Open tasks\n```tasks\nnot done\npath includes {{wiki_root_basename}}/\npath does not include {{transcripts_exclude_path}}\npath does not include {{conversations_exclude_path}}\ngroup by priority\nsort by due\nshort mode\n```","x":-1380,"y":-900,"width":1360,"height":460,"color":"5"}
+	],
+	"edges":[]
+}

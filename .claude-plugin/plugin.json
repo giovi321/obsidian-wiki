@@ -1,0 +1,7 @@
+{
+  "name": "obsidian-wiki",
+  "version": "0.1.0",
+  "description": "Multi-wiki knowledge manager for Obsidian vaults. Ingests sources, distills them into structured pages, maintains provenance, confidence, lifecycle, cross-links, and projects. Supports any number of wikis configured through a one-time interview.",
+  "keywords": ["wiki", "obsidian", "knowledge-management", "notes", "ingestion", "provenance"],
+  "license": "MIT"
+}

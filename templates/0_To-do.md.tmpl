@@ -1,0 +1,65 @@
+---
+type: dashboard
+created: {{today}}
+modified: {{iso_timestamp}}
+tags:
+  - dashboard
+---
+
+# Task dashboard
+
+Tasks live in their project pages. This file surfaces them by category. Do not add tasks here directly. Write them in the relevant project file instead.
+
+## Due in the next 14 days
+```tasks
+(not done) AND (due before in 14 days) AND (path includes {{wiki_root_basename}}/)
+sort by due date
+sort by priority
+short mode
+```
+
+<!--
+  Per-category sections. Duplicate the block below for each category folder under
+  {{projects_path}}/. Replace <category-folder> with the folder name. Delete this
+  comment after customizing.
+
+  ## [[<category-folder>]]
+  ```tasks
+  (not done) AND (path includes {{projects_path}}/<category-folder>/)
+  sort by due date
+  sort by priority
+  short mode
+  ```
+-->
+
+## All open tasks across {{projects_path}}
+```tasks
+(not done) AND (path includes {{projects_path}}/)
+sort by due date
+sort by priority
+short mode
+```
+
+## Overdue
+```tasks
+(not done) AND (due before today) AND (path includes {{projects_path}}/)
+sort by priority
+sort by due
+short mode
+```
+
+## No due date
+```tasks
+(not done) AND (no due date) AND (path includes {{projects_path}}/)
+sort by priority
+short mode
+```
+
+## Done today
+```tasks
+(done today) AND (path includes {{wiki_root_basename}}/)
+sort by status
+sort by priority
+sort by due
+short mode
+```

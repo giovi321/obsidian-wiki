@@ -1,0 +1,154 @@
+---
+name: wiki-setup
+description: >
+  Interview schema, template substitution rules, and registry write protocol for the
+  /setup-wiki command. Defines the standard entry-point suggestions, the substitution
+  map for CLAUDE.md and template files, and the validation rules applied before writing
+  to disk.
+---
+
+# Wiki setup, interview schema and substitution rules
+
+## Standard entry-point suggestions
+
+When the user runs `/setup-wiki`, offer this catalog. The user picks which to enable and may override paths. Defaults are conservative; nothing is enabled unless the user opts in.
+
+| Suggestion key | Default path | source_type | Default quality | Default post_ingest | Naming convention |
+|---|---|---|---|---|---|
+| quick-notes | `99_Quick-notes/` | quick-note | 0.5 | move | `YYYY-MM-DD Short title.ext` |
+| other | `98_Other/` | article | 0.6 | move | `YYYY-MM-DD <slug>.ext` |
+| voice-transcripts | `2_Transcripts/` | voice-transcript | 0.5 | keep | (vendor-defined; no rename) |
+| daily-journal | `1_Journal/` | daily-note | 0.45 | keep | `YYYY-MM-DD.md` |
+| llm-conversations | `4_Claude-conversations/` | claude-chat | 0.3 | move | `YYYY-MM-DD <slug>.md` |
+| inbox-pdfs | `97_PDFs/` | article | 0.6 | move | `YYYY-MM-DD <slug>.pdf` |
+| images | `96_Images/` | image | 0.4 | move | `YYYY-MM-DD <slug>.<ext>` |
+
+For each enabled suggestion, ask:
+1. Confirm or override the path.
+2. Confirm or override `default_quality`.
+3. Confirm or override `post_ingest` (`move` or `keep`).
+4. Confirm or override the naming convention.
+
+The user may also add custom entry points beyond this catalog. For each custom one, ask path, source_type (must be a bucket listed in `wiki-core` SKILL.md), default_quality, post_ingest, naming_convention.
+
+## Standard structured-knowledge suggestions
+
+| Suggestion key | Default path | Purpose | Routing hint |
+|---|---|---|---|
+| projects | `1_Projects/` | projects | Active work, organized by intent category |
+| documentation | `3_Documentation/` | documentation | LLM-curated knowledge articles |
+| resources | `2_Resources/` | resources | Lists, references, recipes, places, contacts |
+| people | `5_People/` | people | Person pages |
+| concepts | `6_Concepts/` | concepts | Companies, markets, frameworks, technical concepts |
+
+The user picks which to enable, overrides paths, and may add custom folders. Each folder gets a stub `<folder-name>.md` index after scaffolding.
+
+## Interview answer schema
+
+The interview produces this object, which the setup command persists into `CLAUDE.md` and the registry:
+
+```yaml
+name: "Wiki display name"
+slug: "wiki-slug"
+root: "/absolute/path"
+entry_points:
+  - path: "99_Quick-notes/"
+    source_type: quick-note
+    default_quality: 0.5
+    post_ingest: move
+    naming_convention: "YYYY-MM-DD Short title.ext"
+structured_knowledge:
+  - path: "1_Projects/"
+    purpose: projects
+    routing_hint: "Active work, organized by intent category"
+dashboards:
+  - path: "0_To-do.md"
+    type: todo
+protected_paths:
+  - "2_Resources/Recipes/"
+tags:
+  - "#work"
+  - "#research"
+writing_style: "No empty line after headings. No trailing summaries unless asked. Inline provenance markers on documentation pages only."
+project_thresholds:
+  active_to_dormant: 6
+  dormant_to_archive: 4
+  completed_to_archive: 6
+templates_to_install:
+  - todo-dashboard
+  - daily-note
+  - canvas-dashboard
+```
+
+## Template substitution map
+
+Every template file under `templates/` contains `{{key}}` placeholders. The setup skill resolves them as follows:
+
+| Placeholder | Source |
+|---|---|
+| `{{wiki_name}}` | `name` |
+| `{{wiki_slug}}` | `slug` |
+| `{{wiki_root}}` | `root` |
+| `{{projects_path}}` | first `structured_knowledge` entry with `purpose: projects`; empty string if none |
+| `{{documentation_path}}` | first entry with `purpose: documentation` |
+| `{{resources_path}}` | first entry with `purpose: resources` |
+| `{{people_path}}` | first entry with `purpose: people` |
+| `{{concepts_path}}` | first entry with `purpose: concepts` |
+| `{{quicknotes_path}}` | first entry point with `source_type: quick-note` |
+| `{{other_path}}` | first entry point with `source_type: article` |
+| `{{journal_path}}` | first entry point with `source_type: daily-note` |
+| `{{transcripts_path}}` | first entry point with `source_type: voice-transcript` |
+| `{{conversations_path}}` | first entry point with `source_type: claude-chat` |
+| `{{tags_block}}` | newline-joined `tags` list |
+| `{{writing_style}}` | `writing_style` |
+| `{{active_to_dormant_months}}` | `project_thresholds.active_to_dormant` |
+| `{{dormant_to_archive_months}}` | `project_thresholds.dormant_to_archive` |
+| `{{completed_to_archive_months}}` | `project_thresholds.completed_to_archive` |
+| `{{entry_points_block}}` | YAML-rendered `entry_points` array |
+| `{{structured_knowledge_block}}` | YAML-rendered `structured_knowledge` array |
+| `{{protected_paths_block}}` | YAML-rendered `protected_paths` array |
+| `{{today}}` | current date `YYYY-MM-DD` |
+| `{{iso_timestamp}}` | current timestamp ISO-8601 |
+
+Placeholders left unresolved by this map are an error: abort and report which placeholder failed.
+
+## Validation rules before writing to disk
+
+Refuse to scaffold if any of these fail:
+
+- `slug` is not kebab-case (lowercase letters, digits, hyphens; cannot start with a digit).
+- `slug` already exists in the registry and the user is in new-wiki mode.
+- `root` is not absolute.
+- `root` is inside another registered wiki's `root` (no nested wikis).
+- Any `entry_points[].path` or `structured_knowledge[].path` overlaps with another (path prefix collision within the wiki).
+- Any `source_type` is not listed in `wiki-core` SKILL.md "Source quality buckets".
+- `project_thresholds.*` are not positive integers.
+
+## Registry write protocol
+
+Read `~/.claude/obsidian-wiki/wiki-registry.json` once. Compute the new state. Write to `~/.claude/obsidian-wiki/wiki-registry.json.tmp`. Verify the JSON parses. Rename atomically to `wiki-registry.json`.
+
+If the registry file is malformed (does not parse), abort and ask the user to fix it before proceeding. Never overwrite a malformed registry; that would lose all other wiki entries.
+
+## Per-wiki command generation
+
+Only when `addressing_mode` is `suffixed`. For each canonical command file in `${CLAUDE_PLUGIN_ROOT}/commands/` (excluding `setup-wiki.md` and `help.md`):
+
+1. Read the canonical file.
+2. Compute the per-wiki filename: replace the basename (without extension) `<verb>` with `<verb>-<slug>`.
+3. In the frontmatter, append " for the <name> wiki" to `description`.
+4. Insert a "Wiki binding" block right after the wiki resolution section:
+   ```
+   This command is pre-bound to the `<slug>` wiki. Skip argument-based wiki resolution.
+   ```
+5. Write to `${CLAUDE_PLUGIN_ROOT}/commands/<verb>-<slug>.md`. If the plugin folder is not writable, fall back to `~/.claude/commands/<verb>-<slug>.md`.
+
+Per-wiki command files are regenerated on reconfigure if any field changes that affects them (currently only `name`, which appears in the description).
+
+## Removing a wiki
+
+Reconfigure mode supports a `--remove` flag. When set:
+- Confirm twice.
+- Delete the registry entry.
+- Delete per-wiki command files generated for the slug (only the ones the setup created; never delete canonical commands).
+- Do NOT delete the wiki's folder or any of its content. The user removes their data manually.

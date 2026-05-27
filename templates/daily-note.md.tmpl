@@ -1,0 +1,75 @@
+---
+modified: {{iso_timestamp}}
+---
+# New tasks
+
+
+# Brain-storage
+
+
+# Due today or earlier
+```tasks
+not done
+due before today
+path includes {{wiki_root_basename}}/
+sort by description
+sort by priority
+sort by due
+short mode
+```
+
+# Due next 7 days
+## High priority
+```tasks
+not done
+due before {{date+7d:YYYY-MM-DD}}
+priority is above medium
+created before {{date+1d:YYYY-MM-DD}}
+path includes {{wiki_root_basename}}/
+
+sort by description
+sort by priority
+sort by due
+short mode
+hide toolbar
+```
+
+## Low priority
+```tasks
+not done
+due before {{date+7d:YYYY-MM-DD}}
+priority is below high
+created before {{date+1d:YYYY-MM-DD}}
+path includes {{wiki_root_basename}}/
+
+sort by description
+sort by priority
+sort by due
+short mode
+hide toolbar
+```
+
+# Done today
+```tasks
+done on {{date:YYYY-MM-DD}}
+path includes {{wiki_root_basename}}/
+
+sort by status
+sort by priority
+sort by due
+short mode
+```
+
+---
+## Created {{date:YYYY-MM-DD}}
+```dataview
+TABLE dateformat(created, "yyyy-MM-dd HH:mm") as created_date_time
+WHERE dateformat(created, "yyyy-MM-dd") = "{{date:YYYY-MM-DD}}"
+SORT created ASC
+```
+## Modified {{date:YYYY-MM-DD}}
+```dataview
+TABLE dateformat(modified, "yyyy-MM-dd HH:mm") as modified_date
+WHERE dateformat(modified, "yyyy-MM-dd") = "{{date:YYYY-MM-DD}}"
+SORT modified ASC
+```
