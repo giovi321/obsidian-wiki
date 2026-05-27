@@ -33,6 +33,8 @@ All verbs take an optional wiki slug as the first argument. If the slug is omitt
 | `/feedback [wiki]` | Record a behavioral rule. |
 | `/daily-note [wiki]` | Create today's daily journal note from template (only if the wiki has a journal entry point). |
 | `/setup-wiki` | Register a new wiki or reconfigure an existing one. Not per-wiki. |
+| `/update-docs` | Refresh shared docs at `<vault_root>/_service/docs/` from the plugin folder. |
+| `/upgrade [wiki]` | Refresh CLAUDE.md and shared docs from the plugin folder. Never touches wiki-config.md or any wiki content. |
 
 ## Notes
 

@@ -296,6 +296,7 @@ There are no per-wiki command files generated anywhere on disk. One canonical co
 | `/feedback` | Record a behavioral rule in `_service/feedback.md` |
 | `/daily-note` | Create today's daily journal note from template |
 | `/update-docs` | Refresh the shared docs folder from the plugin's current README and diagrams |
+| `/upgrade` | Refresh plugin-managed files (CLAUDE.md per wiki + shared docs) after a plugin update |
 
 ## Command reference
 
@@ -321,6 +322,7 @@ Every verb takes the wiki slug as the first argument. The table below uses `<wik
 | `/feedback <wiki>` | `<rule text>` or empty | `_service/feedback.md`, log, hot.md | Confirms before appending; never overwrites |
 | `/daily-note <wiki>` | `[YYYY-MM-DD]` | journal entry point only | Does not touch manifest or log |
 | `/update-docs` | empty | `<vault_root>/_service/docs/` | Refreshes README and diagrams from the plugin folder |
+| `/upgrade` | `[wiki-slug]` or empty | `CLAUDE.md` per target wiki, `<vault_root>/_service/docs/` | Refreshes plugin-managed files only; never touches `wiki-config.md`, `_custom/`, or wiki content |
 
 ## How ingest works on one source
 
@@ -586,13 +588,13 @@ To refresh the docs between setups (typically after `/plugin update obsidian-wik
 
 Three layers, each with a different update behavior.
 
-**`CLAUDE.md` at each wiki root** is generic boilerplate, identical for every wiki. It is a verbatim copy of `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl`. When the plugin updates and this template changes, your local `CLAUDE.md` does NOT auto-refresh. It refreshes when you next run `/setup-wiki <slug>` or, in a future version, a dedicated upgrade command. If a plugin update changes `CLAUDE.md`, your existing wiki keeps the old version until you explicitly refresh.
+**`CLAUDE.md` at each wiki root** is generic boilerplate, identical for every wiki. It is a verbatim copy of `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl`. When the plugin updates and this template changes, your local `CLAUDE.md` does NOT auto-refresh. Run `/upgrade` (or `/upgrade <slug>` for a specific wiki) to pull the new version. The command compares hashes and only writes if the template has changed.
 
 **`wiki-config.md` at each wiki root** is yours. The plugin never touches it on update. The schema documented in `skills/wiki-setup/SKILL.md` may evolve; if it does, your existing `wiki-config.md` keeps working unless the change is backward-incompatible. Backward-incompatible changes are flagged in the commit message with a `BREAKING:` prefix.
 
 **`<wiki-root>/_custom/`** is yours. The plugin never reads or writes anything in there except through the `custom_procedures:` list you declare in `wiki-config.md`.
 
-**`<vault_root>/_service/docs/`** is a mirror of the plugin's README and diagrams. Refresh it with `/update-docs` after a plugin update.
+**`<vault_root>/_service/docs/`** is a mirror of the plugin's README and diagrams. Refresh it with `/update-docs` after a plugin update. `/upgrade` also refreshes it as part of its sweep.
 
 **The registry at `~/.claude/obsidian-wiki/wiki-registry.json`** is yours. The plugin reads it on every command and writes to it only via `/setup-wiki`.
 
