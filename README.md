@@ -259,6 +259,25 @@ Setup asks once how you want to address commands.
 
 Both modes are supported by every command. The setup command generates the suffixed variants for you when you pick that mode.
 
+### Where suffixed commands actually live
+
+The plugin folder (under `~/.claude/plugins/obsidian-wiki/` or your platform's equivalent) is owned by the plugin manager. The manager overwrites it whenever the plugin updates, so the setup command does NOT write per-wiki command files there.
+
+Instead, generated per-wiki commands are written to **user-scope** at `~/.claude/commands/<verb>-<slug>.md`. Claude Code and Cowork merge three command scopes at runtime:
+
+| Scope | Path | Who writes |
+|---|---|---|
+| Plugin-scope | `<plugin-folder>/commands/` | the plugin, on update |
+| User-scope | `~/.claude/commands/` | `/setup-wiki` writes here; the user can also edit by hand |
+| Project-scope | `<project>/.claude/commands/` | per-project overrides |
+
+Consequences:
+
+- **Argument mode**: zero files are generated. The canonical `commands/ingest.md` parses `$1` as the wiki slug. Plugin updates change nothing in user-scope.
+- **Suffixed mode**: with 17 verbs × N wikis, the setup command writes `17 × N` files to `~/.claude/commands/`. They survive plugin updates because they live outside the plugin folder. They reference `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` so they pick up whatever plugin version is currently installed.
+- **Removing a wiki**: `/setup-wiki <slug> --remove` deletes the matching user-scope command files and the registry entry. It never touches the wiki's data folder.
+- **Sandboxed installs**: if Cowork redirects the user-config directory (some app sandboxes do), the setup command probes the platform-specific commands directory before falling back to `~/.claude/commands/`. The registry file at `~/.claude/obsidian-wiki/wiki-registry.json` also persists in user-scope across plugin updates and reinstalls.
+
 ## The 17 commands
 
 | Command | Does |
