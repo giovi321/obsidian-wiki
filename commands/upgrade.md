@@ -24,7 +24,7 @@ Args: $ARGUMENTS
    d. If they differ, copy `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl` to `<wiki-root>/CLAUDE.md`, overwriting. Log the old hash, new hash, and number of lines changed.
 
 4. Refresh the shared docs at `<vault_root>/_service/docs/`:
-   - Copy `${CLAUDE_PLUGIN_ROOT}/README.md` to `<vault_root>/_service/docs/README.md`. Overwrite.
+   - Copy `${CLAUDE_PLUGIN_ROOT}/README.md` to `<vault_root>/_service/docs/README.md`. Overwrite. **Rewrite paths**: replace every `docs/diagrams/` in the README with `diagrams/`. The README in the plugin repo references diagrams as `docs/diagrams/<name>.svg` because it sits at the repo root; the local copy sits inside `_service/docs/`, so the prefix must be stripped for the relative paths to resolve.
    - Copy every `${CLAUDE_PLUGIN_ROOT}/docs/diagrams/*.svg` to `<vault_root>/_service/docs/diagrams/`. Overwrite each.
 
 5. Verify nothing else was touched. Specifically, do NOT modify:
