@@ -232,7 +232,7 @@ After the plugin is installed (either path above), register your first wiki:
 
 The setup command interviews you about wiki name, root path, which entry points to enable, which structured-knowledge folders to enable, dashboard templates, tag vocabulary, project thresholds. It scaffolds the folders, writes the wiki's `CLAUDE.md` from `templates/CLAUDE.md.tmpl`, installs the dashboard templates you picked, and registers the wiki at `~/.claude/obsidian-wiki/wiki-registry.json`.
 
-To add a second wiki, run `/setup-wiki` again. The addressing mode (suffixed or argument-based) you chose during the first setup carries forward.
+To add a second wiki, run `/setup-wiki` again. It appends a new entry to the registry; existing wikis are untouched.
 
 ## Ideal workflow
 
@@ -250,33 +250,19 @@ What the typical loop looks like once a wiki is set up.
 
 ## Addressing two or more wikis
 
-Setup asks once how you want to address commands.
+Every command takes the wiki slug as the first argument:
 
-| Mode | Example | Trade-off |
-|---|---|---|
-| Suffixed | `/ingest-work`, `/ingest-personal` | One command file per verb per wiki. Better slash-menu autocomplete; more files. |
-| Argument | `/ingest work`, `/ingest personal` | One command file per verb. Fewer files; you type the slug each time. |
+```
+/ingest personal
+/ingest work some-file.md
+/query personal "what did I decide about X?"
+```
 
-Both modes are supported by every command. The setup command generates the suffixed variants for you when you pick that mode.
+If exactly one wiki is registered, the slug is optional. The agent falls back to the single registered wiki, so `/ingest` alone works.
 
-### Where suffixed commands actually live
+If two or more wikis are registered and you omit the slug, the agent lists the registered slugs and asks which one to target. Pick a short slug at setup (1 to 4 characters) and the friction is minimal.
 
-The plugin folder (under `~/.claude/plugins/obsidian-wiki/` or your platform's equivalent) is owned by the plugin manager. The manager overwrites it whenever the plugin updates, so the setup command does NOT write per-wiki command files there.
-
-Instead, generated per-wiki commands are written to **user-scope** at `~/.claude/commands/<verb>-<slug>.md`. Claude Code and Cowork merge three command scopes at runtime:
-
-| Scope | Path | Who writes |
-|---|---|---|
-| Plugin-scope | `<plugin-folder>/commands/` | the plugin, on update |
-| User-scope | `~/.claude/commands/` | `/setup-wiki` writes here; the user can also edit by hand |
-| Project-scope | `<project>/.claude/commands/` | per-project overrides |
-
-Consequences:
-
-- **Argument mode**: zero files are generated. The canonical `commands/ingest.md` parses `$1` as the wiki slug. Plugin updates change nothing in user-scope.
-- **Suffixed mode**: with 17 verbs × N wikis, the setup command writes `17 × N` files to `~/.claude/commands/`. They survive plugin updates because they live outside the plugin folder. They reference `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` so they pick up whatever plugin version is currently installed.
-- **Removing a wiki**: `/setup-wiki <slug> --remove` deletes the matching user-scope command files and the registry entry. It never touches the wiki's data folder.
-- **Sandboxed installs**: if Cowork redirects the user-config directory (some app sandboxes do), the setup command probes the platform-specific commands directory before falling back to `~/.claude/commands/`. The registry file at `~/.claude/obsidian-wiki/wiki-registry.json` also persists in user-scope across plugin updates and reinstalls.
+There are no per-wiki command files generated anywhere on disk. One canonical command file per verb lives in the plugin folder, and the slug is resolved from the argument at invocation time. Plugin updates apply to every wiki immediately because there is only one file per verb.
 
 ## The 17 commands
 
@@ -302,11 +288,11 @@ Consequences:
 
 ## Command reference
 
-Suffixed mode shows `/<verb>-<slug>`. Argument mode shows `/<verb> <slug>`. The table below uses argument form for compactness.
+Every verb takes the wiki slug as the first argument. The table below uses `<wiki>` as the placeholder.
 
 | Command | Arguments | Zones written | Side effects |
 |---|---|---|---|
-| `/setup-wiki` | `[slug]` to reconfigure, empty to add | n/a | Creates wiki folders, writes `CLAUDE.md`, registers wiki, optionally generates per-wiki commands |
+| `/setup-wiki` | `[slug]` to reconfigure, empty to add | n/a | Creates wiki folders, writes `CLAUDE.md`, registers wiki |
 | `/ingest <wiki>` | `<file>`, `<URL>`, `quick-notes`, or empty | structured knowledge, `_service/` | Updates manifest, log, hot.md; moves processed files per `post_ingest` |
 | `/ingest-url <wiki>` | `<URL>` | structured knowledge, `_service/` | Saves raw content to article entry point; creates source page |
 | `/ingest-claude <wiki>` | `session`, `folder [filter]`, or empty | structured knowledge, `_service/` | Heavy filtering; default `base_confidence: 0.42` |
@@ -503,13 +489,11 @@ Rules: strip protocol (`https://`), trailing slashes, query params. For GitHub, 
 ```json
 {
   "version": 1,
-  "addressing_mode": "suffixed",
   "wikis": {
     "<slug>": {
       "name": "Display Name",
       "root": "/absolute/path",
-      "created": "ISO-8601",
-      "command_suffix": "<slug>"
+      "created": "ISO-8601"
     }
   }
 }
@@ -582,11 +566,11 @@ The plugin ships 17 canonical commands plus `/setup-wiki`. To add a custom verb 
 
 1. Create `commands/digest.md` in the plugin folder, or `~/.claude/commands/digest.md` for user scope.
 2. Use the same procedure-step structure as the shipped commands. Step 1 reads `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`.
-3. If you want per-wiki suffixed variants, run `/setup-wiki --regenerate-commands`.
+3. Take the wiki slug as the first argument and resolve it via the registry the same way the shipped commands do.
 
 ## Removing a wiki
 
-`/setup-wiki <slug> --remove`. The command deletes the registry entry and removes generated suffixed command files. It does NOT touch the wiki's folder or content; you delete those yourself.
+`/setup-wiki <slug> --remove`. The command deletes the registry entry. It does NOT touch the wiki's folder or content; you delete those yourself.
 
 ## FAQ
 

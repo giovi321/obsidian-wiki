@@ -10,9 +10,8 @@ Args: $ARGUMENTS
 ## Wiki resolution
 
 Resolve the target wiki:
-1. If this command file is named `ingest-<slug>.md`, the wiki slug is `<slug>` and the rest of `$ARGUMENTS` is the source.
-2. Otherwise, the first argument is the wiki slug and the rest is the source.
-3. If no slug can be resolved, read `~/.claude/obsidian-wiki/wiki-registry.json`. If only one wiki is registered, use it. Otherwise list the registered wikis and ask the user to pick.
+1. The first argument is the wiki slug; the rest of `$ARGUMENTS` is the source.
+2. If the first argument is empty or does not match any registered slug, read `~/.claude/obsidian-wiki/wiki-registry.json`. If exactly one wiki is registered, use it (the whole argument string is then the source). Otherwise list the registered wikis and ask the user to pick.
 
 `<wiki-root>` below is the resolved wiki's `root` from the registry.
 

@@ -20,24 +20,20 @@ Wikis are listed in `~/.claude/obsidian-wiki/wiki-registry.json`, created by `/s
 ```json
 {
   "version": 1,
-  "addressing_mode": "suffixed",
   "wikis": {
     "<slug>": {
       "name": "Display Name",
       "root": "/absolute/path/to/wiki/root",
-      "created": "ISO-8601",
-      "command_suffix": "<slug>"
+      "created": "ISO-8601"
     }
   }
 }
 ```
 
-`addressing_mode` is `suffixed` (commands are generated per wiki as `/ingest-<slug>`) or `argument` (a single `/ingest <slug>` per verb). The mode is chosen at setup and applies to all wikis in the registry.
-
 Resolution order for a command invocation:
-1. If the command file name carries a suffix matching a registry entry, target that wiki.
-2. Otherwise, treat the first argument as the wiki slug.
-3. If neither resolves, abort and ask the user which wiki to target.
+1. Treat the first argument as the wiki slug. If it matches a registry entry, target that wiki and treat the remaining arguments as the command's input.
+2. If no first argument is given (or it does not match), and exactly one wiki is registered, target that wiki.
+3. Otherwise, list the registered wikis and ask the user to pick.
 
 Every command reads the registry, resolves the target wiki, then reads `<wiki-root>/CLAUDE.md` for the wiki-specific config.
 

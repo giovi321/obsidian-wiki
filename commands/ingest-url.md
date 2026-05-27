@@ -9,7 +9,7 @@ Args: $ARGUMENTS
 
 ## Wiki resolution
 
-Same scheme as `/ingest`. If the command file name is `ingest-url-<slug>.md`, slug is `<slug>`. Otherwise the first argument is the slug; the remaining argument is the URL.
+Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arguments are the command's input. If the slug is omitted and exactly one wiki is registered, that wiki is used; otherwise the user is asked to pick.
 
 ## Procedure
 

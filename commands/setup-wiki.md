@@ -11,23 +11,14 @@ Args: $ARGUMENTS
 
 1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-setup/SKILL.md` for the interview schema, template substitution rules, and the registry write protocol. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` for the shared rules that the new wiki must conform to.
 
-2. Read or create `~/.claude/obsidian-wiki/wiki-registry.json`. If it does not exist, treat as `{ "version": 1, "addressing_mode": null, "wikis": {} }` and proceed.
+2. Read or create `~/.claude/obsidian-wiki/wiki-registry.json`. If it does not exist, treat as `{ "version": 1, "wikis": {} }` and proceed.
 
 3. **Determine mode**:
    - If `$ARGUMENTS` is empty: new-wiki mode.
    - If `$ARGUMENTS` is a slug present in the registry: reconfigure mode for that wiki.
    - If `$ARGUMENTS` is a slug not in the registry: ask whether the user wants to register a new wiki at that slug.
 
-4. **Addressing mode** (asked only when adding the first wiki, or if `addressing_mode` is null):
-   Ask the user:
-   ```
-   How do you want to invoke commands?
-   1) Suffixed:  /ingest-<slug>           (one command per verb per wiki, easier to autocomplete)
-   2) Argument:  /ingest <slug> ...       (one command per verb, slug as first argument)
-   ```
-   Save the choice in the registry. Once set, it applies to every wiki.
-
-5. **Run the interview** per the schema in `skills/wiki-setup/SKILL.md`. Collect:
+4. **Run the interview** per the schema in `skills/wiki-setup/SKILL.md`. Collect:
    - `name`: display name.
    - `slug`: kebab-case identifier (defaults to slugified name).
    - `root`: absolute filesystem path to the wiki root. Create the folder if missing.
@@ -59,21 +50,13 @@ Args: $ARGUMENTS
    "<slug>": {
      "name": "<name>",
      "root": "<absolute path>",
-     "created": "<ISO-8601>",
-     "command_suffix": "<slug>"
+     "created": "<ISO-8601>"
    }
    ```
 
-10. **Generate per-wiki command files** (only when `addressing_mode` is `suffixed`):
-    For each canonical command in `${CLAUDE_PLUGIN_ROOT}/commands/` (excluding `setup-wiki.md`), write a copy at `${CLAUDE_PLUGIN_ROOT}/commands/<verb>-<slug>.md` that:
-    a. Carries the same frontmatter but its `description` is appended with " for the <name> wiki".
-    b. Pre-binds the wiki slug so the wiki-resolution step skips argument parsing.
+10. **Confirm**: show the user a summary of created paths, registered slug, installed templates. Ask `[y/n]` to commit. On `n`, revert (delete created folders, restore registry).
 
-    Implementation note: if the user does not have write access to the plugin folder, fall back to writing the suffixed commands into `~/.claude/commands/` (user-scope), which Claude Code merges with plugin commands.
-
-11. **Confirm**: show the user a summary of: created paths, registered slug, addressing mode, installed templates, generated commands (if any). Ask `[y/n]` to commit. On `n`, revert (delete created folders, restore registry).
-
-12. **Smoke check**: run `/status` for the new wiki and report the output.
+11. **Smoke check**: run `/status` for the new wiki and report the output.
 
 ## Constraints
 

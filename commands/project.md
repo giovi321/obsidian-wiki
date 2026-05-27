@@ -9,7 +9,7 @@ Args: $ARGUMENTS
 
 ## Wiki resolution
 
-Same scheme as `/ingest`. Command file `project-<slug>.md` resolves to slug `<slug>`; otherwise first argument is the wiki slug and the subcommand follows.
+Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arguments are the command's input. If the slug is omitted and exactly one wiki is registered, that wiki is used; otherwise the user is asked to pick.
 
 ## Procedure
 

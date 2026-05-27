@@ -130,25 +130,9 @@ Read `~/.claude/obsidian-wiki/wiki-registry.json` once. Compute the new state. W
 
 If the registry file is malformed (does not parse), abort and ask the user to fix it before proceeding. Never overwrite a malformed registry; that would lose all other wiki entries.
 
-## Per-wiki command generation
-
-Only when `addressing_mode` is `suffixed`. For each canonical command file in `${CLAUDE_PLUGIN_ROOT}/commands/` (excluding `setup-wiki.md` and `help.md`):
-
-1. Read the canonical file.
-2. Compute the per-wiki filename: replace the basename (without extension) `<verb>` with `<verb>-<slug>`.
-3. In the frontmatter, append " for the <name> wiki" to `description`.
-4. Insert a "Wiki binding" block right after the wiki resolution section:
-   ```
-   This command is pre-bound to the `<slug>` wiki. Skip argument-based wiki resolution.
-   ```
-5. Write to `${CLAUDE_PLUGIN_ROOT}/commands/<verb>-<slug>.md`. If the plugin folder is not writable, fall back to `~/.claude/commands/<verb>-<slug>.md`.
-
-Per-wiki command files are regenerated on reconfigure if any field changes that affects them (currently only `name`, which appears in the description).
-
 ## Removing a wiki
 
 Reconfigure mode supports a `--remove` flag. When set:
 - Confirm twice.
 - Delete the registry entry.
-- Delete per-wiki command files generated for the slug (only the ones the setup created; never delete canonical commands).
 - Do NOT delete the wiki's folder or any of its content. The user removes their data manually.
