@@ -9,7 +9,12 @@ Supports any number of wikis. Each wiki has its own configuration in a `CLAUDE.m
 - [What it does](#what-it-does)
 - [What it is not](#what-it-is-not)
 - [Architecture](#architecture)
-- [Install](#install)
+- [Folder structure](#folder-structure)
+- [Concepts in plain English](#concepts-in-plain-english)
+- [Install in Claude Code](#install-in-claude-code)
+- [Install in Cowork](#install-in-cowork)
+- [First-run setup](#first-run-setup)
+- [Ideal workflow](#ideal-workflow)
 - [Addressing two or more wikis](#addressing-two-or-more-wikis)
 - [The 17 commands](#the-17-commands)
 - [Command reference](#command-reference)
@@ -70,7 +75,58 @@ Each wiki has three zones plus a registry that lives outside the wiki.
 
 The registry at `~/.claude/obsidian-wiki/wiki-registry.json` lists every wiki and its absolute root path. The plugin reads it on every invocation to resolve which wiki a command targets.
 
-## Install
+## Folder structure
+
+Every wiki ends up with the same shape on disk. Names of the folders are configurable at setup; the diagram below uses one example naming scheme.
+
+<p align="center">
+  <img src="docs/diagrams/04-folder-structure.svg" width="800" alt="Wiki root folder tree with three zones (entry points, structured knowledge, service) and their typical contents.">
+</p>
+
+## Concepts in plain English
+
+If you've never used an agent that maintains a wiki, three ideas are worth unpacking before you install: **structured knowledge**, **page lifecycle**, and **lint**.
+
+### Structured knowledge
+
+The opposite of a chat log. Instead of saving every interaction or every note as-is, the agent reads your raw sources and writes new pages that distill what is worth keeping. A 5,000-word meeting transcript becomes a 400-word page on the decision that was made, with a wikilink to the source. The folders under "structured knowledge" hold these distilled pages. You can read them as standalone reference material; you can edit them by hand without breaking anything; and you can rely on cross-links between them to navigate.
+
+The raw inputs (transcripts, articles, PDFs, conversation exports) sit in entry-point folders. They are the inputs. The structured-knowledge folders hold the outputs. Deleting an input does not delete its distilled output. Deleting the distilled output does not delete the input.
+
+### Page lifecycle
+
+Every page in the wiki carries a `lifecycle` field in its frontmatter. It is there to answer a simple question: can I trust this page right now?
+
+| State | What it means | Who sets it |
+|---|---|---|
+| `draft` | The agent wrote it. No human has looked at it. Treat as a starting point. | `/ingest`, `/capture`, `/update` |
+| `reviewed` | You have read and edited the page. The agent will not overwrite it on the next ingest; it will only merge new information in. | You, by editing |
+| `verified` | You have explicitly confirmed the page is correct. Time alone never demotes it. | You, by editing |
+| `disputed` | Sources contradict each other on this topic. Open question. | You, by editing |
+| `archived` | Superseded or no longer relevant. Terminal. May point at a replacement page. | You, or `/ingest` when `superseded_by` is set |
+
+There is also a read-time overlay, `stale`, computed as `(today - updated) > 90 days`. It does not change the lifecycle state; it just flags that the page has not been touched in a while.
+
+The lifecycle solves two failure modes that any wiki agent will eventually hit. First, an agent that re-writes everything on every ingest will silently overwrite your manual edits, and you lose work. Second, an agent that refuses to update anything is useless, because new information cannot get in. The lifecycle is the middle path: anything you have not touched is `draft` and the agent is free to refine it; anything you have touched is `reviewed` or higher and the agent merges new sources in rather than overwriting your text. The state itself is just a frontmatter field. You change it by editing the file.
+
+### Lint
+
+`/lint` reads the wiki and writes a report. It does not change any content. The report flags:
+
+- **Orphan pages**: no other page links to them. Either link them in, or archive them.
+- **Broken links**: wikilinks pointing at pages that do not exist (redlinks the agent did not expect).
+- **Stale pages**: not updated in 90+ days. Maybe still correct, maybe not.
+- **Low-confidence pages**: `base_confidence < 0.4`. Backed by few or weak sources.
+- **Provenance drift**: the actual mix of extracted/inferred/ambiguous claims has drifted from what the frontmatter says.
+- **Contradictions**: two pages making opposing claims about the same thing.
+- **Quiet projects**: active projects that have not seen activity in a long time. Candidates for archival.
+- **Missing sub-folder indexes**: every subfolder should have a `<folder-name>.md` index page; lint flags missing ones.
+
+You read the report and decide what to act on. `/cross-linker` repairs link issues. `/project archive <slug>` archives a quiet project. Hand-editing fixes content issues. Nothing is auto-fixed because the right fix depends on context.
+
+Lint runs are cheap. Run it before any major change to the wiki.
+
+## Install in Claude Code
 
 Requires Claude Code with plugins enabled.
 
@@ -80,15 +136,54 @@ Requires Claude Code with plugins enabled.
 /plugin install obsidian-wiki
 ```
 
-Then run setup to register your first wiki:
+The plugin files are cloned to `~/.claude/plugins/obsidian-wiki/` on your machine. Updates land via `/plugin update obsidian-wiki`.
+
+## Install in Cowork
+
+Cowork is the desktop app for Claude. The plugin runs inside it the same way it runs in the CLI, but the install path goes through Cowork's plugin manager rather than the CLI's `/plugin` command.
+
+1. Open Cowork.
+2. Open the plugin manager (slash command `/plugin` or the plugin button in the UI, depending on Cowork version).
+3. Add the marketplace: paste `giovi321/obsidian-wiki` as the marketplace source.
+4. Install the `obsidian-wiki` plugin from the listing.
+
+The plugin files are cloned to your local Cowork plugin folder (typically under `~/.claude/plugins/` or the platform-specific equivalent shown by Cowork). The plugin lives on your computer; no part of it runs on a remote server.
+
+If you prefer to install from a local clone instead of the marketplace:
+
+```bash
+git clone git@github.com:giovi321/obsidian-wiki.git ~/.claude/plugins/obsidian-wiki
+```
+
+Then restart Cowork. The plugin should appear in the plugin list.
+
+In Cowork, slash commands work the same way as in the CLI. Type `/setup-wiki` and the interview begins. The `AskUserQuestion` prompts the setup command issues render as clickable multiple-choice options inside Cowork's chat panel, which is easier than typing answers by hand.
+
+## First-run setup
+
+After the plugin is installed (either path above), register your first wiki:
 
 ```
 /setup-wiki
 ```
 
-The setup command interviews you about wiki name, root path, which entry points to enable, which structured-knowledge folders to enable, dashboard templates, tag vocabulary, project thresholds. It scaffolds the folders, writes the wiki's `CLAUDE.md` from `templates/CLAUDE.md.tmpl`, installs the dashboard templates you picked, and registers the wiki.
+The setup command interviews you about wiki name, root path, which entry points to enable, which structured-knowledge folders to enable, dashboard templates, tag vocabulary, project thresholds. It scaffolds the folders, writes the wiki's `CLAUDE.md` from `templates/CLAUDE.md.tmpl`, installs the dashboard templates you picked, and registers the wiki at `~/.claude/obsidian-wiki/wiki-registry.json`.
 
 To add a second wiki, run `/setup-wiki` again. The addressing mode (suffixed or argument-based) you chose during the first setup carries forward.
+
+## Ideal workflow
+
+What the typical loop looks like once a wiki is set up.
+
+<p align="center">
+  <img src="docs/diagrams/05-workflow.svg" width="800" alt="Workflow swimlane showing continuous file drops, daily /status and /ingest, weekly /lint and /cross-linker, monthly /archive, and ad-hoc commands.">
+</p>
+
+- **Continuous**: drop files into entry points whenever something is worth keeping. No command needed. The files sit until you run `/ingest`.
+- **Daily or every few days**: `/status` to see what changed, then `/ingest` to compile the new sources into wiki pages. This is the primary loop.
+- **Weekly**: `/lint` to surface issues, then `/cross-linker` to repair link problems automatically.
+- **Monthly or before a big change**: `/archive` to snapshot the structured knowledge. Use `/rebuild` only when you have changed the schema and want to reprocess all sources from scratch.
+- **Any time**: `/query` to ask the wiki a question, `/update` to refine a specific page, `/research` to pull in new sources from the web, `/capture` to save the durable parts of the current conversation. `/feedback` to teach the agent a new rule based on something that did or did not work.
 
 ## Addressing two or more wikis
 
