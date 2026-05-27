@@ -25,7 +25,7 @@
   <text x="220" y="96" fill="#52534e" font-size="10" font-family="'Geist Mono', monospace">no command needed; files sit until /ingest runs</text>
 
   <!-- ROW 2: DAILY -->
-  <text x="40" y="172" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">DAILY OR EVERY FEW DAYS</text>
+  <text x="40" y="172" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">EVERY FEW DAYS</text>
   <text x="40" y="192" fill="#52534e" font-size="10" font-family="'Geist', sans-serif" font-style="italic">check, then compile</text>
 
   <rect x="200" y="156" width="140" height="48" rx="6" fill="#ffffff" stroke="#1c1917"/>
