@@ -13,13 +13,13 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 ## Procedure
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `daily-note` and entries scoped `global`. `CLAUDE.md` declares the journal entry point and the template path. Abort if no `daily_journal` entry point is configured.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `daily-note` and entries scoped `global`. `wiki-config.md` declares the journal entry point and the template path. Abort if no `daily_journal` entry point is configured.
 
 2. Determine target date: `YYYY-MM-DD` from the remaining argument, or today. Reject other formats.
 
 3. Check if `<journal-entry-point>/<date>.md` exists. If yes, ask the user: open existing or recreate.
 
-4. Read the template file at the path declared by `CLAUDE.md` (typically `<journal-entry-point>/_template.md`).
+4. Read the template file at the path declared by `wiki-config.md` (typically `<journal-entry-point>/_template.md`).
 
 5. Substitute placeholders:
    - `{{date:YYYY-MM-DD}}` to target date.

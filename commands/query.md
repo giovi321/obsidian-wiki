@@ -13,7 +13,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 ## Procedure
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `query` and entries scoped `global`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `query` and entries scoped `global`.
 
 2. Apply retrieval cost escalation per SKILL.md:
    a. Read `<wiki-root>/index.md` to orient.
@@ -23,7 +23,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 3. Identify relevant pages across the structured-knowledge folders.
 
-4. Answer in the voice prescribed by `CLAUDE.md`. Cite each claim with wikilinks. Note `base_confidence` and `lifecycle` when relevant. Distinguish wiki knowledge from inference.
+4. Answer in the voice prescribed by `wiki-config.md`. Cite each claim with wikilinks. Note `base_confidence` and `lifecycle` when relevant. Distinguish wiki knowledge from inference.
 
 5. If the wiki cannot answer, say so and recommend a source that would close the gap.
 

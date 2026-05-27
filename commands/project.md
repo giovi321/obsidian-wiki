@@ -13,21 +13,21 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 ## Procedure
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `project` and entries scoped `global`. `CLAUDE.md` declares the project root folder and any category folders.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `project` and entries scoped `global`. `wiki-config.md` declares the project root folder and any category folders.
 
 ### list
 
-Walk the project root and the `_old/` subfolder. Report active and archived projects with status, `last_activity`, one-line summary. Flag overdue state changes per thresholds in `CLAUDE.md`.
+Walk the project root and the `_old/` subfolder. Report active and archived projects with status, `last_activity`, one-line summary. Flag overdue state changes per thresholds in `wiki-config.md`.
 
 ### new <name>
 
-1. If `CLAUDE.md` defines category folders, ask the user which one.
+1. If `wiki-config.md` defines category folders, ask the user which one.
 2. Generate a kebab-case slug. Confirm with the user.
 3. Determine shape: flat (default) or folder (if substantial content is expected).
 4. Create the project file with frontmatter (type, `status: active`, `created`, `last_activity`), description, tasks section.
 5. For folder projects: create `<project-root>/<category>/<slug>/<slug>.md`.
 6. For flat projects: create `<project-root>/<category>/<slug>.md`.
-7. Add a Tasks query if `CLAUDE.md` declares tasks-plugin support: `((not done) AND (path includes <project-root>/<category>/<slug>/))`.
+7. Add a Tasks query if `wiki-config.md` declares tasks-plugin support: `((not done) AND (path includes <project-root>/<category>/<slug>/))`.
 8. Update the category landing page to list the new project.
 9. Update `<wiki-root>/index.md` and `<wiki-root>/_service/log.md`.
 

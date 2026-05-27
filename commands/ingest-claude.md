@@ -13,11 +13,11 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 ## Procedure
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `ingest-claude` and entries scoped `global`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `ingest-claude` and entries scoped `global`.
 
 2. Read `<wiki-root>/_service/.manifest.json`.
 
-3. **Determine the work set**: the conversation entry point is the entry point in `CLAUDE.md` whose `source_type` is `claude-chat`. Abort if none is configured.
+3. **Determine the work set**: the conversation entry point is the entry point in `wiki-config.md` whose `source_type` is `claude-chat`. Abort if none is configured.
    - `session`: read the current session transcript. Save the raw transcript to `<conversation-entry-point>/<YYYY-MM-DD>-<slug>.md`. Then process it.
    - `folder [filter]`: walk `<conversation-entry-point>/` for files not in manifest or with changed hash. Apply optional filter as substring match on filename.
    - Empty: do both, capture current session AND process unprocessed files in the folder.
@@ -35,7 +35,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
    c. Reconstruct conversation text. Drop `tool_use`, `tool_result`, `thinking`, `token_budget` blocks. Include `attachments[].extracted_content`.
    d. Apply heavy filtering. Drop greetings, recapitulations, code mechanics, dead-ends.
    e. Extract durable knowledge: technical findings, decisions with rationale, frameworks, mental models, facts not already in the wiki.
-   f. Classify per `CLAUDE.md` routing rules.
+   f. Classify per `wiki-config.md` routing rules.
    g. File pages per `/ingest` Phase A. `base_confidence: 0.42`. Minimum 250 words.
    h. Create a source page at `<wiki-root>/_service/sources/claude-<slug>.md`: `source_type: claude-chat` or `claude-history`, date range, pages contributed to, `source_quality: 0.3`.
    i. Update manifest, log, hot.md.

@@ -1,95 +1,62 @@
 ---
-modified: {{iso_timestamp}}
+type: wiki-claude
+generated_by: obsidian-wiki plugin
 ---
-# {{wiki_name}} wiki, operating schema
 
-This file is the contract between the user and the agent operating on this wiki. The agent reads it on every session and follows it strictly.
+# Wiki operating schema
 
-Shared logic (provenance markers, confidence scoring, lifecycle states, source quality buckets, source ID normalization, manifest schema, retrieval cost escalation, structured log format, page templates, cross-linking rules, project lifecycle, modes of operation, image ingestion, monthly archival, hot.md spec) lives in the plugin's `skills/wiki-core/SKILL.md`. This file covers only wiki-specific configuration and must not duplicate SKILL.md content.
+This file is the contract between you and the agent operating on this wiki. The agent reads it on every command. **It is intentionally generic and identical across every wiki this plugin manages.** Wiki-specific configuration (entry points, structured-knowledge folders, dashboards, thresholds, tags, writing style) lives in `wiki-config.md` alongside this file.
+
+Shared logic (provenance markers, confidence scoring, lifecycle states, source quality buckets, source ID normalization, manifest schema, retrieval cost escalation, structured log format, page templates, cross-linking rules, project lifecycle, modes of operation, image ingestion, monthly archival, hot.md spec) lives in the plugin's `skills/wiki-core/SKILL.md`.
 
 ## Hard boundary
 
-This folder is the entire scope of the agent's operations. Everything outside this folder is off-limits.
+This folder is the entire scope of the agent's operations. Everything outside is off-limits.
 
-- Never read, write, list, or reference any path outside `{{wiki_root}}`.
+- Never read, write, list, or reference any path outside this wiki's root.
 - If asked to look at content elsewhere, refuse and ask the user to move or copy the relevant file into a readable zone or quote it inline.
-- Treat `{{wiki_root}}` as the project root. Relative paths only.
+- Treat the wiki root as the project root. Relative paths only inside this wiki.
+- Exception: the agent may read the shared docs folder at `<vault-root>/_service/docs/` (set in the registry) for reference material when the user asks about plugin behavior. It must not write there.
 
-## Wiki root
+## Three zones
 
-`{{wiki_root}}`
+Every wiki has three zones. The exact folder names come from `wiki-config.md`.
 
-## Zones
-
-### Entry points
-
-{{entry_points_block}}
-
-### Structured knowledge
-
-{{structured_knowledge_block}}
-
-### Dashboards
-
-Files at root the agent must not modify as a side effect. Rewrite only when explicitly restructuring.
-
-{{dashboards_block}}
-
-### Protected paths
-
-Subfolders inside structured-knowledge that `/rebuild` must not clear (hand-written or hand-curated content).
-
-{{protected_paths_block}}
-
-### Service
-
-`_service/` is Claude-only working state. The agent has full read and write access here.
+1. **Entry points**: folders where raw sources land. The agent reads these and adds `processed: true` frontmatter after ingest. Content is immutable during ingest.
+2. **Structured knowledge**: folders where the agent writes distilled pages. The user can also read and edit by hand.
+3. **Service** (`_service/`): the agent's working state. Manifest, log, hot.md, source summaries, archives, feedback rules. Off-limits to the user except for feedback edits.
 
 ## Folder permissions
 
-| Zone | Path | Agent permission |
+| Zone | Path source | Agent permission |
 |---|---|---|
-| Index | `index.md` | read + write |
-| Service | `_service/` | read + write |
-| Each entry point | see Entry points table | per `post_ingest` rule |
-| Each structured-knowledge folder | see table | read + write |
-| Each dashboard | see Dashboards | rewrite only on explicit restructure |
-| Agent control | `CLAUDE.md`, `.claude/` | read |
-
-## Writing style
-
-{{writing_style}}
-
-## Tag vocabulary
-
-{{tags_block}}
-
-## Project thresholds
-
-| Transition | Threshold (months) |
-|---|---|
-| Active to dormant | {{active_to_dormant_months}} |
-| Dormant to archive | {{dormant_to_archive_months}} |
-| Completed to archive | {{completed_to_archive_months}} |
+| Index | `<wiki-root>/index.md` | read + write |
+| Service | `<wiki-root>/_service/` | read + write |
+| Each entry point | `wiki-config.md → entry_points[]` | per `post_ingest` rule (`move` or `keep`); only adds `processed` frontmatter to source files |
+| Each structured-knowledge folder | `wiki-config.md → structured_knowledge[]` | read + write |
+| Each dashboard | `wiki-config.md → dashboards[]` | rewrite only on explicit restructure; never as a side effect |
+| Agent control | `CLAUDE.md`, `wiki-config.md`, `.claude/` | read only |
 
 ## Routing rules
 
 When `/ingest` extracts a knowledge item, route it as follows:
 
-- If the item is a person, file under the `people` folder if one is declared. Otherwise under the `concepts` folder.
+- If the item is a person, file under the `people` structured-knowledge folder if one is declared; otherwise under `concepts`.
 - If the item is a company, market, framework, or technical concept, file under `concepts`.
 - If the item is project-specific synthesis or analysis, file under the matching project in `projects`.
-- If the item is a curated knowledge article (durable, reference-quality), file under `documentation`.
+- If the item is a curated knowledge article (durable, reference quality), file under `documentation`.
 - If the item is a personal reference (list, recipe, contact, place), file under `resources`.
 
-Folders that are not declared in this CLAUDE.md are not routing targets; the agent must ask the user where to file the item if no folder matches.
+Folders not declared in `wiki-config.md` are not routing targets. If no folder matches, the agent must ask the user where to file the item.
 
 ## Page types
 
-Standard frontmatter for all pages lives in `wiki-core` SKILL.md "Page template". Wiki-specific additions go here. Add type-specific fields as the wiki evolves; document each one with its meaning, default value, and which command writes it.
+Standard frontmatter for all pages lives in `wiki-core` SKILL.md ("Page template"). Wiki-specific additions go in `wiki-config.md` under `page_types:` if needed.
 
-## Notes for the agent
+## Reading order for every command
 
-- Read this file in full at the start of every command.
-- Read `_service/feedback.md` and apply scoped entries.
-- All shared rules from `wiki-core` SKILL.md apply.
+1. Read this `CLAUDE.md` (you are here).
+2. Read `wiki-config.md` for entry points, structured knowledge, dashboards, thresholds, tags, writing style.
+3. Read `_service/feedback.md` and apply scoped entries.
+4. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` for shared rules.
+5. Then perform the command's specific procedure.

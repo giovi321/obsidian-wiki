@@ -13,10 +13,10 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 ## Procedure
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `rebuild` and entries scoped `global`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `rebuild` and entries scoped `global`.
 2. Confirm with the user.
 3. Run `/archive` with reason "pre-rebuild: <reason>".
-4. Clear structured-knowledge folders. Respect any `protected_paths` list declared in `CLAUDE.md` (folders that are hand-written and must not be cleared, e.g. dashboards or hand-curated subfolders). Reset manifest, log, index.
+4. Clear structured-knowledge folders. Respect any `protected_paths` list declared in `wiki-config.md` (folders that are hand-written and must not be cleared, e.g. dashboards or hand-curated subfolders). Reset manifest, log, index.
 5. Run `/ingest` with no arguments to reprocess all sources.
 6. Log the rebuild.
 7. Report: archive location, sources reprocessed, pages created, comparison with pre-rebuild count.
@@ -26,4 +26,4 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 - Always archive first.
 - Always confirm with the user.
 - Never delete entry-point folders.
-- Never clear paths listed under `protected_paths` in `CLAUDE.md`.
+- Never clear paths listed under `protected_paths` in `wiki-config.md`.

@@ -285,6 +285,7 @@ There are no per-wiki command files generated anywhere on disk. One canonical co
 | `/restore` | Restore from a previous archive |
 | `/feedback` | Record a behavioral rule in `_service/feedback.md` |
 | `/daily-note` | Create today's daily journal note from template |
+| `/update-docs` | Refresh the shared docs folder from the plugin's current README and diagrams |
 
 ## Command reference
 
@@ -309,6 +310,7 @@ Every verb takes the wiki slug as the first argument. The table below uses `<wik
 | `/restore <wiki>` | `<archive-id>` or `list` | structured knowledge, `_service/` | Archives current state first |
 | `/feedback <wiki>` | `<rule text>` or empty | `_service/feedback.md`, log, hot.md | Confirms before appending; never overwrites |
 | `/daily-note <wiki>` | `[YYYY-MM-DD]` | journal entry point only | Does not touch manifest or log |
+| `/update-docs` | empty | `<vault_root>/_service/docs/` | Refreshes README and diagrams from the plugin folder |
 
 ## How ingest works on one source
 
@@ -489,6 +491,7 @@ Rules: strip protocol (`https://`), trailing slashes, query params. For GitHub, 
 ```json
 {
   "version": 1,
+  "vault_root": "/absolute/path/to/vault",
   "wikis": {
     "<slug>": {
       "name": "Display Name",
@@ -498,6 +501,8 @@ Rules: strip protocol (`https://`), trailing slashes, query params. For GitHub, 
   }
 }
 ```
+
+`vault_root` is the parent directory shared by all registered wikis. It is set at first `/setup-wiki` run and stores where the shared docs at `<vault_root>/_service/docs/` live.
 
 ## Log format
 
@@ -549,16 +554,23 @@ Commands that apply this: `/query`, `/status`, `/cross-linker`, `/lint`. Exempt:
 
 ## Customization
 
-Everything wiki-specific lives in `<wiki-root>/CLAUDE.md`. Edit it directly to:
+Two files at each wiki root:
 
-- Change which folders are entry points and their `source_type`, `default_quality`, `post_ingest`, `naming_convention`.
-- Change which folders are structured knowledge and their purpose.
-- Change routing rules (what kinds of items go where).
-- Change project thresholds (months to dormant, to archive).
-- Change writing style or tag vocabulary.
-- Add new page types with their own frontmatter fields.
+- `CLAUDE.md` (generic, identical across every wiki this plugin manages): describes the three-zone architecture, hard boundary, folder permissions, routing rules, page types, and the reading order. **Do not edit by hand.** It is meant to be refreshed from the plugin template if the schema changes.
+- `wiki-config.md` (specific to your wiki): YAML frontmatter holds every customizable field. Edit it directly to change:
+  - Which folders are entry points and their `source_type`, `default_quality`, `post_ingest`, `naming_convention`.
+  - Which folders are structured knowledge and their purpose.
+  - Project thresholds (months to dormant, to archive).
+  - Writing style or tag vocabulary.
+  - Dashboards and protected paths.
 
 The shared logic in [`skills/wiki-core/SKILL.md`](skills/wiki-core/SKILL.md) is plugin-wide and applies to every wiki. Edit it only when you want a structural change across all wikis.
+
+## Shared docs
+
+`/setup-wiki` installs the README and diagrams to `<vault_root>/_service/docs/` at first run and refreshes them every time it runs again. The shared docs folder lives outside any specific wiki so multiple wikis under the same vault see the same docs.
+
+To refresh the docs between setups (typically after `/plugin update obsidian-wiki`), run `/update-docs`. It copies the plugin's current README and diagrams over the shared docs folder.
 
 ## Adding a custom command
 

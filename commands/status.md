@@ -13,11 +13,11 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 ## Procedure
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `status` and entries scoped `global`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `status` and entries scoped `global`.
 
 2. Read `<wiki-root>/_service/.manifest.json`.
 
-3. **Compute delta**: walk all entry points declared in `CLAUDE.md`. For each file, compute SHA-256 and compare to the manifest:
+3. **Compute delta**: walk all entry points declared in `wiki-config.md`. For each file, compute SHA-256 and compare to the manifest:
    - New files (not in manifest).
    - Changed files (hash differs).
    - Unchanged files (skip).

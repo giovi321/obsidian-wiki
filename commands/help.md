@@ -36,6 +36,6 @@ All verbs take an optional wiki slug as the first argument. If the slug is omitt
 
 ## Notes
 
-- All commands read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` for shared logic, the target wiki's `CLAUDE.md` for config, and `<wiki-root>/_service/feedback.md` for behavioral rules.
-- Entry points and structured-knowledge folders are declared in each wiki's `CLAUDE.md`. Run `/setup-wiki` to create or modify them.
+- All commands read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` for shared logic, the target wiki's `CLAUDE.md` (generic schema) and `wiki-config.md` (specific configuration), and `<wiki-root>/_service/feedback.md` for behavioral rules.
+- Entry points and structured-knowledge folders are declared in each wiki's `wiki-config.md`. Edit that file or run `/setup-wiki <slug>` to reconfigure.
 - Source-quality scoring, confidence formula, provenance markers, lifecycle states, and the reflection step are documented in `SKILL.md` and in `docs/QUICK-REFERENCE.md`.

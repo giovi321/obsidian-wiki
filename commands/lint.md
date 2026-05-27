@@ -13,7 +13,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 ## Procedure
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `lint` and entries scoped `global`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `lint` and entries scoped `global`.
 
 2. Build inventory: every `.md` file in the structured-knowledge folders with path, frontmatter, outgoing and incoming wikilinks. Every project's status and `last_activity`. Tag usage map.
 
@@ -36,7 +36,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
    - Disputed pages.
    - Pages using legacy fields.
 
-   **Project-level findings** (per `CLAUDE.md` thresholds):
+   **Project-level findings** (per `wiki-config.md` thresholds):
    - Active projects past the active threshold, suggest dormant.
    - Dormant projects past the dormant threshold, suggest archive.
    - Completed projects past the completed threshold, suggest archive.

@@ -13,7 +13,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 ## Procedure
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `restore` and entries scoped `global`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `restore` and entries scoped `global`.
 2. If the target is `list` or empty, list archives from `<wiki-root>/_service/_archives/` with `info.json` metadata. Ask the user which to restore.
 3. Confirm with the user.
 4. Run `/archive` with reason "pre-restore: restoring from <archive-id>".

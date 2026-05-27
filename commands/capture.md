@@ -13,15 +13,15 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 ## Procedure
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `capture` and entries scoped `global`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `capture` and entries scoped `global`.
 
 2. Identify what is worth preserving (decisions, findings, frameworks, facts not in the wiki). Discard logistics, greetings, already-captured content.
 
-3. Classify per `CLAUDE.md` routing rules into the structured-knowledge folders.
+3. Classify per `wiki-config.md` routing rules into the structured-knowledge folders.
 
 4. Rewrite as declarative knowledge. Apply provenance markers.
 
-5. Generate slug and title per `CLAUDE.md` naming rules.
+5. Generate slug and title per `wiki-config.md` naming rules.
 
 6. Check for existing pages via retrieval cost escalation. Update instead of creating duplicates.
 

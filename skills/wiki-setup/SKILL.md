@@ -80,16 +80,31 @@ templates_to_install:
   - canvas-dashboard
 ```
 
-## Template substitution map
+## Per-wiki files written at setup
 
-Every template file under `templates/` contains `{{key}}` placeholders. The setup skill resolves them as follows:
+Setup writes two files at the wiki root and several inside `_service/`:
+
+| File | Source template | Substitution? |
+|---|---|---|
+| `CLAUDE.md` | `templates/CLAUDE.md.tmpl` | No, copied verbatim |
+| `wiki-config.md` | `templates/wiki-config.md.tmpl` | Yes, all placeholders below |
+| `index.md` | `templates/index.md.tmpl` | `{{wiki_name}}` only |
+| `_service/.manifest.json` | `templates/manifest.json.tmpl` | `{{iso_timestamp}}` |
+| `_service/log.md` | empty | — |
+| `_service/hot.md` | `templates/hot.md.tmpl` | `{{iso_timestamp}}` |
+| `_service/feedback.md` | `templates/feedback.md.tmpl` | `{{today}}` |
+
+`CLAUDE.md` is intentionally identical across every wiki this plugin manages. It must not contain any wiki-specific data. All wiki-specific data lives in `wiki-config.md`.
+
+## Template substitution map (for `wiki-config.md` and the dashboard templates)
 
 | Placeholder | Source |
 |---|---|
 | `{{wiki_name}}` | `name` |
 | `{{wiki_slug}}` | `slug` |
 | `{{wiki_root}}` | `root` |
-| `{{projects_path}}` | first `structured_knowledge` entry with `purpose: projects`; empty string if none |
+| `{{wiki_root_basename}}` | basename of `root` (used in Tasks/Dataview queries) |
+| `{{projects_path}}` | first `structured_knowledge` entry with `purpose: projects`; empty if none |
 | `{{documentation_path}}` | first entry with `purpose: documentation` |
 | `{{resources_path}}` | first entry with `purpose: resources` |
 | `{{people_path}}` | first entry with `purpose: people` |
@@ -99,14 +114,15 @@ Every template file under `templates/` contains `{{key}}` placeholders. The setu
 | `{{journal_path}}` | first entry point with `source_type: daily-note` |
 | `{{transcripts_path}}` | first entry point with `source_type: voice-transcript` |
 | `{{conversations_path}}` | first entry point with `source_type: claude-chat` |
-| `{{tags_block}}` | newline-joined `tags` list |
-| `{{writing_style}}` | `writing_style` |
+| `{{tags_block}}` | YAML-rendered list, each tag indented two spaces with `- ` prefix |
+| `{{writing_style_indented}}` | `writing_style` text, indented two spaces for YAML pipe block |
 | `{{active_to_dormant_months}}` | `project_thresholds.active_to_dormant` |
 | `{{dormant_to_archive_months}}` | `project_thresholds.dormant_to_archive` |
 | `{{completed_to_archive_months}}` | `project_thresholds.completed_to_archive` |
-| `{{entry_points_block}}` | YAML-rendered `entry_points` array |
+| `{{entry_points_block}}` | YAML-rendered `entry_points` array (`-` items, two-space indent) |
 | `{{structured_knowledge_block}}` | YAML-rendered `structured_knowledge` array |
-| `{{protected_paths_block}}` | YAML-rendered `protected_paths` array |
+| `{{dashboards_block}}` | YAML-rendered `dashboards` array (empty list `[]` if none) |
+| `{{protected_paths_block}}` | YAML-rendered `protected_paths` array (empty list `[]` if none) |
 | `{{today}}` | current date `YYYY-MM-DD` |
 | `{{iso_timestamp}}` | current timestamp ISO-8601 |
 
@@ -129,6 +145,34 @@ Refuse to scaffold if any of these fail:
 Read `~/.claude/obsidian-wiki/wiki-registry.json` once. Compute the new state. Write to `~/.claude/obsidian-wiki/wiki-registry.json.tmp`. Verify the JSON parses. Rename atomically to `wiki-registry.json`.
 
 If the registry file is malformed (does not parse), abort and ask the user to fix it before proceeding. Never overwrite a malformed registry; that would lose all other wiki entries.
+
+Schema:
+
+```json
+{
+  "version": 1,
+  "vault_root": "/absolute/path/to/vault",
+  "wikis": {
+    "<slug>": {
+      "name": "Display Name",
+      "root": "/absolute/path/to/wiki/root",
+      "created": "ISO-8601"
+    }
+  }
+}
+```
+
+`vault_root` is established at first wiki registration (default: parent of the first wiki's root, asked of the user once). All wikis share it. The shared docs live at `<vault_root>/_service/docs/`.
+
+## Shared docs install
+
+Every `/setup-wiki` run, after the registry is updated, refreshes `<vault_root>/_service/docs/`:
+
+1. Create the directory if missing.
+2. Copy `${CLAUDE_PLUGIN_ROOT}/README.md` to `<vault_root>/_service/docs/README.md`. Overwrite.
+3. Copy `${CLAUDE_PLUGIN_ROOT}/docs/diagrams/*.svg` to `<vault_root>/_service/docs/diagrams/`. Overwrite each.
+
+The same refresh logic is exposed as `/update-docs` for between-setup refreshes (e.g. after the plugin is updated via `/plugin update obsidian-wiki`).
 
 ## Removing a wiki
 

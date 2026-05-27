@@ -20,6 +20,7 @@ Wikis are listed in `~/.claude/obsidian-wiki/wiki-registry.json`, created by `/s
 ```json
 {
   "version": 1,
+  "vault_root": "/absolute/path/to/vault",
   "wikis": {
     "<slug>": {
       "name": "Display Name",
@@ -30,12 +31,21 @@ Wikis are listed in `~/.claude/obsidian-wiki/wiki-registry.json`, created by `/s
 }
 ```
 
+`vault_root` is where the shared docs live (`<vault_root>/_service/docs/`). It is typically the parent of every wiki root but can be overridden at setup.
+
 Resolution order for a command invocation:
 1. Treat the first argument as the wiki slug. If it matches a registry entry, target that wiki and treat the remaining arguments as the command's input.
 2. If no first argument is given (or it does not match), and exactly one wiki is registered, target that wiki.
 3. Otherwise, list the registered wikis and ask the user to pick.
 
-Every command reads the registry, resolves the target wiki, then reads `<wiki-root>/CLAUDE.md` for the wiki-specific config.
+## Per-wiki configuration files
+
+Every wiki has two top-level config files at its root:
+
+- `CLAUDE.md`: generic boilerplate, identical across every wiki this plugin manages. Describes the three-zone architecture, hard boundary, folder permissions, routing rules, page types, and the reading order. The agent reads this on every command but never modifies it. To upgrade the boilerplate, `/setup-wiki` (or `/update-docs`) refreshes it from `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl`.
+- `wiki-config.md`: wiki-specific data. Frontmatter holds `name`, `slug`, `root`, `entry_points`, `structured_knowledge`, `dashboards`, `protected_paths`, `project_thresholds`, `tags`, `writing_style`. The agent reads this on every command to know what folders to operate on. To change configuration, edit this file (or re-run `/setup-wiki <slug>`).
+
+Every command reads the registry, resolves the target wiki, then reads both `<wiki-root>/CLAUDE.md` and `<wiki-root>/wiki-config.md` before doing anything else.
 
 ## Architecture
 

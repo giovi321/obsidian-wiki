@@ -13,13 +13,13 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 ## Procedure
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `archive` and entries scoped `global`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `archive` and entries scoped `global`.
 
 2. Compute archive ID: `YYYY-MM-DD-HHMM`.
 
 3. Create `<wiki-root>/_service/_archives/<archive-id>/`.
 
-4. Copy each structured-knowledge folder declared in `CLAUDE.md` plus service metadata (`_service/.manifest.json`, `_service/log.md`, `_service/sources/`, `<wiki-root>/index.md`) into the archive. Do NOT copy entry points, `_service/_archives/`, `_service/_attachments/`, or dashboard files.
+4. Copy each structured-knowledge folder declared in `wiki-config.md` plus service metadata (`_service/.manifest.json`, `_service/log.md`, `_service/sources/`, `<wiki-root>/index.md`) into the archive. Do NOT copy entry points, `_service/_archives/`, `_service/_attachments/`, or dashboard files.
 
 5. Compute statistics for `<wiki-root>/_service/_archives/<archive-id>/info.json`:
    ```json
