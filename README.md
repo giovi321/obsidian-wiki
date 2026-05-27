@@ -4,6 +4,36 @@ A plugin for [Claude Code](https://docs.claude.com/en/docs/claude-code) that tur
 
 Supports any number of wikis. Each wiki has its own configuration in a `CLAUDE.md` file at its root and is registered globally so commands can address it by slug.
 
+## Table of contents
+
+- [What it does](#what-it-does)
+- [What it is not](#what-it-is-not)
+- [Architecture](#architecture)
+- [Install](#install)
+- [Addressing two or more wikis](#addressing-two-or-more-wikis)
+- [The 17 commands](#the-17-commands)
+- [Command reference](#command-reference)
+- [How ingest works on one source](#how-ingest-works-on-one-source)
+- [Page lifecycle](#page-lifecycle)
+- [Confidence scoring](#confidence-scoring)
+- [Source quality buckets](#source-quality-buckets)
+- [Per-operation confidence defaults](#per-operation-confidence-defaults)
+- [Provenance](#provenance)
+- [Standard page frontmatter](#standard-page-frontmatter)
+- [Entry-point schema](#entry-point-schema)
+- [Source ID canonicalization](#source-id-canonicalization)
+- [Manifest schema](#manifest-schema)
+- [Registry schema](#registry-schema)
+- [Log format](#log-format)
+- [Feedback loop](#feedback-loop)
+- [Retrieval cost escalation](#retrieval-cost-escalation)
+- [Modes of operation](#modes-of-operation)
+- [Customization](#customization)
+- [Adding a custom command](#adding-a-custom-command)
+- [Removing a wiki](#removing-a-wiki)
+- [FAQ](#faq)
+- [License](#license)
+
 ## What it does
 
 Three things, in this order.
@@ -28,7 +58,9 @@ The plugin does not replace Obsidian. Output is plain markdown with wikilinks an
 
 Each wiki has three zones plus a registry that lives outside the wiki.
 
-![architecture](docs/diagrams/01-architecture.html)
+<p align="center">
+  <img src="docs/diagrams/01-architecture.svg" width="800" alt="Three-zone architecture: entry points feed the ingest engine, which writes into structured-knowledge folders, with the service folder tracking state.">
+</p>
 
 | Zone | Contents | Agent permission |
 |---|---|---|
@@ -37,8 +69,6 @@ Each wiki has three zones plus a registry that lives outside the wiki.
 | `_service/` | Manifest, log, hot list, source summaries, archives, feedback rules | Read and write |
 
 The registry at `~/.claude/obsidian-wiki/wiki-registry.json` lists every wiki and its absolute root path. The plugin reads it on every invocation to resolve which wiki a command targets.
-
-See [`docs/diagrams/01-architecture.html`](docs/diagrams/01-architecture.html) for the visual.
 
 ## Install
 
@@ -93,11 +123,35 @@ Both modes are supported by every command. The setup command generates the suffi
 | `/feedback` | Record a behavioral rule in `_service/feedback.md` |
 | `/daily-note` | Create today's daily journal note from template |
 
-Full reference with arguments and side effects in [`docs/QUICK-REFERENCE.md`](docs/QUICK-REFERENCE.md).
+## Command reference
+
+Suffixed mode shows `/<verb>-<slug>`. Argument mode shows `/<verb> <slug>`. The table below uses argument form for compactness.
+
+| Command | Arguments | Zones written | Side effects |
+|---|---|---|---|
+| `/setup-wiki` | `[slug]` to reconfigure, empty to add | n/a | Creates wiki folders, writes `CLAUDE.md`, registers wiki, optionally generates per-wiki commands |
+| `/ingest <wiki>` | `<file>`, `<URL>`, `quick-notes`, or empty | structured knowledge, `_service/` | Updates manifest, log, hot.md; moves processed files per `post_ingest` |
+| `/ingest-url <wiki>` | `<URL>` | structured knowledge, `_service/` | Saves raw content to article entry point; creates source page |
+| `/ingest-claude <wiki>` | `session`, `folder [filter]`, or empty | structured knowledge, `_service/` | Heavy filtering; default `base_confidence: 0.42` |
+| `/capture <wiki>` | `[topic]` | structured knowledge, `_service/` | `base_confidence: 0.42`; stops if nothing worth saving |
+| `/query <wiki>` | `<question>` | none (read-only) | Reflection step at end |
+| `/update <wiki>` | `<page> <info>` | target page, `_service/` | Recomputes `base_confidence` and `provenance` |
+| `/research <wiki>` | `<topic>` | structured knowledge, `_service/` | Saves raw web content to article entry point; 3 to 5 sources minimum |
+| `/lint <wiki>` | empty | `_service/lint-<date>.md`, log, hot.md | Read-only on wiki content |
+| `/cross-linker <wiki>` | `[scope]` or `all` | wikilinks and `aliases` only | Never deletes links |
+| `/project <wiki>` | `list \| new <name> \| archive <slug> \| reactivate <slug> \| status <slug> <new>` | project folders, index, log | Moves to `_old/` on archive, never deletes |
+| `/status <wiki>` | empty | none (read-only) | Computes delta, recommends `/ingest` or `/rebuild` |
+| `/archive <wiki>` | `[reason]` | `_service/_archives/<id>/` | Never modifies archived content |
+| `/rebuild <wiki>` | `[reason]` | structured knowledge (cleared), `_service/` | Archives first; respects `protected_paths` |
+| `/restore <wiki>` | `<archive-id>` or `list` | structured knowledge, `_service/` | Archives current state first |
+| `/feedback <wiki>` | `<rule text>` or empty | `_service/feedback.md`, log, hot.md | Confirms before appending; never overwrites |
+| `/daily-note <wiki>` | `[YYYY-MM-DD]` | journal entry point only | Does not touch manifest or log |
 
 ## How ingest works on one source
 
-![ingest flow](docs/diagrams/02-ingest-flow.html)
+<p align="center">
+  <img src="docs/diagrams/02-ingest-flow.svg" width="700" alt="Ingest flow: file drop, SHA-256 hash check, classify, extract items, route per CLAUDE.md, write page, post-ingest, update tracking.">
+</p>
 
 A source dropped into an entry point:
 
@@ -113,15 +167,19 @@ The minimum page size is 250 words. If a knowledge item cannot reach that thresh
 
 ## Page lifecycle
 
-![lifecycle](docs/diagrams/03-lifecycle.html)
+<p align="center">
+  <img src="docs/diagrams/03-lifecycle.svg" width="800" alt="Five-state lifecycle: draft to reviewed to verified, with disputed and archived branches, plus a 'stale' read-time overlay.">
+</p>
 
 Five states. `stale` is not a state but a computed overlay (`is_stale = (today - updated) > 90 days`).
 
-- `draft`: written by `/ingest`, `/capture`, or `/update`. Default for everything new.
-- `reviewed`: set by a human edit.
-- `verified`: set by a human edit. Time alone never demotes it.
-- `disputed`: set manually when sources contradict.
-- `archived`: terminal. Optional `superseded_by: "[[new-page]]"` field points to the replacement.
+| State | Entered by | Notes |
+|---|---|---|
+| draft | `/ingest`, `/capture`, `/update` on first write | Default for everything new |
+| reviewed | Human edit only | |
+| verified | Human edit only | Time alone never demotes verified |
+| disputed | Human edit only | Use when sources contradict on the page |
+| archived | Human edit, or ingest setting `superseded_by` | Terminal. Optional `superseded_by: "[[new-page]]"` field points to the replacement |
 
 Only ingest, capture, and update commands write `draft`. Every other transition requires a human edit.
 
@@ -133,7 +191,39 @@ Only ingest, capture, and update commands write `draft`. Every other transition 
 base_confidence = min(distinct_source_count / 3, 1.0) × 0.5 + avg(source_quality) × 0.5
 ```
 
-Source quality buckets are defined in [`skills/wiki-core/SKILL.md`](skills/wiki-core/SKILL.md). Per-operation defaults are documented there too: `/capture` defaults to 0.42, `/ingest-claude` to 0.42, `/research` typically reaches 0.85+ with multiple high-quality sources, `/update` to 0.59.
+Sources are deduplicated by normalized source ID before counting.
+
+## Source quality buckets
+
+| Bucket | Score | Examples |
+|---|---|---|
+| paper | 1.0 | Academic papers, conference proceedings |
+| official | 0.9 | Regulator filings, vendor docs, `.gov` |
+| documentation | 0.85 | Well-maintained third-party docs |
+| book | 0.8 | Books, technical references |
+| repository | 0.75 | GitHub READMEs, codebases |
+| article | 0.6 | News articles, industry reports |
+| blog | 0.55 | Personal blogs |
+| voice-transcript | 0.5 | Meeting and voice-recording transcripts |
+| session_transcript | 0.5 | Conversation history, general |
+| daily-note | 0.45 | Journal entries |
+| forum | 0.4 | Stack Overflow, HN, Reddit |
+| unknown | 0.4 | Catch-all |
+| claude-chat | 0.3 | LLM conversation history |
+| llm_generated | 0.3 | LLM self-reflections |
+
+## Per-operation confidence defaults
+
+| Operation | base_confidence | Formula |
+|---|---|---|
+| `/ingest` (single source) | per source | Computed from source quality |
+| `/ingest` (multi-source) | computed | `min(N/3, 1) × 0.5 + avg_q × 0.5` |
+| `/ingest-url` | computed | `0.17 + 0.5 × source_quality` |
+| `/capture` | 0.42 | 1 source at session_transcript 0.5 |
+| `/ingest-claude` | 0.42 | 1 source at claude-chat 0.3, rounded up |
+| `/research` | typically 0.85+ | Multiple high-quality sources |
+| `/update` | 0.59 | Existing page plus new source |
+| `/cross-linker` | unchanged | Does not modify confidence |
 
 ## Provenance
 
@@ -149,6 +239,115 @@ The `provenance:` block in the page frontmatter records the approximate mix as f
 
 Image-derived claims default to `^[inferred]` unless quoting verbatim visible text.
 
+## Standard page frontmatter
+
+```yaml
+---
+title: Page Title
+summary: "≤200 characters describing what this page is about."
+aliases: [alternate name, abbreviation]
+sources:
+  - source-id-1
+  - source-id-2
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+base_confidence: 0.65
+lifecycle: draft
+lifecycle_changed: YYYY-MM-DD
+provenance:
+  extracted: 0.80
+  inferred: 0.15
+  ambiguous: 0.05
+superseded_by: "[[new-page]]"   # only when lifecycle=archived and a replacement exists
+---
+```
+
+## Entry-point schema
+
+Declared in each wiki's `CLAUDE.md`:
+
+```yaml
+entry_points:
+  - path: "99_Quick-notes/"
+    source_type: quick-note
+    default_quality: 0.5
+    post_ingest: move          # or "keep"
+    naming_convention: "YYYY-MM-DD Short title.ext"
+```
+
+`post_ingest: move` relocates the file to `_service/entry-points/<entry-point>/<YYYY-MM>/` after adding `processed: true` frontmatter. `keep` adds the frontmatter only.
+
+## Source ID canonicalization
+
+| Source type | Rule | Example |
+|---|---|---|
+| Academic paper | DOI > arXiv ID > `<author>-<year>-<slug>` | `10.1234/foo`, `arxiv:1706.03762` |
+| GitHub repo | `github.com/<owner>/<repo>` | `github.com/owner/repo` |
+| Official docs | `<canonical-host>/<product>` | `docs.python.org/3` |
+| Blog post | `<host>/<author>` | `example.com/author` |
+| Book | `isbn:<ISBN>` or `<author>-<year>-<short-title>` | `isbn:9780134685991` |
+| Session transcript | `<agent>/<session-id>` | `claude.ai/abc123` |
+| Quick note | relative path at ingest time | `99_Quick-notes/20260510-1133.md` |
+| URL | canonical URL (no protocol, no trailing slash) | `example.com/article-slug` |
+
+Rules: strip protocol (`https://`), trailing slashes, query params. For GitHub, stop at `owner/repo`. When the same content arrives from two paths, collapse to a single ID (prefer DOI > URL > file path).
+
+## Manifest schema
+
+`<wiki-root>/_service/.manifest.json`:
+
+```json
+{
+  "version": 1,
+  "updated": "ISO-8601",
+  "sources": {
+    "<source-id>": {
+      "sha256": "hex digest",
+      "ingested_at": "ISO-8601",
+      "source_type": "article",
+      "source_quality": 0.6,
+      "wiki_pages": ["path/to/page.md"],
+      "projects_touched": ["project-slug"]
+    }
+  },
+  "curated_pages": {
+    "<page-path>": {
+      "sha256": "hex digest",
+      "curated_at": "ISO-8601"
+    }
+  }
+}
+```
+
+## Registry schema
+
+`~/.claude/obsidian-wiki/wiki-registry.json`:
+
+```json
+{
+  "version": 1,
+  "addressing_mode": "suffixed",
+  "wikis": {
+    "<slug>": {
+      "name": "Display Name",
+      "root": "/absolute/path",
+      "created": "ISO-8601",
+      "command_suffix": "<slug>"
+    }
+  }
+}
+```
+
+## Log format
+
+`<wiki-root>/_service/log.md`, inside a fenced code block to keep Obsidian from rendering underscores as italic:
+
+```
+- [ISO-8601] OPERATION key=value key="string value" ...
+```
+
+Operations: `INGEST`, `CAPTURE`, `LINT`, `ARCHIVE`, `REBUILD`, `RESTORE`, `PROJECT`, `QUERY`, `STATUS`, `CROSS-LINK`, `RESEARCH`, `UPDATE`, `INGEST-URL`, `INGEST-CLAUDE`, `FEEDBACK`.
+
 ## Feedback loop
 
 `_service/feedback.md` is per-wiki behavioral memory. Use `/feedback "Stop creating pages shorter than 100 words from quick-notes"` and the rule gets appended (after you confirm) and applied by every subsequent command.
@@ -156,6 +355,36 @@ Image-derived claims default to `^[inferred]` unless quoting verbatim visible te
 After every write-heavy operation (`/ingest`, `/lint`, `/cross-linker`, `/update`, `/research`, `/query`), the agent runs a reflection step that proposes feedback entries based on corrections you made during the run. Each proposal is a one-line draft you accept or reject with `y/n`. The feedback file is never written without explicit confirmation.
 
 Source content can never produce feedback entries. Only your direct messages via `/feedback` can write to the file.
+
+Format: one entry per line.
+
+```
+- YYYY-MM-DD scope. Rule in plain English. Why: ... How: ...
+```
+
+Scope is a command name without any per-wiki suffix (`ingest`, `lint`, `cross-linker`, `update`, `research`, `query`, `capture`, `ingest-claude`, `ingest-url`, `project`, `status`, `archive`, `rebuild`, `restore`, `daily-note`) or `global`.
+
+## Retrieval cost escalation
+
+Commands that read the wiki use the cheapest primitive that answers the question, escalating only when insufficient.
+
+| Need | Primitive |
+|---|---|
+| Does the page exist? Title or category? | Read `index.md`; grep frontmatter |
+| One- or two-sentence preview | Read `summary:` field |
+| Specific claim or section | Grep with `-A`/`-B` context |
+| Full page content | Read entire file |
+| Cross-page relationships | Grep wikilinks or walk from a known page |
+
+Commands that apply this: `/query`, `/status`, `/cross-linker`, `/lint`. Exempt: `/ingest`, `/rebuild`.
+
+## Modes of operation
+
+| Mode | Trigger | Behavior |
+|---|---|---|
+| Append | Normal `/ingest` | Process new and changed via SHA-256 |
+| Rebuild | `/rebuild` | Archive, clear, reprocess all |
+| Restore | `/restore <id>` | Archive current, copy from `_archives/` |
 
 ## Customization
 
