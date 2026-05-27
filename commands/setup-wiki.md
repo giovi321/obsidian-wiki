@@ -22,13 +22,15 @@ Args: $ARGUMENTS
    - `name`: display name.
    - `slug`: kebab-case identifier (defaults to slugified name).
    - `root`: absolute filesystem path to the wiki root. Create the folder if missing.
-   - `entry_points[]`: each with `path`, `source_type`, `default_quality?`, `post_ingest`, `naming_convention`. The setup skill provides a standard list of suggestions; the user picks which to enable and may override paths.
+   - `entry_points[]`: each with `path`, `source_type`, `default_quality?`, `post_ingest` (`move`, `keep`, or `read_only`), `naming_convention`, optional `exclude` glob list. The setup skill provides a standard catalog of suggestions; the user picks which to enable, may override paths, and may add custom entry points.
    - `structured_knowledge[]`: each with `path`, `purpose` (one of `projects`, `documentation`, `resources`, `people`, `concepts`, `custom`), `routing_hint` (free text).
    - `dashboards[]`: paths to dashboard files (optional).
    - `protected_paths[]`: structured-knowledge subfolders that `/rebuild` must not clear.
-   - `tags`: tag vocabulary (free text or comma-separated list).
+   - `ignore_paths[]`: filesystem artifacts at the wiki root the agent must ignore entirely. Suggest common entries: `.obsidian/`, `.trash/`, `notes.sqlite`, `.DS_Store`.
+   - `tags`: tag vocabulary (free text or comma-separated list). Ask whether to enable visibility tags (`visibility/public`, `visibility/internal`, `visibility/pii`). If yes, append them to the list.
    - `writing_style`: rules for prose voice.
    - `project_thresholds`: integers in months for `active_to_dormant`, `dormant_to_archive`, `completed_to_archive`.
+   - `custom_procedures[]`: optional. Ask the user if they want any custom procedures wired in at specific hook points (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`). For each one, collect a `name`, `when`, `description`, and a `procedure` path under `<wiki-root>/_custom/`. The setup command creates `<wiki-root>/_custom/` and copies `${CLAUDE_PLUGIN_ROOT}/templates/_custom-procedure.md.tmpl` to each declared path so the user can fill it in afterward.
    - `templates_to_install[]`: subset of `todo-dashboard`, `daily-note`, `canvas-dashboard`. For each, ask where to install it (default paths derived from the entry-point and dashboard answers above).
 
 6. **Scaffold the wiki**:

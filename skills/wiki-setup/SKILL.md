@@ -145,10 +145,11 @@ Setup writes two files at the wiki root and several inside `_service/`:
 | `{{active_to_dormant_months}}` | `project_thresholds.active_to_dormant` |
 | `{{dormant_to_archive_months}}` | `project_thresholds.dormant_to_archive` |
 | `{{completed_to_archive_months}}` | `project_thresholds.completed_to_archive` |
-| `{{entry_points_block}}` | YAML-rendered `entry_points` array (`-` items, two-space indent) |
+| `{{entry_points_block}}` | YAML-rendered `entry_points` array (`-` items, two-space indent). Includes `exclude` when set. |
 | `{{structured_knowledge_block}}` | YAML-rendered `structured_knowledge` array |
 | `{{dashboards_block}}` | YAML-rendered `dashboards` array (empty list `[]` if none) |
 | `{{protected_paths_block}}` | YAML-rendered `protected_paths` array (empty list `[]` if none) |
+| `{{ignore_paths_block}}` | YAML-rendered `ignore_paths` array (empty list `[]` if none) |
 | `{{today}}` | current date `YYYY-MM-DD` |
 | `{{iso_timestamp}}` | current timestamp ISO-8601 |
 
@@ -158,13 +159,18 @@ Placeholders left unresolved by this map are an error: abort and report which pl
 
 Refuse to scaffold if any of these fail:
 
-- `slug` is not kebab-case (lowercase letters, digits, hyphens; cannot start with a digit).
+- `slug` is not kebab-case or short (lowercase letters, digits, hyphens; cannot start with a digit; max 32 characters).
 - `slug` already exists in the registry and the user is in new-wiki mode.
 - `root` is not absolute.
 - `root` is inside another registered wiki's `root` (no nested wikis).
 - Any `entry_points[].path` or `structured_knowledge[].path` overlaps with another (path prefix collision within the wiki).
 - Any `source_type` is not listed in `wiki-core` SKILL.md "Source quality buckets".
+- Any `post_ingest` value is not one of `move`, `keep`, `read_only`.
 - `project_thresholds.*` are not positive integers.
+- Any `custom_procedures[].when` is not one of `pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`.
+- Any `custom_procedures[].procedure` resolves to a path outside the wiki root.
+
+After scaffolding succeeds, the agent creates an empty `<wiki-root>/_custom/` folder for any custom procedures the user declared, and copies `templates/_custom-procedure.md.tmpl` to each declared procedure path so the user has a starter file to edit.
 
 ## Registry write protocol
 

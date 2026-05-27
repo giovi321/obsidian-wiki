@@ -8,47 +8,103 @@ slug: "{{wiki_slug}}"
 root: "{{wiki_root}}"
 created: {{today}}
 
+# Folders the agent reads as sources. Each entry has:
+#   path:               folder name relative to root
+#   source_type:        bucket from wiki-core SKILL.md (quick-note, article, ...)
+#   default_quality:    optional override for the bucket default (0.0-1.0)
+#   post_ingest:        move | keep | read_only
+#   naming_convention:  plain-English description; agent renames to fit
+#   exclude:            optional glob list relative to the entry-point root
 entry_points:
 {{entry_points_block}}
 
+# Folders the agent writes distilled output into. Each entry has:
+#   path:          folder name relative to root
+#   purpose:       projects | documentation | resources | people | concepts | custom
+#   routing_hint:  free text used by /ingest when routing items
 structured_knowledge:
 {{structured_knowledge_block}}
 
+# Files the agent must not modify as a side effect. List file paths or globs.
 dashboards:
 {{dashboards_block}}
 
+# Structured-knowledge subfolders that /rebuild must not clear. Hand-written
+# content lives here (recipes, manual references, personal notes the agent
+# is forbidden to regenerate).
 protected_paths:
 {{protected_paths_block}}
 
+# Files or folders the agent must ignore entirely. Use for filesystem
+# artifacts that are not part of the wiki (database files, app caches,
+# editor settings).
+ignore_paths:
+{{ignore_paths_block}}
+
+# Project lifecycle thresholds (months).
 project_thresholds:
   active_to_dormant_months: {{active_to_dormant_months}}
   dormant_to_archive_months: {{dormant_to_archive_months}}
   completed_to_archive_months: {{completed_to_archive_months}}
 
+# Tag vocabulary. Agent will only use tags from this list on new pages.
+# Add the special tags `visibility/public`, `visibility/internal`,
+# `visibility/pii` if you want the visibility-filter feature in /query.
 tags:
 {{tags_block}}
 
+# Free-form prose rules. The agent applies these to every page it writes.
 writing_style: |
 {{writing_style_indented}}
+
+# Optional. Custom procedures the agent must follow at specific hook points
+# in canonical commands. Each entry has:
+#   name:         short identifier
+#   when:         pre-ingest | during-ingest | post-ingest | pre-lint | post-lint
+#   procedure:    path to a markdown file (relative to wiki root)
+#                 conventionally under <wiki-root>/_custom/
+#   description:  one-line summary
+# The agent reads the referenced file at the hook point and follows its
+# procedure section literally. If a procedure requires an external tool
+# (MCP, CLI) that is unavailable, the agent logs a warning and skips the
+# procedure; it does not abort the parent command.
+custom_procedures: []
 ---
 
 # {{wiki_name}} wiki configuration
 
-This file holds wiki-specific configuration that the agent reads on every command. The structural schema is described in `CLAUDE.md` and in `${CLAUDE_PLUGIN_ROOT}/skills/wiki-setup/SKILL.md`. Edit the frontmatter to change the configuration; do not edit `CLAUDE.md`.
+This file holds wiki-specific configuration that the agent reads on every command. The structural schema is described in `CLAUDE.md` and in `${CLAUDE_PLUGIN_ROOT}/skills/wiki-setup/SKILL.md`. To change configuration, edit the frontmatter above; do not edit `CLAUDE.md`.
 
-## Field reference
+## Page types (optional, wiki-specific)
 
-- **name**: display name shown in `/help` and reports.
-- **slug**: short identifier used as the wiki argument to every command (e.g. `/ingest <slug> ...`). Pick something short.
-- **root**: absolute filesystem path to the wiki root. Must match the registry.
-- **entry_points**: each one has `path` (relative to root), `source_type` (must be one of the buckets in `wiki-core` SKILL.md), `default_quality` (override the bucket default), `post_ingest` (`move` or `keep`), `naming_convention` (plain-English description; the agent applies it during monthly archival).
-- **structured_knowledge**: each has `path`, `purpose` (one of `projects`, `documentation`, `resources`, `people`, `concepts`, `custom`), `routing_hint` (free text used by `/ingest` to decide what goes here).
-- **dashboards**: paths to files the agent must not modify as a side effect (todo, canvas, etc.).
-- **protected_paths**: structured-knowledge subfolders that `/rebuild` must not clear (hand-written content like recipes, manual references).
-- **project_thresholds**: month counts after which active projects are suggested for dormant, dormant ones for archive, completed ones for archive.
-- **tags**: tag vocabulary used across the wiki. Agent uses these on new pages where applicable.
-- **writing_style**: free-form prose rules. The agent applies these to every page it writes.
+If your wiki uses page types beyond the generic Project/Documentation/Resource set, document them here. For each page type, describe:
+
+- Where pages of this type live (path pattern).
+- Wiki-specific frontmatter fields beyond the standard template in `wiki-core` SKILL.md.
+- Required structural blocks (e.g. Tasks query at the bottom of every Person page).
+- Naming conventions for filenames.
+
+Example structure:
+
+| Type | Path | Notes |
+|---|---|---|
+| Project landing | `<projects_path>/<slug>/<slug>.md` | Always includes Tasks query and Dataview sibling list. |
+| Person | `<people_path>/<Display Name>.md` | First + last name. Tasks query at the bottom. |
+
+## Required structural blocks (optional)
+
+If your wiki requires specific code blocks on certain page types (Tasks queries, Dataview lists, etc.), document them here so the agent inserts them automatically when creating new pages of that type.
+
+## Task syntax convention (optional)
+
+If your wiki uses the [Obsidian Tasks plugin](https://github.com/obsidian-tasks-group/obsidian-tasks) or a similar convention, document the format here. The agent applies this when extracting action items during ingest.
+
+Example: `- [ ] [[Person]] [[ProjectSlug]] description ➕ YYYY-MM-DD 📅 YYYY-MM-DD 🔼`
+
+## What the agent never does (optional, wiki-specific)
+
+Add wiki-specific constraints here. The generic constraints from `CLAUDE.md` and `wiki-core` SKILL.md always apply; this section is for additions.
 
 ## Free-form notes
 
-Anything below this line is for your own reference. The agent reads it but does not apply it programmatically.
+Anything below is for your own reference. The agent reads it but does not apply it programmatically.

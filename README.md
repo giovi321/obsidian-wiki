@@ -582,6 +582,38 @@ The shared logic in [`skills/wiki-core/SKILL.md`](skills/wiki-core/SKILL.md) is 
 
 To refresh the docs between setups (typically after `/plugin update obsidian-wiki`), run `/update-docs`. It copies the plugin's current README and diagrams over the shared docs folder.
 
+## What happens when the plugin updates
+
+Three layers, each with a different update behavior.
+
+**`CLAUDE.md` at each wiki root** is generic boilerplate, identical for every wiki. It is a verbatim copy of `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl`. When the plugin updates and this template changes, your local `CLAUDE.md` does NOT auto-refresh. It refreshes when you next run `/setup-wiki <slug>` or, in a future version, a dedicated upgrade command. If a plugin update changes `CLAUDE.md`, your existing wiki keeps the old version until you explicitly refresh.
+
+**`wiki-config.md` at each wiki root** is yours. The plugin never touches it on update. The schema documented in `skills/wiki-setup/SKILL.md` may evolve; if it does, your existing `wiki-config.md` keeps working unless the change is backward-incompatible. Backward-incompatible changes are flagged in the commit message with a `BREAKING:` prefix.
+
+**`<wiki-root>/_custom/`** is yours. The plugin never reads or writes anything in there except through the `custom_procedures:` list you declare in `wiki-config.md`.
+
+**`<vault_root>/_service/docs/`** is a mirror of the plugin's README and diagrams. Refresh it with `/update-docs` after a plugin update.
+
+**The registry at `~/.claude/obsidian-wiki/wiki-registry.json`** is yours. The plugin reads it on every command and writes to it only via `/setup-wiki`.
+
+The plugin updating cannot lose your data and cannot silently change your wiki's behavior. The two files that are "managed by the plugin" (`CLAUDE.md`, shared docs) only refresh when you explicitly ask.
+
+## Custom procedures
+
+A wiki may declare custom procedures that hook into specific points of the canonical command flow. Use this for behavior that is specific to one wiki: syncing pages from an external service (e.g. Notion), extracting action items from voice transcripts into a daily journal, post-ingest notifications, lint-driven exports.
+
+Declare custom procedures in `wiki-config.md` under `custom_procedures:`. Each entry has a `name`, a `when` hook point (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`), a `procedure` path under `<wiki-root>/_custom/`, and a `description`. The procedure file is a markdown document with a `## Procedure` section the agent follows literally.
+
+If a procedure requires an external tool (MCP, CLI) that is unavailable in the current session, the agent logs a warning and skips the procedure; it does not abort the parent command.
+
+Use `templates/_custom-procedure.md.tmpl` in this repo as a starter for new procedure files. `/setup-wiki` can also create the `_custom/` folder and copy the template into it during the interview if you declare procedures up front.
+
+Custom procedures live in your wiki, not in this repo. They never get committed to the plugin source. Your customizations stay yours.
+
+## Visibility tags
+
+Optional. If your `wiki-config.md` tags list includes `visibility/public`, `visibility/internal`, `visibility/pii`, pages may carry one of these tags. `/query <wiki> --visibility public` then restricts the candidate set to public-tagged pages only. The agent never sets `visibility/public` on a page automatically; doing so requires explicit confirmation.
+
 ## Adding a custom command
 
 The plugin ships 17 canonical commands plus `/setup-wiki`. To add a custom verb (say, `/digest` that emails you a weekly summary):

@@ -1,0 +1,42 @@
+---
+type: custom-procedure
+hook: pre-ingest                # one of: pre-ingest | during-ingest | post-ingest | pre-lint | post-lint
+applies_to: <wiki name>         # which wiki this procedure belongs to
+requires:                       # optional: external tools the procedure needs
+  - <tool-name>                 # e.g. "WebFetch", an MCP tool name, or a CLI binary
+---
+
+# <Procedure name>
+
+One-paragraph summary of what this procedure does and why.
+
+## Trigger
+
+When does the agent run this procedure? Describe the hook point precisely:
+
+- `pre-ingest`: runs at the start of every `/ingest <slug>` run, BEFORE the work-set walk. Use for fetching external sources, transforming inputs, or preparing the work set.
+- `during-ingest`: runs once per source during Phase A, after the source is classified and before its knowledge is filed. Use for source-specific transformations (e.g. extracting action items from voice transcripts).
+- `post-ingest`: runs at the end of every `/ingest <slug>` run, after the report is generated and after the reflection step. Use for sending notifications, syncing back to external systems, or cleanup.
+- `pre-lint`: runs at the start of every `/lint <slug>` run, before the inventory is built. Use for refreshing data the lint pass depends on.
+- `post-lint`: runs at the end of every `/lint <slug>` run, after the report is written. Use for surfacing lint findings to external systems (e.g. Slack notification, GitHub issue creation).
+
+## Procedure
+
+Numbered steps the agent should follow literally.
+
+1. ...
+2. ...
+3. ...
+
+## Constraints
+
+What the agent must NOT do during this procedure. Be explicit.
+
+- ...
+- ...
+
+## Failure handling
+
+What should happen if the procedure can't complete? Skip silently? Abort the parent command? Log and continue?
+
+The default (defined in `wiki-core` SKILL.md) is: if a required external tool is unavailable, log a warning and skip the procedure; do not abort the parent command.

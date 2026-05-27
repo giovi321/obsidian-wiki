@@ -15,9 +15,11 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `lint` and entries scoped `global`.
 
-2. Build inventory: every `.md` file in the structured-knowledge folders with path, frontmatter, outgoing and incoming wikilinks. Every project's status and `last_activity`. Tag usage map.
+2. **Pre-lint custom procedures**: for each entry in `custom_procedures` with `when: pre-lint`, read the procedure file and follow it. Skip silently if required tools are unavailable.
 
-3. Compute:
+3. Build inventory: every `.md` file in the structured-knowledge folders with path, frontmatter, outgoing and incoming wikilinks. Every project's status and `last_activity`. Tag usage map.
+
+4. Compute:
 
    **Page-level findings**:
    - Orphans: pages with zero incoming wikilinks (excluding `index.md`, category landing pages, dashboards).
@@ -50,13 +52,21 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
    **Feedback-level findings**:
    - Entries older than 90 days with zero hits in `_service/log.md` (candidates for removal).
 
-4. Write the report to `<wiki-root>/_service/lint-<YYYY-MM-DD>.md`.
+   **Config-level findings**:
+   - Each `custom_procedures[].procedure` path: verify the file exists at the path relative to the wiki root. Flag missing procedure files.
+   - Each `entry_points[].exclude` glob: verify it matches at least one historical file in the entry point or in `_service/entry-points/`. Flag glob patterns that have never matched anything (likely a typo).
+   - Each `ignore_paths` entry: verify the path or glob is well-formed.
+   - Tags used on pages that are not in the `tags` vocabulary in `wiki-config.md`. Flag as "unknown tags".
 
-5. Do NOT auto-fix. Report only.
+5. Write the report to `<wiki-root>/_service/lint-<YYYY-MM-DD>.md`.
 
-6. Append a structured one-liner to `<wiki-root>/_service/log.md`. Update `<wiki-root>/_service/hot.md`.
+6. Do NOT auto-fix. Report only.
 
-7. **Reflection** (mandatory, not opt-out): run the reflection procedure from SKILL.md. Draft feedback entries for any in-run corrections or ambiguities the user resolved verbally. Ask `[y/n]` per entry. On `y`, append to `<wiki-root>/_service/feedback.md` and log a FEEDBACK line. If nothing to capture, say "nothing to capture" and end.
+7. Append a structured one-liner to `<wiki-root>/_service/log.md`. Update `<wiki-root>/_service/hot.md`.
+
+8. **Post-lint custom procedures**: for each entry in `custom_procedures` with `when: post-lint`, read the procedure file and follow it. Skip silently if required tools are unavailable.
+
+9. **Reflection** (mandatory, not opt-out): run the reflection procedure from SKILL.md. Draft feedback entries for any in-run corrections or ambiguities the user resolved verbally. Ask `[y/n]` per entry. On `y`, append to `<wiki-root>/_service/feedback.md` and log a FEEDBACK line. If nothing to capture, say "nothing to capture" and end.
 
 ## Constraints
 
