@@ -173,11 +173,11 @@ The plugin files are cloned to `~/.claude/plugins/obsidian-wiki/` on your machin
 
 ## Install in Cowork
 
-Cowork is the desktop app for Claude. The plugin runs inside it the same way it runs in the CLI, but the install path goes through Cowork's plugin manager rather than the CLI's `/plugin` command.
+Cowork is the desktop app for Claude. It does NOT support the `/plugin` slash command. Plugins install through Cowork's UI.
 
 1. Open Cowork.
-2. Open the plugin manager (slash command `/plugin` or the plugin button in the UI, depending on Cowork version).
-3. Add the marketplace: paste `giovi321/obsidian-wiki` as the marketplace source.
+2. Open the plugin manager from the UI (settings panel, plugin button, or wherever your Cowork version exposes it).
+3. Add a marketplace: paste `giovi321/obsidian-wiki` as the marketplace source.
 4. Install the `obsidian-wiki` plugin from the listing.
 
 The plugin files are cloned to your local Cowork plugin folder (typically under `~/.claude/plugins/` or the platform-specific equivalent shown by Cowork). The plugin lives on your computer; no part of it runs on a remote server.
@@ -190,7 +190,9 @@ git clone git@github.com:giovi321/obsidian-wiki.git ~/.claude/plugins/obsidian-w
 
 Then restart Cowork. The plugin should appear in the plugin list.
 
-In Cowork, slash commands work the same way as in the CLI. Type `/setup-wiki` and the interview begins. The `AskUserQuestion` prompts the setup command issues render as clickable multiple-choice options inside Cowork's chat panel, which is easier than typing answers by hand.
+Inside a Cowork chat, the plugin's slash commands work the same way as in the CLI. Type `/setup-wiki` and the interview begins. The `AskUserQuestion` prompts the setup command issues render as clickable multiple-choice options inside Cowork's chat panel, which is easier than typing answers by hand.
+
+To update the plugin in Cowork: use the same plugin manager UI. There is no `/plugin update` slash command in Cowork. After an update, run `/upgrade` from inside a chat to refresh `CLAUDE.md` and the shared docs in each wiki.
 
 ## Obsidian plugins required
 
@@ -582,7 +584,7 @@ The shared logic in [`skills/wiki-core/SKILL.md`](skills/wiki-core/SKILL.md) is 
 
 `/setup-wiki` installs the README and diagrams to `<vault_root>/_service/docs/` at first run and refreshes them every time it runs again. The shared docs folder lives outside any specific wiki so multiple wikis under the same vault see the same docs.
 
-To refresh the docs between setups (typically after `/plugin update obsidian-wiki`), run `/update-docs`. It copies the plugin's current README and diagrams over the shared docs folder.
+To refresh the docs between setups (typically after updating the plugin via the Cowork plugin manager UI, or `/plugin update obsidian-wiki` in Claude Code CLI), run `/update-docs`. It copies the plugin's current README and diagrams over the shared docs folder.
 
 ## What happens when the plugin updates
 
