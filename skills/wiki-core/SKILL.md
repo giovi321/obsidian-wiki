@@ -84,10 +84,30 @@ Fields:
 - `path`, folder name relative to the wiki root.
 - `source_type`, one of the canonical source types listed under Source quality buckets. Add new types only by editing this skill.
 - `default_quality`, override the bucket default for this entry point. Optional.
-- `post_ingest`, either `move` (relocate the file under `_service/entry-points/<entry-point>/<YYYY-MM>/`) or `keep` (leave in place and add only `processed: true` frontmatter).
+- `post_ingest`, one of:
+  - `move`: add `processed: true` and `processed_at` frontmatter, then relocate the file under `_service/entry-points/<entry-point>/<YYYY-MM>/`.
+  - `keep`: add `processed: true` and `processed_at` frontmatter; leave the file in place. Monthly archival (if applicable) still moves the file to `<entry-point>/YYYY/YYYY-MM/`.
+  - `read_only`: do NOT add any frontmatter and do NOT move the file. The source is treated as immutable. Manifest still records the SHA-256 for dedup. Monthly archival still applies.
 - `naming_convention`, plain-English description of the expected filename format. The agent renames files to fit before processing.
+- `exclude`, optional list of glob patterns relative to the entry-point root. Excluded files are never processed, moved, or modified.
 
 Commands iterate this list at runtime; nothing about entry points is hard-coded in commands or in this skill.
+
+## Custom procedures
+
+A wiki may declare custom procedures that hook into specific points of the canonical command flow. These are wiki-specific extensions (e.g. syncing from an external source, transforming source content before ingest, post-processing). They live in `wiki-config.md` under the `custom_procedures:` field:
+
+```yaml
+custom_procedures:
+  - name: <procedure-name>
+    when: pre-ingest | during-ingest | post-ingest | pre-lint | post-lint
+    procedure: "<path/to/procedure.md>"        # relative to wiki root
+    description: "<one-line summary>"
+```
+
+The agent reads each referenced procedure file when the corresponding hook point is reached during command execution. The procedure file is a markdown document with a procedure section the agent follows literally, similar to a command's procedure step. If the procedure requires an external tool (MCP, CLI) that is unavailable in the current session, log a warning and skip the procedure; do not abort the parent command.
+
+Custom procedure files conventionally live in `<wiki-root>/_custom/`.
 
 ## Content trust boundary
 

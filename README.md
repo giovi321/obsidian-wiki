@@ -78,15 +78,25 @@ The registry at `~/.claude/obsidian-wiki/wiki-registry.json` lists every wiki an
 
 ## Folder structure
 
-Every wiki ends up with the same shape on disk. Names of the folders are configurable at setup; the diagram below uses one example naming scheme.
+Every wiki ends up with the same shape on disk. Names of the folders are configurable at setup; the diagram below uses one example naming scheme. The two files at the root, `CLAUDE.md` (generic) and `wiki-config.md` (specific), drive everything the agent does: every command reads them on every invocation.
 
 <p align="center">
-  <img src="docs/diagrams/04-folder-structure.svg" width="800" alt="Wiki root folder tree with three zones (entry points, structured knowledge, service) and their typical contents.">
+  <img src="docs/diagrams/04-folder-structure.svg" width="800" alt="Wiki root folder tree with three zones (entry points, structured knowledge, service) and the two config files (CLAUDE.md, wiki-config.md) plus index.md at the root.">
 </p>
 
 ## Concepts in plain English
 
-If you've never used an agent that maintains a wiki, five ideas are worth unpacking before you install: **entry points**, **structured knowledge**, **page lifecycle**, **provenance**, and **lint**.
+If you've never used an agent that maintains a wiki, six ideas are worth unpacking before you install: **the two config files**, **entry points**, **structured knowledge**, **page lifecycle**, **provenance**, and **lint**.
+
+### The two config files at each wiki root
+
+Every wiki has two markdown files at its root that the agent reads on every command:
+
+- `CLAUDE.md`: generic boilerplate. Identical across every wiki this plugin manages. Describes the three-zone architecture, hard boundary, folder permissions, routing rules, page types, and the reading order. **Do not edit by hand.** The setup command refreshes it from the plugin's template; updating the plugin updates `CLAUDE.md` on next setup.
+- `wiki-config.md`: your wiki's specific configuration. Frontmatter holds: name, slug, root path, entry points (with paths, source types, default quality, post-ingest rules, exclude lists), structured-knowledge folders (with paths and routing hints), dashboards, protected paths, project thresholds, tag vocabulary, writing style. The body holds free-form prose about page types, naming conventions, and any wiki-specific rules.
+
+Optionally, a wiki can declare `custom_procedures:` in `wiki-config.md` that hook into specific points of the canonical command flow (pre-ingest, during-ingest, post-ingest). Each entry points to a markdown file under `<wiki-root>/_custom/` that the agent reads at the corresponding hook point. Use this for wiki-specific extensions like syncing pages from an external service, transforming source content before ingest, or post-processing. The agent skips the procedure silently if the required external tools (MCP, CLI) are unavailable.
+
 
 ### Entry points
 

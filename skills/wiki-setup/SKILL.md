@@ -26,10 +26,36 @@ When the user runs `/setup-wiki`, offer this catalog. The user picks which to en
 For each enabled suggestion, ask:
 1. Confirm or override the path.
 2. Confirm or override `default_quality`.
-3. Confirm or override `post_ingest` (`move` or `keep`).
+3. Confirm or override `post_ingest` (`move`, `keep`, or `read_only`).
 4. Confirm or override the naming convention.
+5. Optionally specify an `exclude` list (filenames to skip during ingest).
 
-The user may also add custom entry points beyond this catalog. For each custom one, ask path, source_type (must be a bucket listed in `wiki-core` SKILL.md), default_quality, post_ingest, naming_convention.
+The user may also add custom entry points beyond this catalog. For each custom one, ask path, source_type (must be a bucket listed in `wiki-core` SKILL.md), default_quality, post_ingest, naming_convention, exclude.
+
+### `post_ingest` semantics
+
+| Value | What happens to source files after ingest |
+|---|---|
+| `move` | Add `processed: true` and `processed_at: YYYY-MM-DD` frontmatter, then relocate the file to `_service/entry-points/<entry-point-name>/<YYYY-MM>/`. |
+| `keep` | Add `processed: true` and `processed_at: YYYY-MM-DD` frontmatter. Leave the file in place. Monthly archival (if applicable) still moves files dated before the current month into `<entry-point>/YYYY/YYYY-MM/` subfolders. |
+| `read_only` | Do NOT add any frontmatter. Do NOT move the file. The source is treated as immutable. Manifest records the SHA-256 to dedupe across runs. Monthly archival still moves files dated before the current month into the date subfolders. |
+
+`read_only` is the strictest setting; use it for entry points whose contents must never be modified by the agent (e.g. archive folders the user maintains by hand, vendor-managed folders, or sync source-of-truth folders).
+
+### `exclude` list per entry point
+
+```yaml
+- path: "1_Journal/"
+  source_type: daily-note
+  default_quality: 0.45
+  post_ingest: keep
+  naming_convention: "YYYY-MM-DD.md"
+  exclude:
+    - "_template.md"
+    - "_draft-*.md"
+```
+
+Glob patterns are matched against the filename relative to the entry-point root. Excluded files are never processed, never moved, never have frontmatter added. They also are not flagged as orphans by `/lint`.
 
 ## Standard structured-knowledge suggestions
 
