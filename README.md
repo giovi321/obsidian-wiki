@@ -618,7 +618,26 @@ Custom procedures live in your wiki, not in this repo. They never get committed 
 
 ## Visibility tags
 
-Optional. If your `wiki-config.md` tags list includes `visibility/public`, `visibility/internal`, `visibility/pii`, pages may carry one of these tags. `/query <wiki> --visibility public` then restricts the candidate set to public-tagged pages only. The agent never sets `visibility/public` on a page automatically; doing so requires explicit confirmation.
+Optional. Enabled by adding `visibility/public`, `visibility/internal`, `visibility/pii` to your `wiki-config.md` `tags:` list. With it on, any page can carry one of three tags:
+
+| Tag | Meaning | Default behavior |
+|---|---|---|
+| `visibility/public` | Safe to share or publish externally | Agent never sets this automatically; setting it requires explicit user confirmation |
+| `visibility/internal` | Private to you, not for sharing | Treated as the default when no visibility tag is set |
+| `visibility/pii` | Contains personally identifiable information (addresses, IBANs, government IDs, contacts) | The agent treats PII-tagged content as sensitive; `/lint` flags pages in folders you mark as PII-bearing that lack the tag |
+
+Use the `--visibility <level>` flag on `/query` to restrict the candidate set:
+
+```
+/query p --visibility public "what did I publish about X?"
+/query p --visibility pii "list my saved IBANs"
+```
+
+The agent applies the filter before generating the answer. Pages tagged outside the requested level are excluded from the candidate set. If the filter excludes everything, the agent says so and recommends a source that would close the gap.
+
+Recommended convention: mark PII-bearing folders in `wiki-config.md` so that `/lint` flags missing tags. For example, your free-form notes might say: "`2_Resources/Admin/` and `2_Resources/People/` pages should always carry `visibility/pii`."
+
+The visibility filter is read-time only. The agent does not yet block writes to PII-tagged pages without confirmation; that's documented as unimplemented enforcement.
 
 ## Adding a custom command
 
