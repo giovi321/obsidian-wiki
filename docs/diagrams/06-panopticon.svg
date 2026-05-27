@@ -1,0 +1,155 @@
+<svg viewBox="0 0 1000 760" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="dots-pan" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="0.9" fill="rgba(11,13,11,0.10)"/>
+    </pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#52534e"/>
+    </marker>
+    <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#b5523a"/>
+    </marker>
+    <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#1a70c7"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#faf7f2"/>
+  <rect width="100%" height="100%" fill="url(#dots-pan)" opacity="0.5"/>
+
+  <!-- TOP STRIP: plugin / registry / shared docs -->
+  <text x="40" y="36" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">PLUGIN AND GLOBAL STATE (one per user)</text>
+  <line x1="40" y1="44" x2="960" y2="44" stroke="rgba(11,13,11,0.10)" stroke-width="0.8"/>
+
+  <rect x="40" y="60" width="240" height="76" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="160" y="84" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">obsidian-wiki plugin</text>
+  <text x="160" y="102" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">~/.claude/plugins/obsidian-wiki/</text>
+  <text x="160" y="120" fill="#52534e" font-size="9" font-family="'Geist', sans-serif" text-anchor="middle">commands, skills, templates</text>
+
+  <rect x="300" y="60" width="240" height="76" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="420" y="84" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">registry</text>
+  <text x="420" y="102" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">~/.claude/obsidian-wiki/wiki-registry.json</text>
+  <text x="420" y="120" fill="#52534e" font-size="9" font-family="'Geist', sans-serif" text-anchor="middle">list of wikis, vault_root</text>
+
+  <rect x="560" y="60" width="240" height="76" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="680" y="84" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">shared docs</text>
+  <text x="680" y="102" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">&lt;vault_root&gt;/_service/docs/</text>
+  <text x="680" y="120" fill="#52534e" font-size="9" font-family="'Geist', sans-serif" text-anchor="middle">README + diagrams (refreshed by /upgrade)</text>
+
+  <!-- AGENT focal node -->
+  <rect x="824" y="60" width="136" height="76" rx="6" fill="#faf7f2"/>
+  <rect x="824" y="60" width="136" height="76" rx="6" fill="rgba(181,82,58,0.08)" stroke="#b5523a"/>
+  <text x="892" y="92" fill="#1c1917" font-size="13" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Agent</text>
+  <text x="892" y="112" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">runs commands</text>
+  <text x="892" y="126" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">in Cowork or CLI</text>
+
+  <!-- Arrows from agent to plugin and registry (reads) -->
+  <path d="M 824 88 L 282 100" stroke="#52534e" stroke-width="0.8" fill="none" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
+  <path d="M 824 100 L 540 100" stroke="#52534e" stroke-width="0.8" fill="none" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
+  <rect x="700" y="86" width="50" height="12" rx="2" fill="#faf7f2"/>
+  <text x="725" y="96" fill="#65655c" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">READS</text>
+
+  <!-- MIDDLE STRIP: a single wiki, blown up -->
+  <text x="40" y="172" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ONE WIKI (you can register N of these)</text>
+  <line x1="40" y1="180" x2="960" y2="180" stroke="rgba(11,13,11,0.10)" stroke-width="0.8"/>
+
+  <!-- Wiki container -->
+  <rect x="40" y="196" width="920" height="384" rx="8" fill="#ffffff" stroke="#1c1917" stroke-width="1.2"/>
+  <text x="60" y="220" fill="#1c1917" font-size="14" font-weight="600" font-family="'Geist Mono', monospace">&lt;wiki-root&gt;/</text>
+  <text x="60" y="240" fill="#52534e" font-size="10" font-family="'Geist', sans-serif" font-style="italic">three zones plus two config files at the root</text>
+
+  <!-- Config files at top of wiki -->
+  <rect x="60" y="256" width="248" height="48" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="184" y="278" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">CLAUDE.md</text>
+  <text x="184" y="294" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">generic, identical for every wiki</text>
+
+  <rect x="324" y="256" width="248" height="48" rx="6" fill="rgba(181,82,58,0.08)" stroke="#b5523a"/>
+  <text x="448" y="278" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">wiki-config.md</text>
+  <text x="448" y="294" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">YOUR config: entry points, structure, rules</text>
+
+  <rect x="588" y="256" width="248" height="48" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
+  <text x="712" y="278" fill="#1c1917" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">index.md</text>
+  <text x="712" y="294" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">auto-maintained page catalog</text>
+
+  <!-- ZONE 1: entry points -->
+  <rect x="60" y="324" width="280" height="240" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
+  <text x="76" y="344" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 1, ENTRY POINTS</text>
+  <text x="76" y="362" fill="#52534e" font-size="10" font-family="'Geist', sans-serif" font-style="italic">where you drop sources</text>
+  <text x="76" y="386" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">99_Quick-notes/</text>
+  <text x="76" y="404" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">98_Other/</text>
+  <text x="76" y="422" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">4_Conversations/</text>
+  <text x="76" y="440" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">(custom)</text>
+  <text x="76" y="468" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.10em">POST-INGEST RULES</text>
+  <text x="76" y="486" fill="#52534e" font-size="9" font-family="'Geist', sans-serif">move | keep | read_only</text>
+  <text x="76" y="514" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.10em">SOURCE TYPES</text>
+  <text x="76" y="532" fill="#52534e" font-size="9" font-family="'Geist', sans-serif">quick-note, article, claude-chat,</text>
+  <text x="76" y="546" fill="#52534e" font-size="9" font-family="'Geist', sans-serif">voice-transcript, image, ...</text>
+
+  <!-- ZONE 2: structured knowledge -->
+  <rect x="360" y="324" width="280" height="240" rx="6" fill="#ffffff" stroke="#1c1917"/>
+  <text x="376" y="344" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 2, STRUCTURED KNOWLEDGE</text>
+  <text x="376" y="362" fill="#52534e" font-size="10" font-family="'Geist', sans-serif" font-style="italic">where agent writes pages</text>
+  <text x="376" y="386" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">1_Projects/</text>
+  <text x="376" y="404" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">3_Documentation/</text>
+  <text x="376" y="422" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">2_Resources/</text>
+  <text x="376" y="440" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">(custom)</text>
+  <text x="376" y="468" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.10em">PAGE LIFECYCLE</text>
+  <text x="376" y="486" fill="#52534e" font-size="9" font-family="'Geist', sans-serif">draft → reviewed → verified</text>
+  <text x="376" y="514" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.10em">PROVENANCE PER CLAIM</text>
+  <text x="376" y="532" fill="#52534e" font-size="9" font-family="'Geist', sans-serif">extracted | ^[inferred] | ^[ambiguous]</text>
+
+  <!-- ZONE 3: service -->
+  <rect x="660" y="324" width="280" height="240" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
+  <text x="676" y="344" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 3, _SERVICE</text>
+  <text x="676" y="362" fill="#52534e" font-size="10" font-family="'Geist', sans-serif" font-style="italic">operational state</text>
+  <text x="676" y="386" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">.manifest.json    sha256 dedup</text>
+  <text x="676" y="404" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">log.md            append-only</text>
+  <text x="676" y="422" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">hot.md            last 20 touches</text>
+  <text x="676" y="440" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">sources/          per-source pages</text>
+  <text x="676" y="458" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">_archives/        snapshots</text>
+  <text x="676" y="476" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace">entry-points/     moved sources</text>
+  <text x="676" y="498" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace" font-weight="600">feedback.md       one-line rules</text>
+  <text x="676" y="516" fill="#1c1917" font-size="10" font-family="'Geist Mono', monospace" font-weight="600">custom-procedures/ multi-step hooks</text>
+  <text x="676" y="544" fill="#52534e" font-size="9" font-family="'Geist', sans-serif" font-style="italic">last two are user-authored;</text>
+  <text x="676" y="558" fill="#52534e" font-size="9" font-family="'Geist', sans-serif" font-style="italic">the rest agent-managed</text>
+
+  <!-- Arrows between zones -->
+  <path d="M 340 444 L 360 444" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 640 444 L 660 444" stroke="#52534e" stroke-width="0.8" fill="none" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
+  <rect x="294" y="424" width="44" height="14" rx="2" fill="#ffffff"/>
+  <text x="316" y="435" fill="#65655c" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">/INGEST</text>
+  <rect x="618" y="424" width="44" height="14" rx="2" fill="rgba(28,25,23,0.05)"/>
+  <text x="640" y="435" fill="#65655c" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TRACK</text>
+
+  <!-- BOTTOM STRIP: commands -->
+  <text x="40" y="616" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">COMMANDS, ALL TAKE WIKI SLUG AS FIRST ARGUMENT</text>
+  <line x1="40" y1="624" x2="960" y2="624" stroke="rgba(11,13,11,0.10)" stroke-width="0.8"/>
+
+  <!-- 4 groups of commands -->
+  <rect x="40" y="640" width="216" height="92" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
+  <text x="148" y="660" fill="#1c1917" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Daily loop</text>
+  <text x="148" y="680" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/status</text>
+  <text x="148" y="694" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/ingest</text>
+  <text x="148" y="708" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/ingest-url, /ingest-claude</text>
+  <text x="148" y="722" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/capture</text>
+
+  <rect x="276" y="640" width="216" height="92" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
+  <text x="384" y="660" fill="#1c1917" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Maintenance</text>
+  <text x="384" y="680" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/lint</text>
+  <text x="384" y="694" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/cross-linker</text>
+  <text x="384" y="708" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/archive, /restore</text>
+  <text x="384" y="722" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/rebuild (rare)</text>
+
+  <rect x="512" y="640" width="216" height="92" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
+  <text x="620" y="660" fill="#1c1917" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Use and refine</text>
+  <text x="620" y="680" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/query [--visibility ...]</text>
+  <text x="620" y="694" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/update</text>
+  <text x="620" y="708" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/research</text>
+  <text x="620" y="722" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/project (list|new|archive)</text>
+
+  <rect x="748" y="640" width="212" height="92" rx="6" fill="rgba(181,82,58,0.08)" stroke="#b5523a"/>
+  <text x="854" y="660" fill="#1c1917" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Setup and teach</text>
+  <text x="854" y="680" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/setup-wiki</text>
+  <text x="854" y="694" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/upgrade, /update-docs</text>
+  <text x="854" y="708" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/feedback</text>
+  <text x="854" y="722" fill="#52534e" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">/daily-note</text>
+</svg>

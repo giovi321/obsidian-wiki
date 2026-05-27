@@ -85,6 +85,12 @@ Each wiki has three zones plus a registry that lives outside the wiki.
   <img src="docs/diagrams/01-architecture.svg" width="800" alt="Three-zone architecture: entry points feed the ingest engine, which writes into structured-knowledge folders, with the service folder tracking state.">
 </p>
 
+For a one-glance view of the whole system (plugin folder, registry, shared docs, one wiki blown up to show its three zones plus config files, and the command groups), see the panopticon diagram:
+
+<p align="center">
+  <img src="docs/diagrams/06-panopticon.svg" width="900" alt="Panopticon: plugin and global state on top, one wiki blown up in the middle (CLAUDE.md + wiki-config.md + index.md at the root, three zones below), command groups at the bottom.">
+</p>
+
 | Zone | Contents | Agent permission |
 |---|---|---|
 | Entry points | Folders you drop sources into. Configured per wiki. | Read, add `processed` frontmatter, move per `post_ingest` rule |
