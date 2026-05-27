@@ -23,12 +23,12 @@
   <path d="M 496 152 L 420 232" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
   <path d="M 688 152 L 460 232" stroke="#52534e" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
 
-  <!-- Arrows: ingest engine -> structured knowledge (5 arrows, one per folder) -->
-  <path d="M 332 296 L 104 360" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
-  <path d="M 368 296 L 252 360" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
-  <path d="M 400 296 L 400 360" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
-  <path d="M 432 296 L 548 360" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
-  <path d="M 468 296 L 696 360" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <!-- Arrows: ingest engine -> structured knowledge (5 arrows, end above the zone header at y=344) -->
+  <path d="M 332 296 L 104 328" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 368 296 L 252 328" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 400 296 L 400 328" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 432 296 L 548 328" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
+  <path d="M 468 296 L 696 328" stroke="#b5523a" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
 
   <!-- Entry-point boxes -->
   <rect x="32" y="72" width="160" height="80" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
