@@ -6,7 +6,10 @@
   "plugins": [
     {
       "name": "obsidian-wiki",
-      "source": ".",
+      "source": {
+        "source": "github",
+        "repo": "giovi321/obsidian-wiki"
+      },
       "description": "Multi-wiki knowledge manager for Obsidian vaults"
     }
   ]
