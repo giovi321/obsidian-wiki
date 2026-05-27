@@ -4,8 +4,25 @@ A plugin for [Claude Code](https://docs.claude.com/en/docs/claude-code) that tur
 
 Supports any number of wikis. Each wiki has its own configuration in a `CLAUDE.md` file at its root and is registered globally so commands can address it by slug.
 
+## Quick start
+
+Five steps. Five minutes if you already use Obsidian.
+
+1. **Install the plugin.** In Cowork: Customize → Personal plugins → Browse plugins → paste `giovi321/obsidian-wiki` → install. In Claude Code CLI: `/plugin marketplace add giovi321/obsidian-wiki` then `/plugin install obsidian-wiki`.
+
+2. **Install the required Obsidian community plugins**: Dataview, Tasks, Periodic Notes, Front Matter Timestamps, Folder Notes. See [Obsidian plugins required](#obsidian-plugins-required) for the full list.
+
+3. **Register your wiki**: in a Claude chat, run `/setup-wiki`. The interview asks for the wiki name, root folder (point at any existing Obsidian folder, or a new empty one), which entry points to enable (quick-notes, articles, voice transcripts, LLM conversations), which structured-knowledge folders to enable (projects, documentation, resources, people, concepts), and a few thresholds. Pick a short slug (1 to 4 characters); you'll type it as the first argument on every command.
+
+4. **Drop a source file** into one of the entry points the setup created. A markdown note, a PDF, an article you saved, anything. Then run `/ingest <slug>`. The agent reads the file, distills the durable content into one or more wiki pages, and moves the source to `_service/entry-points/<entry-point>/<YYYY-MM>/`. Check the report it prints.
+
+5. **Ask the wiki a question**: `/query <slug> "what did I save about X?"`. The agent answers using only the wiki contents, citing the pages it pulled from.
+
+That's the daily loop. Add more sources, rerun `/ingest <slug>`. Run `/lint <slug>` weekly to surface orphans and broken links. Run `/upgrade` after a plugin update to refresh the boilerplate. Everything else is layered on top.
+
 ## Table of contents
 
+- [Quick start](#quick-start)
 - [What it does](#what-it-does)
 - [What it is not](#what-it-is-not)
 - [Architecture](#architecture)
@@ -86,7 +103,7 @@ Every wiki ends up with the same shape on disk. Names of the folders are configu
 
 ## Concepts in plain English
 
-If you've never used an agent that maintains a wiki, six ideas are worth unpacking before you install: **the two config files**, **entry points**, **structured knowledge**, **page lifecycle**, **provenance**, and **lint**.
+If you've never used an agent that maintains a wiki, seven ideas are worth unpacking before you install: **the two config files**, **entry points**, **structured knowledge**, **page lifecycle**, **provenance**, **lint**, and **feedback vs custom procedures**.
 
 ### The two config files at each wiki root
 
@@ -95,7 +112,7 @@ Every wiki has two markdown files at its root that the agent reads on every comm
 - `CLAUDE.md`: generic boilerplate. Identical across every wiki this plugin manages. Describes the three-zone architecture, hard boundary, folder permissions, routing rules, page types, and the reading order. **Do not edit by hand.** The setup command refreshes it from the plugin's template; updating the plugin updates `CLAUDE.md` on next setup.
 - `wiki-config.md`: your wiki's specific configuration. Frontmatter holds: name, slug, root path, entry points (with paths, source types, default quality, post-ingest rules, exclude lists), structured-knowledge folders (with paths and routing hints), dashboards, protected paths, project thresholds, tag vocabulary, writing style. The body holds free-form prose about page types, naming conventions, and any wiki-specific rules.
 
-Optionally, a wiki can declare `custom_procedures:` in `wiki-config.md` that hook into specific points of the canonical command flow (pre-ingest, during-ingest, post-ingest). Each entry points to a markdown file under `<wiki-root>/_custom/` that the agent reads at the corresponding hook point. Use this for wiki-specific extensions like syncing pages from an external service, transforming source content before ingest, or post-processing. The agent skips the procedure silently if the required external tools (MCP, CLI) are unavailable.
+Optionally, a wiki can declare `custom_procedures:` in `wiki-config.md` that hook into specific points of the canonical command flow (pre-ingest, during-ingest, post-ingest). Each entry points to a markdown file under `<wiki-root>/_service/custom-procedures/` that the agent reads at the corresponding hook point. Use this for wiki-specific extensions like syncing pages from an external service, transforming source content before ingest, or post-processing. The agent skips the procedure silently if the required external tools (MCP, CLI) are unavailable.
 
 
 ### Entry points
@@ -158,6 +175,28 @@ Provenance markers are the agent's accountability mechanism. They turn the wiki 
 You read the report and decide what to act on. `/cross-linker` repairs link issues. `/project archive <slug>` archives a quiet project. Hand-editing fixes content issues. Nothing is auto-fixed because the right fix depends on context.
 
 Lint runs are cheap. Run it before any major change to the wiki.
+
+### Feedback vs custom procedures
+
+Two related mechanisms for teaching the agent things, with different shapes and load behavior.
+
+**Feedback** lives in `<wiki-root>/_service/feedback.md`. One line per rule. Plain English. The agent reads it on every command. Use it for short behavioral rules:
+
+- "Stop creating pages shorter than 100 words from quick-notes."
+- "Never auto-archive projects in the `experiments` category."
+- "Always use the `#draft` tag on pages with `base_confidence < 0.4`."
+
+Add via `/feedback <wiki> "<rule>"`. The command writes it after you confirm.
+
+**Custom procedures** live in `<wiki-root>/_service/custom-procedures/<name>.md`. Multi-step routines declared in `wiki-config.md` under `custom_procedures:` with a hook point. The agent runs them only at the declared hook (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`). Use them for routines that involve external tools, multiple steps, or single-command logic:
+
+- **`notion-sync`** (pre-ingest): fetch a list of Notion pages and mirror them into local files before `/ingest` processes them. Requires the Notion MCP.
+- **`task-extraction`** (during-ingest): scan each ingested source for action items and write them as Obsidian Tasks-plugin entries in today's daily note. Requires a daily-journal entry point.
+- **`post-lint-slack-notify`** (post-lint): post the lint report to a Slack channel. Requires a Slack MCP.
+
+These are illustrative. The plugin does NOT ship any of them; each user authors their own custom procedures based on what their wiki needs.
+
+**Where does my rule belong?** Use feedback when the rule is a short one-liner that modifies behavior. Use a custom procedure when the rule is a multi-step routine, references an external tool, or only applies to one command at a specific hook. `/feedback` detects when a draft rule looks procedural and offers to write a custom procedure file instead. `/lint` flags existing feedback entries that look procedural as "candidates for promotion".
 
 ## Install in Claude Code
 
@@ -326,7 +365,7 @@ Every verb takes the wiki slug as the first argument. The table below uses `<wik
 | `/feedback <wiki>` | `<rule text>` or empty | `_service/feedback.md`, log, hot.md | Confirms before appending; never overwrites |
 | `/daily-note <wiki>` | `[YYYY-MM-DD]` | journal entry point only | Does not touch manifest or log |
 | `/update-docs` | empty | `<vault_root>/_service/docs/` | Refreshes README and diagrams from the plugin folder |
-| `/upgrade` | `[wiki-slug]` or empty | `CLAUDE.md` per target wiki, `<vault_root>/_service/docs/` | Refreshes plugin-managed files only; never touches `wiki-config.md`, `_custom/`, or wiki content |
+| `/upgrade` | `[wiki-slug]` or empty | `CLAUDE.md` per target wiki, `<vault_root>/_service/docs/` | Refreshes plugin-managed files only; never touches `wiki-config.md`, `_service/custom-procedures/`, or wiki content |
 
 ## How ingest works on one source
 
@@ -596,7 +635,7 @@ Three layers, each with a different update behavior.
 
 **`wiki-config.md` at each wiki root** is yours. The plugin never touches it on update. The schema documented in `skills/wiki-setup/SKILL.md` may evolve; if it does, your existing `wiki-config.md` keeps working unless the change is backward-incompatible. Backward-incompatible changes are flagged in the commit message with a `BREAKING:` prefix.
 
-**`<wiki-root>/_custom/`** is yours. The plugin never reads or writes anything in there except through the `custom_procedures:` list you declare in `wiki-config.md`.
+**`<wiki-root>/_service/custom-procedures/`** is yours. The plugin never reads or writes anything in there except through the `custom_procedures:` list you declare in `wiki-config.md`.
 
 **`<vault_root>/_service/docs/`** is a mirror of the plugin's README and diagrams. Refresh it with `/update-docs` after a plugin update. `/upgrade` also refreshes it as part of its sweep.
 
@@ -608,11 +647,11 @@ The plugin updating cannot lose your data and cannot silently change your wiki's
 
 A wiki may declare custom procedures that hook into specific points of the canonical command flow. Use this for behavior that is specific to one wiki: syncing pages from an external service (e.g. Notion), extracting action items from voice transcripts into a daily journal, post-ingest notifications, lint-driven exports.
 
-Declare custom procedures in `wiki-config.md` under `custom_procedures:`. Each entry has a `name`, a `when` hook point (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`), a `procedure` path under `<wiki-root>/_custom/`, and a `description`. The procedure file is a markdown document with a `## Procedure` section the agent follows literally.
+Declare custom procedures in `wiki-config.md` under `custom_procedures:`. Each entry has a `name`, a `when` hook point (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`), a `procedure` path under `<wiki-root>/_service/custom-procedures/`, and a `description`. The procedure file is a markdown document with a `## Procedure` section the agent follows literally.
 
 If a procedure requires an external tool (MCP, CLI) that is unavailable in the current session, the agent logs a warning and skips the procedure; it does not abort the parent command.
 
-Use `templates/_custom-procedure.md.tmpl` in this repo as a starter for new procedure files. `/setup-wiki` can also create the `_custom/` folder and copy the template into it during the interview if you declare procedures up front.
+Use `templates/_custom-procedure.md.tmpl` in this repo as a starter for new procedure files. `/setup-wiki` can also create the `_service/custom-procedures/` folder and copy the template into it during the interview if you declare procedures up front.
 
 Custom procedures live in your wiki, not in this repo. They never get committed to the plugin source. Your customizations stay yours.
 
@@ -653,16 +692,4 @@ The plugin ships 17 canonical commands plus `/setup-wiki`. To add a custom verb 
 
 ## FAQ
 
-**Does this work without Obsidian?** Yes. The output is plain markdown with wikilinks and frontmatter. Obsidian is the easiest viewer but anything that renders markdown will work. The dashboards (todo, canvas) use Obsidian-specific plugins (Tasks, Dataview, Canvas) and will not render in other viewers.
-
-**Can I use it with a vault that has other folders I don't want touched?** Yes. Declare the wiki root as a sub-folder of the vault. The agent's "hard boundary" rule restricts it to that sub-folder; everything outside is off-limits.
-
-**Does ingest run automatically?** Every command runs only when you type it. There is no background indexing.
-
-**What happens if I edit a wiki page by hand?** The lifecycle state moves to `reviewed` or `verified` when you set it. `/lint` and `/cross-linker` respect your edits. The next `/ingest` will not overwrite hand-edited content, only merge new information.
-
-**How is this different from RAG or vector search over my vault?** RAG retrieves raw chunks at query time. This plugin compiles sources into curated pages once, then queries against those pages. The pages are durable artifacts. You can read them, edit them, and refactor them. The raw sources can be archived or deleted once distilled; the knowledge stays.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+**Does this work without Obsidian?** Yes. The output is plain markdown with wik

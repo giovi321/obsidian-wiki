@@ -3,7 +3,7 @@ description: Refresh plugin-managed files (CLAUDE.md and shared docs) without to
 argument-hint: [wiki-slug] (optional, defaults to all registered wikis)
 ---
 
-Refresh `CLAUDE.md` in one or every registered wiki, plus the shared docs folder. Does NOT touch `wiki-config.md`, `_custom/`, the registry, or any wiki content.
+Refresh `CLAUDE.md` in one or every registered wiki, plus the shared docs folder. Does NOT touch `wiki-config.md`, `_service/custom-procedures/`, the registry, or any wiki content.
 
 Args: $ARGUMENTS
 
@@ -29,7 +29,7 @@ Args: $ARGUMENTS
 
 5. Verify nothing else was touched. Specifically, do NOT modify:
    - `<wiki-root>/wiki-config.md`
-   - `<wiki-root>/_custom/` and its contents
+   - `<wiki-root>/_service/custom-procedures/` and its contents
    - `<wiki-root>/_service/` files (manifest, log, hot.md, feedback.md, sources, archives, entry-points)
    - `<wiki-root>/index.md`
    - The wiki registry

@@ -30,7 +30,7 @@ Args: $ARGUMENTS
    - `tags`: tag vocabulary (free text or comma-separated list). Ask whether to enable visibility tags (`visibility/public`, `visibility/internal`, `visibility/pii`). If yes, append them to the list.
    - `writing_style`: rules for prose voice.
    - `project_thresholds`: integers in months for `active_to_dormant`, `dormant_to_archive`, `completed_to_archive`.
-   - `custom_procedures[]`: optional. Ask the user if they want any custom procedures wired in at specific hook points (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`). For each one, collect a `name`, `when`, `description`, and a `procedure` path under `<wiki-root>/_custom/`. The setup command creates `<wiki-root>/_custom/` and copies `${CLAUDE_PLUGIN_ROOT}/templates/_custom-procedure.md.tmpl` to each declared path so the user can fill it in afterward.
+   - `custom_procedures[]`: optional. Ask the user if they want any custom procedures wired in at specific hook points (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`). For each one, collect a `name`, `when`, `description`, and a `procedure` path under `<wiki-root>/_service/custom-procedures/`. The setup command creates `<wiki-root>/_service/custom-procedures/` and copies `${CLAUDE_PLUGIN_ROOT}/templates/_custom-procedure.md.tmpl` to each declared path so the user can fill it in afterward.
    - `templates_to_install[]`: subset of `todo-dashboard`, `daily-note`, `canvas-dashboard`. For each, ask where to install it (default paths derived from the entry-point and dashboard answers above).
 
 6. **Scaffold the wiki**:

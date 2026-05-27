@@ -107,7 +107,20 @@ custom_procedures:
 
 The agent reads each referenced procedure file when the corresponding hook point is reached during command execution. The procedure file is a markdown document with a procedure section the agent follows literally, similar to a command's procedure step. If the procedure requires an external tool (MCP, CLI) that is unavailable in the current session, log a warning and skip the procedure; do not abort the parent command.
 
-Custom procedure files conventionally live in `<wiki-root>/_custom/`.
+Custom procedure files live in `<wiki-root>/_service/custom-procedures/`. They are user-authored even though they sit inside `_service/`; the boundary is "service holds operational state, some agent-managed (manifest, log, hot, archives, sources) and some user-authored (feedback, custom procedures)".
+
+## Feedback vs custom procedure
+
+Two related mechanisms with different shapes and load behavior:
+
+| Mechanism | Shape | Loaded by | Use when |
+|---|---|---|---|
+| Feedback entry | One line in `_service/feedback.md`. Plain English imperative. | Every command on step 1. | Short behavioral rule, parameter tweak, "don't do X", "always Y". |
+| Custom procedure | Multi-step `## Procedure` in `_service/custom-procedures/<name>.md`. Declared in `wiki-config.md`. | Only at the declared hook (pre-ingest, during-ingest, post-ingest, pre-lint, post-lint). | Routine with multiple steps, references to external tools, single-command scope, longer than a single line of intent. |
+
+Promotion path: `/feedback` detects when a draft entry looks procedural (more than one verb step, references an external tool, applies to only one command and hook point, longer than 30 words) and offers to write a custom procedure file instead. `/lint` flags existing feedback entries that match the same heuristic as "candidates for promotion". Never auto-promotes; always asks the user first.
+
+Demotion (custom procedure → feedback) is not automated. Edit `wiki-config.md` to remove the `custom_procedures:` entry, delete or repurpose the procedure file, and add a feedback line via `/feedback` if the rule still needs to be enforced.
 
 ## Page-type patterns (optional, declared by the wiki)
 

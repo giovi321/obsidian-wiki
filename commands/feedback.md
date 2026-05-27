@@ -21,12 +21,35 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
    - If the remaining argument is non-empty, use it.
    - If empty, read the last 20 lines of `<wiki-root>/_service/log.md` and the last 10 lines of `_service/hot.md`. Ask the user: "what didn't work?" and use their answer.
 
-4. **Classify scope**: pick one of:
+4. **Promotion check**: a feedback entry is a one-line behavioral rule. If the proposed entry looks more like a multi-step procedure, suggest promoting it to a custom procedure instead. Trigger the suggestion if ANY of these is true:
+   - The text contains more than one verb step (markers: "first... then...", "next,", "after that,", numbered "1.", "2.").
+   - The text references an external tool the agent must call (MCP tool name, `WebFetch`, `WebSearch`, a CLI command).
+   - The text only applies to one specific command and runs at a specific hook point (pre-ingest, during-ingest, post-ingest, pre-lint, post-lint).
+   - The text is longer than 30 words.
+
+   If triggered, ask the user:
+   ```
+   This rule looks more like a custom procedure than a feedback entry. Promote?
+     y) draft a custom procedure file at <wiki-root>/_service/custom-procedures/<slug>.md, add a `custom_procedures:` entry in wiki-config.md, do not append to feedback.md
+     n) append to feedback.md as written
+   ```
+
+   On `y`:
+   - Ask for the hook point (pre-ingest, during-ingest, post-ingest, pre-lint, post-lint).
+   - Ask for a short kebab-case name.
+   - Copy `${CLAUDE_PLUGIN_ROOT}/templates/_custom-procedure.md.tmpl` to `<wiki-root>/_service/custom-procedures/<name>.md`, substitute the hook and the user's text into the `## Procedure` section.
+   - Append a new entry to `wiki-config.md`'s `custom_procedures:` list.
+   - Log a `PROMOTE` line in `<wiki-root>/_service/log.md`.
+   - Skip the rest of the feedback flow.
+
+   On `n`: continue with steps 5 onward.
+
+5. **Classify scope**: pick one of:
    - A specific command name without any per-wiki suffix (`ingest`, `lint`, `cross-linker`, `update`, `research`, `query`, `capture`, `ingest-claude`, `ingest-url`, `project`, `status`, `archive`, `rebuild`, `restore`, `daily-note`).
    - `global` if the rule applies to every command.
    If ambiguous, ask the user to pick.
 
-5. **Draft the entry** in the format defined in SKILL.md:
+6. **Draft the entry** in the format defined in SKILL.md:
    ```
    - YYYY-MM-DD scope. Rule in plain English. Why: ... How: ...
    ```
@@ -36,22 +59,22 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
    - `How:` is the concrete change in agent behavior (or `—` if none).
    - The entire entry must fit on one line. No bullet sub-lists, no multi-paragraph entries.
 
-6. **Conflict check**: scan existing entries in `<wiki-root>/_service/feedback.md`. If the new entry contradicts an active entry, show both and ask the user: keep both, replace the old, or skip.
+7. **Conflict check**: scan existing entries in `<wiki-root>/_service/feedback.md`. If the new entry contradicts an active entry, show both and ask the user: keep both, replace the old, or skip.
 
-7. **Schema check**: if the rule implies a `CLAUDE.md` or SKILL.md schema change (new page type, new folder zone, new frontmatter field), do not write to `feedback.md`. Instead, propose the `CLAUDE.md` or SKILL.md edit and ask for confirmation.
+8. **Schema check**: if the rule implies a `CLAUDE.md` or SKILL.md schema change (new page type, new folder zone, new frontmatter field), do not write to `feedback.md`. Instead, propose the `CLAUDE.md` or SKILL.md edit and ask for confirmation.
 
-8. **Confirm with the user**: show the draft entry. Get `[y/n]`.
+9. **Confirm with the user**: show the draft entry. Get `[y/n]`.
 
-9. **Append**: on `y`, add the entry to the `## Active rules` section of `<wiki-root>/_service/feedback.md`. Update the file's `updated:` frontmatter to today.
+10. **Append**: on `y`, add the entry to the `## Active rules` section of `<wiki-root>/_service/feedback.md`. Update the file's `updated:` frontmatter to today.
 
-10. **Log**: append a one-liner to `<wiki-root>/_service/log.md`:
+11. **Log**: append a one-liner to `<wiki-root>/_service/log.md`:
     ```
     - [ISO-8601] FEEDBACK scope=<scope> rule="<short paraphrase>"
     ```
 
-11. **Hot**: update `<wiki-root>/_service/hot.md` with `_service/feedback.md` as the touched page.
+12. **Hot**: update `<wiki-root>/_service/hot.md` with `_service/feedback.md` as the touched page.
 
-12. **Report**: show the appended entry. No reflection step (this command is itself the reflection mechanism).
+13. **Report**: show the appended entry. No reflection step (this command is itself the reflection mechanism).
 
 ## Constraints
 

@@ -51,6 +51,12 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
    **Feedback-level findings**:
    - Entries older than 90 days with zero hits in `_service/log.md` (candidates for removal).
+   - Entries that look like custom procedures rather than one-line behavioral rules (candidates for promotion). An entry is flagged when ANY of these is true:
+     - More than one verb step ("first... then...", numbered "1.", "2.").
+     - References an external tool (MCP tool name, `WebFetch`, `WebSearch`, a CLI command).
+     - Only applies to one command and runs at a specific hook point.
+     - Longer than 30 words.
+     For each flagged entry, report: "this entry looks procedural; consider promoting to `_service/custom-procedures/` via `/feedback` with the same text, or move it by hand." Do not auto-promote.
 
    **Config-level findings**:
    - Each `custom_procedures[].procedure` path: verify the file exists at the path relative to the wiki root. Flag missing procedure files.

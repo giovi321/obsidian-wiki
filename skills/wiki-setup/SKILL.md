@@ -170,7 +170,7 @@ Refuse to scaffold if any of these fail:
 - Any `custom_procedures[].when` is not one of `pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`.
 - Any `custom_procedures[].procedure` resolves to a path outside the wiki root.
 
-After scaffolding succeeds, the agent creates an empty `<wiki-root>/_custom/` folder for any custom procedures the user declared, and copies `templates/_custom-procedure.md.tmpl` to each declared procedure path so the user has a starter file to edit.
+After scaffolding succeeds, the agent creates an empty `<wiki-root>/_service/custom-procedures/` folder for any custom procedures the user declared, and copies `templates/_custom-procedure.md.tmpl` to each declared procedure path so the user has a starter file to edit.
 
 ## Registry write protocol
 
