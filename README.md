@@ -13,6 +13,7 @@ Supports any number of wikis. Each wiki has its own configuration in a `CLAUDE.m
 - [Concepts in plain English](#concepts-in-plain-english)
 - [Install in Claude Code](#install-in-claude-code)
 - [Install in Cowork](#install-in-cowork)
+- [Obsidian plugins required](#obsidian-plugins-required)
 - [First-run setup](#first-run-setup)
 - [Ideal workflow](#ideal-workflow)
 - [Addressing two or more wikis](#addressing-two-or-more-wikis)
@@ -158,6 +159,46 @@ git clone git@github.com:giovi321/obsidian-wiki.git ~/.claude/plugins/obsidian-w
 Then restart Cowork. The plugin should appear in the plugin list.
 
 In Cowork, slash commands work the same way as in the CLI. Type `/setup-wiki` and the interview begins. The `AskUserQuestion` prompts the setup command issues render as clickable multiple-choice options inside Cowork's chat panel, which is easier than typing answers by hand.
+
+## Obsidian plugins required
+
+The shipped templates (todo dashboard, daily-note, canvas dashboard) and several command outputs depend on Obsidian community and core plugins. Install these before running `/setup-wiki` if you want the dashboards to render correctly.
+
+### Required community plugins
+
+| Plugin | Why |
+|---|---|
+| [Dataview](https://github.com/blacksmithgu/obsidian-dataview) | The daily-note template and canvas dashboard use `dataview` query blocks for "created today", "modified today", and project listings. |
+| [Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) | The todo dashboard, daily-note, canvas dashboard, and the `/project new` command generate `tasks` query blocks for due, overdue, and done filters. |
+| [Periodic Notes](https://github.com/liamcain/obsidian-periodic-notes) | The `/daily-note` command and daily-note template rely on the `{{date:YYYY-MM-DD}}`, `{{date+1d:YYYY-MM-DD}}`, `{{date+7d:YYYY-MM-DD}}` placeholder syntax this plugin provides. |
+| [Front Matter Timestamps](https://github.com/Joschua-Conrad/front-matter-timestamps) | Auto-populates the `created` and `modified` frontmatter fields the daily-note's Dataview queries filter on. Without it the queries return nothing. |
+| [Folder Notes](https://github.com/LostPaul/obsidian-folder-notes) | Each subfolder of a structured-knowledge folder has a `<folder-name>.md` index. Folder Notes makes that index display when you click the folder, rather than having to open the file separately. |
+
+### Required core (built-in) plugins
+
+| Core plugin | Why |
+|---|---|
+| Canvas | The canvas dashboard template is a `.canvas` file. Off by default in some Obsidian setups. |
+| Properties | Reads and edits the YAML frontmatter the agent writes on every page. |
+| Backlinks | Surfaces incoming wikilinks; the agent's cross-link conventions assume you see them. |
+| Daily notes | Required by Periodic Notes. |
+| Templates | Variable substitution for the daily-note template. |
+
+### Recommended community plugins (not required)
+
+| Plugin | What it adds |
+|---|---|
+| [Calendar](https://github.com/liamcain/obsidian-calendar-plugin) | UI for navigating daily notes; pairs with Periodic Notes. |
+| [Omnisearch](https://github.com/scambier/obsidian-omnisearch) | Better search than the built-in. Useful when querying the wiki manually. |
+| [Hidden Folder](https://github.com/dragonprogrammer/obsidian-hidden-folder) | Hides `_service/` from the file explorer so the agent's working state stays out of your way. |
+| [Iconic](https://github.com/gfxholo/iconic) | Custom icons per folder; useful to visually distinguish zones. |
+| [Tray](https://github.com/cmoog/obsidian-tray) | System tray shortcuts for opening daily notes or specific files. |
+| [Task Board](https://github.com/Atif-Shafi/obsidian-task-board) | Kanban view over Tasks; alternative to the canvas dashboard. |
+| [Commander (cmdr)](https://github.com/phibr0/obsidian-commander) | Custom buttons in toolbars and side panels. |
+| [Table Editor](https://github.com/ganesshkumar/obsidian-table-editor) | Better table editing. The plugin writes many tables. |
+| [Recent Files](https://github.com/tgrosinger/recent-files-obsidian) | An Obsidian-native counterpart to `_service/hot.md`. |
+| [Actions URI](https://github.com/czottmann/obsidian-actions-uri) | URL-scheme actions for triggering Obsidian from outside. |
+| [Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) | Only needed if you connect the [obsidian MCP server](https://github.com/MarkusPfundstein/mcp-obsidian) so Claude can read or write to Obsidian over HTTP. Direct filesystem access via the Read/Write tools works without it. |
 
 ## First-run setup
 
