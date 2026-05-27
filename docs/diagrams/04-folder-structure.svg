@@ -1,95 +1,89 @@
 <svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <pattern id="dots-folders" width="22" height="22" patternUnits="userSpaceOnUse">
-      <circle cx="1" cy="1" r="0.9" fill="rgba(11,13,11,0.10)"/>
-    </pattern>
-  </defs>
-  <rect width="100%" height="100%" fill="#faf7f2"/>
-  <rect width="100%" height="100%" fill="url(#dots-folders)" opacity="0.5"/>
+  <rect width="100%" height="100%" fill="#f5f5f5"/>
 
   <!-- Outer container: wiki root -->
-  <rect x="20" y="20" width="760" height="760" rx="8" fill="#ffffff" stroke="#1c1917" stroke-width="1.2"/>
+  <rect x="20" y="20" width="760" height="760" rx="8" fill="#ffffff" stroke="#2d3142" stroke-width="1.2"/>
 
-  <text x="40" y="44" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">WIKI ROOT</text>
-  <text x="40" y="72" fill="#1c1917" font-size="16" font-weight="600" font-family="'Geist Mono', monospace">&lt;wiki-root&gt;/</text>
+  <text x="40" y="44" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">WIKI ROOT</text>
+  <text x="40" y="72" fill="#2d3142" font-size="16" font-weight="600" font-family="'Geist Mono', monospace">&lt;wiki-root&gt;/</text>
 
   <!-- Top-level files -->
-  <text x="40" y="100" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">CLAUDE.md</text>
-  <text x="220" y="100" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">generic schema, identical across every wiki this plugin manages</text>
+  <text x="40" y="100" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">CLAUDE.md</text>
+  <text x="220" y="100" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">generic schema, identical across every wiki this plugin manages</text>
 
-  <text x="40" y="120" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">wiki-config.md</text>
-  <text x="220" y="120" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">this wiki's specific configuration; edit to reconfigure</text>
+  <text x="40" y="120" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">wiki-config.md</text>
+  <text x="220" y="120" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">this wiki's specific configuration; edit to reconfigure</text>
 
-  <text x="40" y="140" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">index.md</text>
-  <text x="220" y="140" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">auto-maintained catalog of every page</text>
+  <text x="40" y="140" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">index.md</text>
+  <text x="220" y="140" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">auto-maintained catalog of every page</text>
 
-  <line x1="40" y1="156" x2="760" y2="156" stroke="rgba(11,13,11,0.10)" stroke-width="0.8"/>
+  <line x1="40" y1="156" x2="760" y2="156" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
 
   <!-- Zone 1: Entry points -->
-  <rect x="40" y="172" width="720" height="140" rx="6" fill="rgba(28,25,23,0.03)" stroke="rgba(28,25,23,0.30)"/>
-  <text x="56" y="192" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 1, ENTRY POINTS</text>
-  <text x="56" y="212" fill="#52534e" font-size="11" font-family="'Geist', sans-serif" font-style="italic">you drop files here; the agent reads them on /ingest</text>
+  <rect x="40" y="172" width="720" height="140" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)"/>
+  <text x="56" y="192" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 1, ENTRY POINTS</text>
+  <text x="56" y="212" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif" font-style="italic">you drop files here; the agent reads them on /ingest</text>
 
-  <text x="56" y="240" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">99_Quick-notes/</text>
-  <text x="260" y="240" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">raw notes, brain dumps, your inbox</text>
+  <text x="56" y="240" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">99_Quick-notes/</text>
+  <text x="260" y="240" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">raw notes, brain dumps, your inbox</text>
 
-  <text x="56" y="260" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">98_Other/</text>
-  <text x="260" y="260" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">articles, PDFs, web clips you save</text>
+  <text x="56" y="260" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">98_Other/</text>
+  <text x="260" y="260" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">articles, PDFs, web clips you save</text>
 
-  <text x="56" y="280" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">4_Conversations/</text>
-  <text x="260" y="280" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">LLM session exports</text>
+  <text x="56" y="280" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">4_Conversations/</text>
+  <text x="260" y="280" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">LLM session exports</text>
 
-  <text x="56" y="300" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">(custom)</text>
-  <text x="260" y="300" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">add your own at setup: voice transcripts, daily journal, images...</text>
+  <text x="56" y="300" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">(custom)</text>
+  <text x="260" y="300" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">add your own at setup: voice transcripts, daily journal, images...</text>
 
   <!-- Zone 2: Structured knowledge -->
-  <rect x="40" y="328" width="720" height="140" rx="6" fill="#ffffff" stroke="#1c1917"/>
-  <text x="56" y="348" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 2, STRUCTURED KNOWLEDGE</text>
-  <text x="56" y="368" fill="#52534e" font-size="11" font-family="'Geist', sans-serif" font-style="italic">where /ingest writes the distilled output; you can read and edit by hand</text>
+  <rect x="40" y="328" width="720" height="140" rx="6" fill="#ffffff" stroke="#2d3142"/>
+  <text x="56" y="348" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 2, STRUCTURED KNOWLEDGE</text>
+  <text x="56" y="368" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif" font-style="italic">where /ingest writes the distilled output; you can read and edit by hand</text>
 
-  <text x="56" y="396" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">1_Projects/</text>
-  <text x="260" y="396" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">active work, one folder per category, archived ones in _old/</text>
+  <text x="56" y="396" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">1_Projects/</text>
+  <text x="260" y="396" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">active work, one folder per category, archived ones in _old/</text>
 
-  <text x="56" y="416" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">3_Documentation/</text>
-  <text x="260" y="416" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">durable knowledge articles, the agent's main output</text>
+  <text x="56" y="416" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">3_Documentation/</text>
+  <text x="260" y="416" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">durable knowledge articles, the agent's main output</text>
 
-  <text x="56" y="436" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">2_Resources/</text>
-  <text x="260" y="436" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">lists, references, personal memory</text>
+  <text x="56" y="436" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">2_Resources/</text>
+  <text x="260" y="436" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">lists, references, personal memory</text>
 
-  <text x="56" y="456" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">(custom)</text>
-  <text x="260" y="456" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">people, concepts, anything you declare in wiki-config.md</text>
+  <text x="56" y="456" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">(custom)</text>
+  <text x="260" y="456" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">people, concepts, anything you declare in wiki-config.md</text>
 
   <!-- Zone 3: Service -->
-  <rect x="40" y="484" width="720" height="280" rx="6" fill="rgba(28,25,23,0.05)" stroke="#52534e"/>
-  <text x="56" y="504" fill="#65655c" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 3, _SERVICE, AGENT-ONLY WORKING STATE</text>
-  <text x="56" y="524" fill="#52534e" font-size="11" font-family="'Geist', sans-serif" font-style="italic">tracking, logs, feedback; do not edit by hand unless you know why</text>
+  <rect x="40" y="484" width="720" height="280" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75"/>
+  <text x="56" y="504" fill="#7a8399" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.14em">ZONE 3, _SERVICE, AGENT-ONLY WORKING STATE</text>
+  <text x="56" y="524" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif" font-style="italic">tracking, logs, feedback; do not edit by hand unless you know why</text>
 
-  <text x="56" y="552" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">.manifest.json</text>
-  <text x="260" y="552" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">sha256 ledger of every ingested source, enables incremental reruns</text>
+  <text x="56" y="552" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">.manifest.json</text>
+  <text x="260" y="552" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">sha256 ledger of every ingested source, enables incremental reruns</text>
 
-  <text x="56" y="572" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">log.md</text>
-  <text x="260" y="572" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">append-only operation log</text>
+  <text x="56" y="572" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">log.md</text>
+  <text x="260" y="572" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">append-only operation log</text>
 
-  <text x="56" y="592" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">hot.md</text>
-  <text x="260" y="592" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">last 20 touched pages, for cheap "what changed?" queries</text>
+  <text x="56" y="592" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">hot.md</text>
+  <text x="260" y="592" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">last 20 touched pages, for cheap "what changed?" queries</text>
 
-  <text x="56" y="612" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">feedback.md</text>
-  <text x="260" y="612" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">behavioral rules you've taught the agent via /feedback</text>
+  <text x="56" y="612" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">feedback.md</text>
+  <text x="260" y="612" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">behavioral rules you've taught the agent via /feedback</text>
 
-  <text x="56" y="632" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">sources/</text>
-  <text x="260" y="632" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">one summary page per ingested source, with backlinks to pages</text>
+  <text x="56" y="632" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">sources/</text>
+  <text x="260" y="632" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">one summary page per ingested source, with backlinks to pages</text>
 
-  <text x="56" y="652" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">_archives/</text>
-  <text x="260" y="652" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">timestamped snapshots from /archive and pre-/rebuild</text>
+  <text x="56" y="652" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">_archives/</text>
+  <text x="260" y="652" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">timestamped snapshots from /archive and pre-/rebuild</text>
 
-  <text x="56" y="672" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">entry-points/</text>
-  <text x="260" y="672" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">where source files are moved after post_ingest: move</text>
+  <text x="56" y="672" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">entry-points/</text>
+  <text x="260" y="672" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">where source files are moved after post_ingest: move</text>
 
-  <text x="56" y="692" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">lint-&lt;date&gt;.md</text>
-  <text x="260" y="692" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">latest /lint report, per-day file</text>
+  <text x="56" y="692" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">lint-&lt;date&gt;.md</text>
+  <text x="260" y="692" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">latest /lint report, per-day file</text>
 
-  <text x="56" y="712" fill="#1c1917" font-size="11" font-family="'Geist Mono', monospace">custom-procedures/</text>
-  <text x="260" y="712" fill="#52534e" font-size="11" font-family="'Geist', sans-serif">optional: per-wiki procedure files (task-extraction, ...). User-authored.</text>
+  <text x="56" y="712" fill="#2d3142" font-size="11" font-family="'Geist Mono', monospace">custom-procedures/</text>
+  <text x="260" y="712" fill="#4f5d75" font-size="11" font-family="'Geist', sans-serif">optional: per-wiki procedure files (task-extraction, ...). User-authored.</text>
 
-  <text x="56" y="740" fill="#52534e" font-size="10" font-family="'Geist', sans-serif" font-style="italic">Everything in _service/ is regenerable from sources via /rebuild, except feedback.md.</text>
-</svg>
+  <text x="56" y="740" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif" font-style="italic">Everything in _service/ is regenerable from sources via /rebuild, except feedback.md.</text>
+</sv
