@@ -1,5 +1,5 @@
 ---
-description: Register a new wiki or reconfigure an existing one. Interviews the user, scaffolds folders, installs templates, generates per-wiki command files if requested.
+description: Register a new wiki or reconfigure an existing one. Interviews the user, scaffolds folders, and installs templates. Commands are invoked as `/obsidian-wiki:<verb> <slug>`; no per-wiki command files are generated.
 argument-hint: optional wiki-slug to reconfigure, or omit to add a new wiki
 ---
 
@@ -33,23 +33,23 @@ Args: $ARGUMENTS
    - `custom_procedures[]`: optional. Ask the user if they want any custom procedures wired in at specific hook points (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`). For each one, collect a `name`, `when`, `description`, and a `procedure` path under `<wiki-root>/_service/custom-procedures/`. The setup command creates `<wiki-root>/_service/custom-procedures/` and copies `${CLAUDE_PLUGIN_ROOT}/templates/_custom-procedure.md.tmpl` to each declared path so the user can fill it in afterward.
    - `templates_to_install[]`: subset of `todo-dashboard`, `daily-note`, `canvas-dashboard`. For each, ask where to install it (default paths derived from the entry-point and dashboard answers above).
 
-6. **Scaffold the wiki**:
+5. **Scaffold the wiki**:
    a. Create the wiki root if missing.
    b. Create each declared entry point folder.
    c. Create each structured-knowledge folder. Add a stub `<folder-name>.md` index in each.
    d. Create `<wiki-root>/_service/` with: empty `.manifest.json` (from `templates/manifest.json.tmpl`), empty `log.md`, empty `hot.md` (from `templates/hot.md.tmpl`), `feedback.md` (from `templates/feedback.md.tmpl`), and empty `_archives/`, `sources/`, `entry-points/` subfolders.
    e. Write `<wiki-root>/index.md` from `templates/index.md.tmpl` with the wiki name substituted.
 
-7. **Write `<wiki-root>/CLAUDE.md`** by copying `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl` verbatim. This file is generic and identical across all wikis the plugin manages; no placeholders are substituted.
+6. **Write `<wiki-root>/CLAUDE.md`** by copying `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl` verbatim. This file is generic and identical across all wikis the plugin manages; no placeholders are substituted.
 
-8. **Write `<wiki-root>/wiki-config.md`** by reading `${CLAUDE_PLUGIN_ROOT}/templates/wiki-config.md.tmpl` and substituting all collected values. The template uses `{{key}}` placeholders; the setup skill defines the full substitution map.
+7. **Write `<wiki-root>/wiki-config.md`** by reading `${CLAUDE_PLUGIN_ROOT}/templates/wiki-config.md.tmpl` and substituting all collected values. The template uses `{{key}}` placeholders; the setup skill defines the full substitution map.
 
-9. **Install requested templates**:
+8. **Install requested templates**:
    - `todo-dashboard`: copy `templates/0_To-do.md.tmpl`, substitute `{{wiki_root}}` and project-folder paths, write to the user-chosen dashboard path.
    - `daily-note`: copy `templates/daily-note.md.tmpl`, substitute the journal entry-point path, write to `<journal-entry-point>/_template.md`.
    - `canvas-dashboard`: copy `templates/dashboard.canvas.tmpl`, substitute `{{wiki_root}}` and exclusion-path placeholders, write to the user-chosen dashboard path.
 
-10. **Determine the vault root and install shared docs**:
+9. **Determine the vault root and install shared docs**:
     a. If this is the first wiki being registered, ask: "Where should the shared docs folder live?" Default: the parent of `<wiki-root>`. Other accepted values: any absolute path the user provides.
     b. Save the vault root in the registry under `vault_root`. Subsequent wikis inherit this value; the question is not asked again unless the existing path is unwritable.
     c. Refresh `<vault_root>/_service/docs/` by copying:
@@ -57,7 +57,7 @@ Args: $ARGUMENTS
        - `${CLAUDE_PLUGIN_ROOT}/docs/diagrams/*.svg` → `<vault_root>/_service/docs/diagrams/`
        Overwrite any existing files (the plugin's docs are authoritative).
 
-11. **Update the registry**: add the new wiki entry to `~/.claude/obsidian-wiki/wiki-registry.json`:
+10. **Update the registry**: add the new wiki entry to `~/.claude/obsidian-wiki/wiki-registry.json`:
     ```json
     "<slug>": {
       "name": "<name>",
@@ -74,9 +74,9 @@ Args: $ARGUMENTS
     }
     ```
 
-12. **Confirm**: show the user a summary of created paths, registered slug, installed templates, shared docs location. Ask `[y/n]` to commit. On `n`, revert (delete created folders, restore registry).
+11. **Confirm**: show the user a summary of created paths, registered slug, installed templates, shared docs location. Ask `[y/n]` to commit. On `n`, revert (delete created folders, restore registry).
 
-13. **Smoke check**: run `/status` for the new wiki and report the output.
+12. **Smoke check**: run `/status` for the new wiki and report the output.
 
 ## Constraints
 
