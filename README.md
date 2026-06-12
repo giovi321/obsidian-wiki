@@ -34,7 +34,7 @@ That's the daily loop. Add more sources, rerun `/ingest <slug>`. Run `/lint <slu
 - [First-run setup](#first-run-setup)
 - [Ideal workflow](#ideal-workflow)
 - [Addressing two or more wikis](#addressing-two-or-more-wikis)
-- [The 17 commands](#the-17-commands)
+- [The 20 commands](#the-20-commands)
 - [Command reference](#command-reference)
 - [How ingest works on one source](#how-ingest-works-on-one-source)
 - [Page lifecycle](#page-lifecycle)
@@ -52,6 +52,10 @@ That's the daily loop. Add more sources, rerun `/ingest <slug>`. Run `/lint <slu
 - [Retrieval cost escalation](#retrieval-cost-escalation)
 - [Modes of operation](#modes-of-operation)
 - [Customization](#customization)
+- [Shared docs](#shared-docs)
+- [What happens when the plugin updates](#what-happens-when-the-plugin-updates)
+- [Custom procedures](#custom-procedures)
+- [Visibility tags](#visibility-tags)
 - [Adding a custom command](#adding-a-custom-command)
 - [Removing a wiki](#removing-a-wiki)
 - [FAQ](#faq)
@@ -324,10 +328,11 @@ If two or more wikis are registered and you omit the slug, the agent lists the r
 
 There are no per-wiki command files generated anywhere on disk. One canonical command file per verb lives in the plugin folder, and the slug is resolved from the argument at invocation time. Plugin updates apply to every wiki immediately because there is only one file per verb.
 
-## The 17 commands
+## The 20 commands
 
 | Command | Does |
 |---|---|
+| `/help` | Print the command reference and registered wikis |
 | `/setup-wiki` | Register a new wiki or reconfigure an existing one |
 | `/ingest` | Ingest sources from entry points and curate changed pages |
 | `/ingest-url` | Alias for `/ingest <URL>` |
@@ -354,6 +359,7 @@ Every verb takes the wiki slug as the first argument. The table below uses `<wik
 
 | Command | Arguments | Zones written | Side effects |
 |---|---|---|---|
+| `/help` | empty | none (read-only) | Prints the command table and registered wikis |
 | `/setup-wiki` | `[slug]` to reconfigure, empty to add | n/a | Creates wiki folders, writes `CLAUDE.md`, registers wiki |
 | `/ingest <wiki>` | `<file>`, `<URL>`, `quick-notes`, or empty | structured knowledge, `_service/` | Updates manifest, log, hot.md; moves processed files per `post_ingest`; promotes `_raw/` staged files |
 | `/ingest-url <wiki>` | `<URL>` | structured knowledge, `_service/` | Alias for `/ingest <URL>` |
@@ -689,7 +695,7 @@ The visibility filter is read-time only. The agent does not yet block writes to 
 
 ## Adding a custom command
 
-The plugin ships 17 canonical commands plus `/setup-wiki`. To add a custom verb (say, `/digest` that emails you a weekly summary):
+The plugin ships the commands listed in [The 20 commands](#the-20-commands). To add a custom verb (say, `/digest` that emails you a weekly summary):
 
 1. Create `commands/digest.md` in the plugin folder, or `~/.claude/commands/digest.md` for user scope.
 2. Use the same procedure-step structure as the shipped commands. Step 1 reads `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and `<wiki-root>/CLAUDE.md`.
@@ -701,4 +707,18 @@ The plugin ships 17 canonical commands plus `/setup-wiki`. To add a custom verb 
 
 ## FAQ
 
-**Does this work without Obsidian?** Yes. The output is plain markdown with wik
+**Does this work without Obsidian?** Yes. The output is plain markdown with wikilinks and YAML frontmatter, readable in any editor. The Obsidian community plugins listed above are only needed if you want the dashboards, Tasks queries, and Dataview blocks to render. The agent itself reads and writes files directly on disk.
+
+**Can I run multiple wikis in one vault?** Yes. Each wiki is registered with its own slug and root folder; commands address them by slug. The only restriction is that wiki roots must not nest inside each other (enforced at setup).
+
+**Will a plugin update break or change my wiki?** No. The two plugin-managed files (`CLAUDE.md` per wiki, shared docs) only refresh when you explicitly run `/upgrade` or `/update-docs`. Everything else — `wiki-config.md`, custom procedures, feedback rules, your content — is never touched by an update. See [What happens when the plugin updates](#what-happens-when-the-plugin-updates).
+
+**Can the agent modify my hand-written notes?** Only inside declared zones, and even there the lifecycle protects you: pages you have edited are `reviewed` or higher and get merged into, never overwritten. `protected_paths` folders are never cleared by `/rebuild`, `read_only` entry points are never modified at all, and dashboards are only rewritten on an explicit restructure request.
+
+**What happens if I drop the same file in twice?** Nothing. Every source is hashed (SHA-256) and recorded in the manifest; unchanged files are skipped on every subsequent ingest. A changed file (same path, different content) is re-processed.
+
+**How do I undo a bad ingest or rebuild?** `/archive` snapshots the structured knowledge at any time, and `/rebuild` and `/restore` always archive before making changes. Run `/restore list` to see available snapshots and `/restore <archive-id>` to roll back.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

@@ -97,9 +97,9 @@ tags:
   - "#research"
 writing_style: "No empty line after headings. No trailing summaries unless asked. Inline provenance markers on documentation pages only."
 project_thresholds:
-  active_to_dormant: 6
-  dormant_to_archive: 4
-  completed_to_archive: 6
+  active_to_dormant_months: 6
+  dormant_to_archive_months: 4
+  completed_to_archive_months: 6
 templates_to_install:
   - todo-dashboard
   - daily-note
@@ -142,18 +142,32 @@ Setup writes two files at the wiki root and several inside `_service/`:
 | `{{conversations_path}}` | first entry point with `source_type: claude-chat` |
 | `{{tags_block}}` | YAML-rendered list, each tag indented two spaces with `- ` prefix |
 | `{{writing_style_indented}}` | `writing_style` text, indented two spaces for YAML pipe block |
-| `{{active_to_dormant_months}}` | `project_thresholds.active_to_dormant` |
-| `{{dormant_to_archive_months}}` | `project_thresholds.dormant_to_archive` |
-| `{{completed_to_archive_months}}` | `project_thresholds.completed_to_archive` |
+| `{{active_to_dormant_months}}` | `project_thresholds.active_to_dormant_months` |
+| `{{dormant_to_archive_months}}` | `project_thresholds.dormant_to_archive_months` |
+| `{{completed_to_archive_months}}` | `project_thresholds.completed_to_archive_months` |
 | `{{entry_points_block}}` | YAML-rendered `entry_points` array (`-` items, two-space indent). Includes `exclude` when set. |
 | `{{structured_knowledge_block}}` | YAML-rendered `structured_knowledge` array |
 | `{{dashboards_block}}` | YAML-rendered `dashboards` array (empty list `[]` if none) |
 | `{{protected_paths_block}}` | YAML-rendered `protected_paths` array (empty list `[]` if none) |
 | `{{ignore_paths_block}}` | YAML-rendered `ignore_paths` array (empty list `[]` if none) |
+| `{{projects_path_quoted}}` | `<wiki_root_basename>/<projects_path>`, trailing slash stripped (Dataview `FROM` clause) |
+| `{{transcripts_path_quoted}}` | `<wiki_root_basename>/<transcripts_path>`, trailing slash stripped (Dataview `FROM` clause) |
+| `{{transcripts_exclude_path}}` | `<wiki_root_basename>/<transcripts_path>` (Tasks `path does not include` filter) |
+| `{{conversations_exclude_path}}` | `<wiki_root_basename>/<conversations_path>` (Tasks `path does not include` filter) |
 | `{{today}}` | current date `YYYY-MM-DD` |
 | `{{iso_timestamp}}` | current timestamp ISO-8601 |
 
 Placeholders left unresolved by this map are an error: abort and report which placeholder failed.
+
+### Dashboard template conditional rules
+
+The canvas dashboard template references entry points and folders the wiki may not have configured. When substituting `dashboard.canvas.tmpl` (and only dashboard templates):
+
+- If `{{transcripts_exclude_path}}` or `{{conversations_exclude_path}}` resolves empty (the corresponding entry point is not configured), delete the entire `path does not include …` line from each query rather than leaving an empty filter.
+- If `{{projects_path_quoted}}` resolves empty (no `purpose: projects` folder), remove the whole `projects_table` node from the canvas JSON and tell the user it was skipped.
+- If `{{transcripts_path_quoted}}` resolves empty (no voice-transcript entry point), remove the whole `recent_transcripts` node and tell the user it was skipped.
+
+These removals are not errors; report them in the setup summary.
 
 ## Validation rules before writing to disk
 
