@@ -29,7 +29,7 @@ Args: $ARGUMENTS
    - `ignore_paths[]`: filesystem artifacts at the wiki root the agent must ignore entirely. Suggest common entries: `.obsidian/`, `.trash/`, `notes.sqlite`, `.DS_Store`.
    - `tags`: tag vocabulary (free text or comma-separated list). Ask whether to enable visibility tags (`visibility/public`, `visibility/internal`, `visibility/pii`). If yes, append them to the list.
    - `writing_style`: rules for prose voice.
-   - `project_thresholds`: integers in months for `active_to_dormant`, `dormant_to_archive`, `completed_to_archive`.
+   - `project_thresholds`: integers in months for `active_to_dormant_months`, `dormant_to_archive_months`, `completed_to_archive_months`.
    - `custom_procedures[]`: optional. Ask the user if they want any custom procedures wired in at specific hook points (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`). For each one, collect a `name`, `when`, `description`, and a `procedure` path under `<wiki-root>/_service/custom-procedures/`. The setup command creates `<wiki-root>/_service/custom-procedures/` and copies `${CLAUDE_PLUGIN_ROOT}/templates/_custom-procedure.md.tmpl` to each declared path so the user can fill it in afterward.
    - `templates_to_install[]`: subset of `todo-dashboard`, `daily-note`, `canvas-dashboard`. For each, ask where to install it (default paths derived from the entry-point and dashboard answers above).
 
@@ -47,7 +47,7 @@ Args: $ARGUMENTS
 8. **Install requested templates**:
    - `todo-dashboard`: copy `templates/0_To-do.md.tmpl`, substitute `{{wiki_root}}` and project-folder paths, write to the user-chosen dashboard path.
    - `daily-note`: copy `templates/daily-note.md.tmpl`, substitute the journal entry-point path, write to `<journal-entry-point>/_template.md`.
-   - `canvas-dashboard`: copy `templates/dashboard.canvas.tmpl`, substitute `{{wiki_root}}` and exclusion-path placeholders, write to the user-chosen dashboard path.
+   - `canvas-dashboard`: copy `templates/dashboard.canvas.tmpl`, substitute all placeholders per the map in `skills/wiki-setup/SKILL.md`, applying the "Dashboard template conditional rules" there (drop filter lines or whole canvas nodes when the wiki lacks the corresponding entry point or folder), write to the user-chosen dashboard path.
 
 9. **Determine the vault root and install shared docs**:
     a. If this is the first wiki being registered, ask: "Where should the shared docs folder live?" Default: the parent of `<wiki-root>`. Other accepted values: any absolute path the user provides.

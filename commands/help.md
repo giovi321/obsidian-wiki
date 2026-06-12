@@ -16,6 +16,7 @@ All verbs take an optional wiki slug as the first argument. If the slug is omitt
 
 | Command | Description |
 |---------|-------------|
+| `/help` | Print this command reference and the registered wikis. |
 | `/ingest [wiki]` | Ingest sources and curate changed pages. Accepts a filename, URL, `quick-notes` keyword, or omit for all new files. Also promotes staged `_raw/` files. |
 | `/ingest-claude [wiki]` | Ingest LLM conversations. `session` for current session, `folder [filter]` for files, omit for both. |
 | `/ingest-url [wiki]` | Alias for `/ingest <URL>`. |
@@ -40,4 +41,4 @@ All verbs take an optional wiki slug as the first argument. If the slug is omitt
 
 - All commands read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` for shared logic, the target wiki's `CLAUDE.md` (generic schema) and `wiki-config.md` (specific configuration), and `<wiki-root>/_service/feedback.md` for behavioral rules.
 - Entry points and structured-knowledge folders are declared in each wiki's `wiki-config.md`. Edit that file or run `/setup-wiki <slug>` to reconfigure.
-- Source-quality scoring, confidence formula, provenance markers, lifecycle states, and the reflection step are documented in `SKILL.md` and in `docs/QUICK-REFERENCE.md`.
+- Source-quality scoring, confidence formula, provenance markers, lifecycle states, and the reflection step are documented in `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` and mirrored in the shared docs at `<vault_root>/_service/docs/README.md`.
