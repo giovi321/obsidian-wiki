@@ -32,6 +32,8 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
    - Low-confidence pages: `base_confidence < 0.4`.
    - Provenance drift: recompute fractions, flag divergence greater than 0.15.
    - Missing sub-folder index pages: every subfolder under structured-knowledge folders must have a `<folder-name>.md` index.
+   - Broken relationship edges: `relationships:` targets pointing at pages that do not exist.
+   - Unknown edge types: `relationships:` types outside the canonical set (SKILL.md "Typed relationships") and any wiki-declared extensions in `wiki-config.md`.
 
    **Lifecycle findings**:
    - Draft pages in documentation-class folders with `lifecycle_changed` older than 6 months.
