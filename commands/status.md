@@ -17,10 +17,13 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 2. Read `<wiki-root>/_service/.manifest.json`.
 
-3. **Compute delta**: walk all entry points declared in `wiki-config.md`. For each file, compute SHA-256 and compare to the manifest:
-   - New files (not in manifest).
-   - Changed files (hash differs).
-   - Unchanged files (skip).
+3. **Compute delta**: run the manifest helper:
+
+   ```
+   python "${CLAUDE_PLUGIN_ROOT}/scripts/manifest.py" delta "<wiki-root>/_service/.manifest.json" <absolute path of each entry point>
+   ```
+
+   Each output line is `reason<TAB>absolute-path` with reason ∈ {`new`, `changed`}; unchanged files are omitted. The helper honors the `WIKI_SKIP_PROJECTS` env var. Fallback: if `python` is unavailable or the script errors, walk the entry points manually — compute SHA-256 per file and compare to the manifest (not present = new, hash differs = changed). Either way, drop files matched by entry-point `exclude` globs and `ignore_paths` from the result.
 
 4. **Wiki statistics**:
    - Total pages per structured-knowledge folder.
