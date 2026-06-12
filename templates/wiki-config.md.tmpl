@@ -25,7 +25,8 @@ entry_points:
 structured_knowledge:
 {{structured_knowledge_block}}
 
-# Files the agent must not modify as a side effect. List file paths or globs.
+# Dashboard files. The agent may rewrite these only on an explicit
+# restructure request, never as a side effect of another command.
 dashboards:
 {{dashboards_block}}
 
@@ -40,6 +41,12 @@ protected_paths:
 # editor settings).
 ignore_paths:
 {{ignore_paths_block}}
+
+# Optional. Folders whose pages must carry the `visibility/pii` tag.
+# /lint flags violations. Only meaningful when the tags list below
+# includes the visibility/* tags.
+pii_paths:
+{{pii_paths_block}}
 
 # Project lifecycle thresholds (months).
 project_thresholds:

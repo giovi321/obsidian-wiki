@@ -150,6 +150,7 @@ Setup writes two files at the wiki root and several inside `_service/`:
 | `{{dashboards_block}}` | YAML-rendered `dashboards` array (empty list `[]` if none) |
 | `{{protected_paths_block}}` | YAML-rendered `protected_paths` array (empty list `[]` if none) |
 | `{{ignore_paths_block}}` | YAML-rendered `ignore_paths` array (empty list `[]` if none) |
+| `{{pii_paths_block}}` | YAML-rendered `pii_paths` array (empty list `[]` if none) |
 | `{{projects_path_quoted}}` | `<wiki_root_basename>/<projects_path>`, trailing slash stripped (Dataview `FROM` clause) |
 | `{{transcripts_path_quoted}}` | `<wiki_root_basename>/<transcripts_path>`, trailing slash stripped (Dataview `FROM` clause) |
 | `{{transcripts_exclude_path}}` | `<wiki_root_basename>/<transcripts_path>` (Tasks `path does not include` filter) |

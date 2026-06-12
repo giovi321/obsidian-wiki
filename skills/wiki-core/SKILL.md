@@ -6,12 +6,12 @@ description: >
   cost escalation, structured log format, page templates, index format, cross-linking rules,
   project lifecycle, modes of operation, image ingestion, monthly archival, and hot.md spec.
   Read by every command before execution. Wiki-specific config (paths, entry points, page types,
-  writing style, tags) lives in each wiki's CLAUDE.md.
+  writing style, tags) lives in each wiki's wiki-config.md.
 ---
 
 # Wiki core, shared operating logic
 
-This skill is the contract for every command in the plugin. The plugin supports an arbitrary number of independent wikis. Each wiki has its own root folder and its own `CLAUDE.md` that supplies wiki-specific configuration. Shared logic stays here.
+This skill is the contract for every command in the plugin. The plugin supports an arbitrary number of independent wikis. Each wiki has its own root folder, a generic `CLAUDE.md`, and a `wiki-config.md` that supplies wiki-specific configuration. Shared logic stays here.
 
 ## Wiki registry
 
@@ -42,7 +42,7 @@ Resolution order for a command invocation:
 
 Every wiki has two top-level config files at its root:
 
-- `CLAUDE.md`: generic boilerplate, identical across every wiki this plugin manages. Describes the three-zone architecture, hard boundary, folder permissions, routing rules, page types, and the reading order. The agent reads this on every command but never modifies it. To upgrade the boilerplate, `/setup-wiki` (or `/update-docs`) refreshes it from `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl`.
+- `CLAUDE.md`: generic boilerplate, identical across every wiki this plugin manages. Describes the three-zone architecture, hard boundary, folder permissions, routing rules, page types, and the reading order. The agent reads this on every command but never modifies it. To upgrade the boilerplate, `/setup-wiki` (or `/upgrade`) refreshes it from `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl`.
 - `wiki-config.md`: wiki-specific data. Frontmatter holds `name`, `slug`, `root`, `entry_points`, `structured_knowledge`, `dashboards`, `protected_paths`, `project_thresholds`, `tags`, `writing_style`. The agent reads this on every command to know what folders to operate on. To change configuration, edit this file (or re-run `/setup-wiki <slug>`).
 
 Every command reads the registry, resolves the target wiki, then reads both `<wiki-root>/CLAUDE.md` and `<wiki-root>/wiki-config.md` before doing anything else.
@@ -51,15 +51,15 @@ Every command reads the registry, resolves the target wiki, then reads both `<wi
 
 Each wiki follows the same three-zone layout:
 
-1. **Entry points**, folders at root where raw sources land. Content is immutable during ingest; only `processed` frontmatter may be added. Each wiki's `CLAUDE.md` defines which entry points exist and whether files are moved after processing.
-2. **Structured knowledge**, folders at root containing LLM-maintained and human-edited pages. Each wiki defines its own structured-knowledge folders in `CLAUDE.md`.
+1. **Entry points**, folders at root where raw sources land. Content is immutable during ingest; only `processed` frontmatter may be added. Each wiki's `wiki-config.md` defines which entry points exist and whether files are moved after processing.
+2. **Structured knowledge**, folders at root containing LLM-maintained and human-edited pages. Each wiki defines its own structured-knowledge folders in `wiki-config.md`.
 3. **Service**, a `_service/` folder containing operational state: log, manifest, source summaries, archives, attachments.
 
-The agent reads this `SKILL.md` for shared rules and the wiki's `CLAUDE.md` for paths and wiki-specific config. `CLAUDE.md` declares the entry points as a typed list (see Entry-point schema below) and the structured-knowledge folders.
+The agent reads this `SKILL.md` for shared rules and the wiki's `wiki-config.md` for paths and wiki-specific config. `wiki-config.md` declares the entry points as a typed list (see Entry-point schema below) and the structured-knowledge folders.
 
 ## Entry-point schema
 
-Every entry point declared in `CLAUDE.md` follows this shape:
+Every entry point declared in `wiki-config.md` follows this shape:
 
 ```yaml
 entry_points:
@@ -92,6 +92,16 @@ Fields:
 - `exclude`, optional list of glob patterns relative to the entry-point root. Excluded files are never processed, moved, or modified.
 
 Commands iterate this list at runtime; nothing about entry points is hard-coded in commands or in this skill.
+
+## Quick-capture staging (`_raw/`)
+
+`<wiki-root>/_raw/` is a staging area written only by `/capture --quick`. It is not an entry point and is not declared in `wiki-config.md`.
+
+- Staged files carry frontmatter: `capture_source: claude-session`, `captured_at: YYYY-MM-DD`, `wiki: <slug>`, `lifecycle: raw`.
+- `lifecycle: raw` is a staging-only marker, valid exclusively inside `_raw/`. It is never a wiki-page lifecycle state (see Lifecycle states).
+- Staging writes nothing to the manifest, `log.md`, `hot.md`, or `index.md` — that is the point of the fast path.
+- The next `/ingest` run with no source argument promotes staged files: they are treated as `quick-note` sources (quality 0.5), distilled into wiki pages with the normal pipeline, then moved to `_service/entry-points/raw/<YYYY-MM>/`.
+- `/lint` flags any file outside `_raw/` carrying `lifecycle: raw`.
 
 ## Custom procedures
 
@@ -189,9 +199,9 @@ Chronological append-only record inside a fenced code block (prevents Obsidian f
 - [ISO-8601] OPERATION key=value key="string value" ...
 ```
 
-Operations: INGEST, CAPTURE, LINT, ARCHIVE, REBUILD, RESTORE, PROJECT, QUERY, STATUS, CROSS-LINK, RESEARCH, UPDATE, INGEST-CLAUDE.
+Operations: INGEST, CAPTURE, LINT, ARCHIVE, REBUILD, RESTORE, PROJECT, QUERY, STATUS, CROSS-LINK, RESEARCH, UPDATE, INGEST-CLAUDE, FEEDBACK, PROMOTE, UPGRADE.
 
-URL sources ingested via `/ingest` log as `INGEST` with `source_type=url`.
+URL sources ingested via `/ingest` log as `INGEST` with `source_type=url`. FEEDBACK lines are written by `/feedback` and by the reflection step of any command. PROMOTE marks a feedback entry promoted to a custom procedure. UPGRADE marks a `CLAUDE.md` refresh by `/upgrade`.
 
 ### _service/.manifest.json
 Tracks every source that has been ingested.
@@ -293,7 +303,7 @@ Field rules:
 - `sources`, list of source IDs (see Source ID normalization) that contributed to this page.
 - `superseded_by`, optional, wikilink. Set only when `lifecycle: archived` and a replacement page exists. Example: `superseded_by: "[[new-page]]"`. Never fabricate this field.
 
-Additional type-specific fields are defined in each wiki's `CLAUDE.md`.
+Additional type-specific fields are defined in each wiki's `wiki-config.md`.
 
 ## Minimum page size
 
@@ -378,6 +388,8 @@ Five states. `stale` is NOT a state but a computed overlay: `is_stale = (today -
 
 Only ingest, capture, and update commands set `draft`. All other transitions require the human editor. Update `lifecycle_changed` whenever the state changes.
 
+`raw` is not a lifecycle state: it is a staging-only marker valid exclusively on files inside `_raw/` (see Quick-capture staging). Promoted pages start at `draft` like any other.
+
 ## Source ID normalization
 
 Every source referenced in `sources:` frontmatter or in the manifest uses a canonical ID for deduplication.
@@ -439,7 +451,7 @@ Create only when:
 - The agent identifies project-scoped synthesis and no active project covers it. Propose first, never silently create.
 
 ### When to archive (move to _old/)
-Suggest (never auto-move) when thresholds from `CLAUDE.md` are exceeded. Each wiki defines its own thresholds.
+Suggest (never auto-move) when thresholds from `wiki-config.md` are exceeded. Each wiki defines its own thresholds.
 
 When moved: relocate the folder, update all wikilinks across the wiki, update Dataview `FROM` paths inside the moved project's landing page. Never delete projects.
 

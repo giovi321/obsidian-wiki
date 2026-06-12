@@ -37,6 +37,11 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
    - Draft pages in documentation-class folders with `lifecycle_changed` older than 6 months.
    - Disputed pages.
    - Pages using legacy fields.
+   - Files outside `_raw/` carrying `lifecycle: raw` (staging-only marker that escaped promotion).
+
+   **Visibility findings** (only when the wiki's `tags:` list includes `visibility/*` tags):
+   - Pages inside any folder listed in `wiki-config.md` `pii_paths` that lack the `visibility/pii` tag.
+   - Pages tagged `visibility/public` still in `lifecycle: draft` (public content nobody has reviewed).
 
    **Project-level findings** (per `wiki-config.md` thresholds):
    - Active projects past the active threshold, suggest dormant.
