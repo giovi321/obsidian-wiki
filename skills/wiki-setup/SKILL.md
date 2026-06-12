@@ -206,6 +206,34 @@ Every `/setup-wiki` run, after the registry is updated, refreshes `<vault_root>/
 
 The same refresh logic is exposed as `/update-docs` for between-setup refreshes (e.g. after the plugin is updated via `/plugin update obsidian-wiki`).
 
+## Optional: session-end capture hook
+
+After setup succeeds, offer to install the stop hook that prompts `/capture --quick` at the end of any Claude Code session that had file edits or significant shell activity:
+
+1. Ask: "Install the session-end capture hook? It will nudge you to run `/capture --quick` after productive sessions." `[y/n]`
+2. If yes, copy `${CLAUDE_PLUGIN_ROOT}/.claude/hooks/wiki-stop-capture.sh` to `~/.claude/hooks/wiki-stop-capture.sh` (create dir if missing).
+3. Read `~/.claude/settings.json` (create as `{}` if missing). Add the hook entry:
+   ```json
+   {
+     "hooks": {
+       "Stop": [
+         {
+           "hooks": [
+             {
+               "type": "command",
+               "command": "bash ~/.claude/hooks/wiki-stop-capture.sh"
+             }
+           ]
+         }
+       ]
+     }
+   }
+   ```
+   Merge with existing content; do not overwrite other hooks.
+4. Confirm: "Stop hook installed globally. It activates in every Claude Code project."
+
+The hook fires at most once per session (session_id sentinel in TMPDIR) and never fires if the turn was itself injected by a hook (`stop_hook_active` guard).
+
 ## Removing a wiki
 
 Reconfigure mode supports a `--remove` flag. When set:

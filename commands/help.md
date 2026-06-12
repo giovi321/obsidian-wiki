@@ -16,12 +16,12 @@ All verbs take an optional wiki slug as the first argument. If the slug is omitt
 
 | Command | Description |
 |---------|-------------|
-| `/ingest [wiki]` | Ingest sources and curate changed pages. Accepts a filename, URL, `quick-notes` keyword, or omit for all new files. |
+| `/ingest [wiki]` | Ingest sources and curate changed pages. Accepts a filename, URL, `quick-notes` keyword, or omit for all new files. Also promotes staged `_raw/` files. |
 | `/ingest-claude [wiki]` | Ingest LLM conversations. `session` for current session, `folder [filter]` for files, omit for both. |
-| `/ingest-url [wiki]` | Fetch and ingest a single URL. |
+| `/ingest-url [wiki]` | Alias for `/ingest <URL>`. |
 | `/update [wiki]` | Update a specific page with new information. |
 | `/query [wiki]` | Answer a question using only wiki contents. |
-| `/capture [wiki]` | Save knowledge from the current conversation. |
+| `/capture [wiki]` | Save knowledge from the current conversation. Add `--quick` to stage findings to `_raw/` in under 60 s (no manifest writes). |
 | `/status [wiki]` | Show wiki health summary and ingest recommendations. |
 | `/lint [wiki]` | Audit for orphans, broken links, stale pages. |
 | `/cross-linker [wiki]` | Audit and fix wikilinks. |

@@ -305,7 +305,8 @@ What the typical loop looks like once a wiki is set up.
 - **Daily or every few days**: `/status` to see what changed, then `/ingest` to compile the new sources into wiki pages. This is the primary loop.
 - **Weekly**: `/lint` to surface issues, then `/cross-linker` to repair link problems automatically.
 - **Monthly or before a big change**: `/archive` to snapshot the structured knowledge. Use `/rebuild` only when you have changed the schema and want to reprocess all sources from scratch.
-- **Any time**: `/query` to ask the wiki a question, `/update` to refine a specific page, `/research` to pull in new sources from the web, `/capture` to save the durable parts of the current conversation. `/feedback` to teach the agent a new rule based on something that did or did not work.
+- **Any time**: `/query` to ask the wiki a question, `/update` to refine a specific page, `/research` to pull in new sources from the web, `/capture` to save the durable parts of the current conversation, `/capture --quick` to stage findings in under 60 s without interrupting flow. `/feedback` to teach the agent a new rule based on something that did or did not work.
+- **Session end (automatic)**: install `.claude/hooks/wiki-stop-capture.sh` (see `wiki-setup/SKILL.md` → "Optional: session-end capture hook") to have Claude Code nudge you with `/capture --quick` at the end of any session that had file edits or significant shell activity.
 
 ## Addressing two or more wikis
 
@@ -329,9 +330,9 @@ There are no per-wiki command files generated anywhere on disk. One canonical co
 |---|---|
 | `/setup-wiki` | Register a new wiki or reconfigure an existing one |
 | `/ingest` | Ingest sources from entry points and curate changed pages |
-| `/ingest-url` | Fetch one URL and ingest it |
+| `/ingest-url` | Alias for `/ingest <URL>` |
 | `/ingest-claude` | Ingest the current LLM session or saved conversation exports |
-| `/capture` | Save durable knowledge from the current conversation |
+| `/capture` | Save durable knowledge from the current conversation. Add `--quick` to stage findings to `_raw/` in under 60 s without touching the manifest |
 | `/query` | Answer using only the wiki contents |
 | `/update` | Targeted update of one page with new info |
 | `/research` | Search the web for a topic and distill 3 to 5 sources into pages |
@@ -354,10 +355,10 @@ Every verb takes the wiki slug as the first argument. The table below uses `<wik
 | Command | Arguments | Zones written | Side effects |
 |---|---|---|---|
 | `/setup-wiki` | `[slug]` to reconfigure, empty to add | n/a | Creates wiki folders, writes `CLAUDE.md`, registers wiki |
-| `/ingest <wiki>` | `<file>`, `<URL>`, `quick-notes`, or empty | structured knowledge, `_service/` | Updates manifest, log, hot.md; moves processed files per `post_ingest` |
-| `/ingest-url <wiki>` | `<URL>` | structured knowledge, `_service/` | Saves raw content to article entry point; creates source page |
+| `/ingest <wiki>` | `<file>`, `<URL>`, `quick-notes`, or empty | structured knowledge, `_service/` | Updates manifest, log, hot.md; moves processed files per `post_ingest`; promotes `_raw/` staged files |
+| `/ingest-url <wiki>` | `<URL>` | structured knowledge, `_service/` | Alias for `/ingest <URL>` |
 | `/ingest-claude <wiki>` | `session`, `folder [filter]`, or empty | structured knowledge, `_service/` | Heavy filtering; default `base_confidence: 0.42` |
-| `/capture <wiki>` | `[topic]` | structured knowledge, `_service/` | `base_confidence: 0.42`; stops if nothing worth saving |
+| `/capture <wiki>` | `[--quick] [topic]` | structured knowledge or `_raw/` | Normal: `base_confidence: 0.42`, full pipeline. `--quick`: stages to `_raw/` in <60 s, no manifest writes |
 | `/query <wiki>` | `<question>` | none (read-only) | Reflection step at end |
 | `/update <wiki>` | `<page> <info>` | target page, `_service/` | Recomputes `base_confidence` and `provenance` |
 | `/research <wiki>` | `<topic>` | structured knowledge, `_service/` | Saves raw web content to article entry point; 3 to 5 sources minimum |
@@ -444,7 +445,7 @@ Sources are deduplicated by normalized source ID before counting.
 |---|---|---|
 | `/ingest` (single source) | per source | Computed from source quality |
 | `/ingest` (multi-source) | computed | `min(N/3, 1) × 0.5 + avg_q × 0.5` |
-| `/ingest-url` | computed | `0.17 + 0.5 × source_quality` |
+| `/ingest` (URL source) | computed | `0.17 + 0.5 × source_quality` |
 | `/capture` | 0.42 | 1 source at session_transcript 0.5 |
 | `/ingest-claude` | 0.42 | 1 source at claude-chat 0.3, rounded up |
 | `/research` | typically 0.85+ | Multiple high-quality sources |
@@ -545,6 +546,8 @@ Rules: strip protocol (`https://`), trailing slashes, query params. For GitHub, 
 }
 ```
 
+File-based source keys must always be stored as absolute paths (no `~`, no relative paths). Run `python scripts/manifest.py normalize <manifest-path>` to repair any existing manifest and merge duplicates. Set `WIKI_SKIP_PROJECTS=slug1,slug2` to exclude specific projects from the delta computation (`scripts/manifest.py delta` respects this).
+
 ## Registry schema
 
 `~/.claude/obsidian-wiki/wiki-registry.json`:
@@ -573,7 +576,7 @@ Rules: strip protocol (`https://`), trailing slashes, query params. For GitHub, 
 - [ISO-8601] OPERATION key=value key="string value" ...
 ```
 
-Operations: `INGEST`, `CAPTURE`, `LINT`, `ARCHIVE`, `REBUILD`, `RESTORE`, `PROJECT`, `QUERY`, `STATUS`, `CROSS-LINK`, `RESEARCH`, `UPDATE`, `INGEST-URL`, `INGEST-CLAUDE`, `FEEDBACK`.
+Operations: `INGEST`, `CAPTURE`, `LINT`, `ARCHIVE`, `REBUILD`, `RESTORE`, `PROJECT`, `QUERY`, `STATUS`, `CROSS-LINK`, `RESEARCH`, `UPDATE`, `INGEST-CLAUDE`, `FEEDBACK`. URL sources log as `INGEST` with `source_type=url`.
 
 ## Feedback loop
 
