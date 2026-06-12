@@ -483,7 +483,7 @@ Rules:
 
 | Mode | When to use | Behavior |
 |---|---|---|
-| Append | Normal operation | Compute delta via manifest SHA-256, process only new or changed |
+| Append | Normal operation | Compute delta via manifest SHA-256 (`scripts/manifest.py delta` where Python is available), process only new or changed |
 | Rebuild | Major schema change, significant drift | Archive first, clear, reprocess all sources |
 | Restore | Revert to previous state | Archive current, copy from `_archives/` |
 

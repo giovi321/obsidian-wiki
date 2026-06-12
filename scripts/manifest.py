@@ -69,7 +69,7 @@ def normalize(manifest_path: str) -> None:
 
     after_count = len(normalized)
     merged_count = original_count - after_count
-    print(f"normalize: {original_count} keys → {after_count} "
+    print(f"normalize: {original_count} keys -> {after_count} "
           f"({'no merges' if merged_count == 0 else f'{merged_count} collision(s) merged'})")
 
 
