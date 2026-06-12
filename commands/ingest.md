@@ -47,6 +47,7 @@ Resolve the target wiki:
       - Compute `base_confidence`, set `lifecycle: draft`, write a `summary` of ≤200 characters, compute provenance fractions.
       - Mark provenance inline per SKILL.md markers.
       - Cross-link: minimum 2 outgoing, 1 incoming per page.
+      - Typed edges: when the source explicitly states a relationship between two pages being touched (e.g. "X is built on Y", "A replaced B"), record it in `relationships:` frontmatter with the matching type per SKILL.md "Typed relationships". Only source-stated relations; never infer edges speculatively.
       - If the wiki uses visibility tags (see `wiki-config.md` tags), the agent must not set `visibility/public` automatically; default is `visibility/internal` or no tag. Setting `visibility/public` requires explicit user confirmation.
    h. Create or update a source page at `<wiki-root>/_service/sources/<slug>.md`: source_type, quality score, 300-500 word summary, list of wiki pages contributed to, projects touched.
    i. **Post-source-ingest**: per the entry point's `post_ingest` rule:

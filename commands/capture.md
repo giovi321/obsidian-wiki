@@ -29,7 +29,7 @@ If `--quick` is present anywhere in the arguments, run **Quick mode** instead of
 
 6. Check for existing pages via retrieval cost escalation. Update instead of creating duplicates.
 
-7. Write the page with full frontmatter: `base_confidence: 0.42`, `lifecycle: draft`, `summary` ≤200 characters, provenance fractions. Minimum 250 words, two or more outgoing wikilinks.
+7. Write the page with full frontmatter: `base_confidence: 0.42`, `lifecycle: draft`, `summary` ≤200 characters, provenance fractions. Minimum 250 words, two or more outgoing wikilinks. When the conversation explicitly stated a relationship between pages being touched, record a typed edge in `relationships:` per SKILL.md "Typed relationships" (stated relations only, never speculative).
 
 8. Update `index.md`, `_service/log.md`, `_service/hot.md`. Touch project `last_activity` if relevant.
 

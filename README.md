@@ -338,7 +338,7 @@ There are no per-wiki command files generated anywhere on disk. One canonical co
 | `/ingest-url` | Alias for `/ingest <URL>` |
 | `/ingest-claude` | Ingest the current LLM session or saved conversation exports |
 | `/capture` | Save durable knowledge from the current conversation. Add `--quick` to stage findings to `_raw/` in under 60 s without touching the manifest |
-| `/query` | Answer using only the wiki contents |
+| `/query` | Answer using only the wiki contents; path questions traverse typed relationships |
 | `/update` | Targeted update of one page with new info |
 | `/research` | Search the web for a topic and distill 3 to 5 sources into pages |
 | `/lint` | Audit for orphans, broken links, stale pages, contradictions |
@@ -492,8 +492,13 @@ provenance:
   inferred: 0.15
   ambiguous: 0.05
 superseded_by: "[[new-page]]"   # only when lifecycle=archived and a replacement exists
+relationships:                   # optional typed edges, see below
+  - type: depends-on
+    target: "[[other-page]]"
 ---
 ```
+
+The optional `relationships:` field records typed edges between pages (canonical types: `depends-on`, `part-of`, `relates-to`, `supersedes`, `caused-by`, `used-by`; wikis can extend the vocabulary in `wiki-config.md`). Edges are only written when a source states the relationship explicitly. `/query` uses them for multi-hop path questions — "how is X connected to Y", "what does X depend on transitively" — via a bounded breadth-first search over frontmatter (max 4 hops, edges traversable in both directions), rendering the full chain with edge types. `/lint` flags edges pointing at non-existent pages and unknown edge types.
 
 ## Entry-point schema
 

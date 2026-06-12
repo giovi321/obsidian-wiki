@@ -294,6 +294,9 @@ provenance:
   extracted: 0.80
   inferred: 0.15
   ambiguous: 0.05
+relationships:
+  - type: depends-on
+    target: "[[other-page]]"
 ---
 ```
 
@@ -302,6 +305,25 @@ Field rules:
 - `aliases`, alternate names, abbreviations, prior names. Obsidian uses these for search and link resolution.
 - `sources`, list of source IDs (see Source ID normalization) that contributed to this page.
 - `superseded_by`, optional, wikilink. Set only when `lifecycle: archived` and a replacement page exists. Example: `superseded_by: "[[new-page]]"`. Never fabricate this field.
+- `relationships`, optional, list of typed edges to other pages (see Typed relationships). Pages without it are valid.
+
+## Typed relationships
+
+The optional `relationships:` frontmatter field declares typed edges between pages, enabling multi-hop path queries in `/query` ("how is X connected to Y", "what does X depend on transitively").
+
+```yaml
+relationships:
+  - type: depends-on
+    target: "[[page-slug]]"
+```
+
+Canonical edge types: `depends-on`, `part-of`, `relates-to`, `supersedes`, `caused-by`, `used-by`. A wiki may extend the vocabulary by documenting additional types in `wiki-config.md` (free-form body); `/lint` flags types outside the canonical + wiki-declared set.
+
+Rules:
+- Edges are recorded only when a source states the relationship explicitly (content trust + provenance rules apply). Never infer edges speculatively.
+- Edges are traversable in both directions for path queries: `A depends-on B` also answers "what depends on B".
+- The graph is read frontmatter-only: commands grep `relationships:` blocks, never read page bodies for traversal (retrieval cost escalation).
+- A `target` must be an existing page or a deliberate redlink; `/lint` flags targets that do not exist.
 
 Additional type-specific fields are defined in each wiki's `wiki-config.md`.
 
