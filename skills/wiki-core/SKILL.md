@@ -189,7 +189,9 @@ Chronological append-only record inside a fenced code block (prevents Obsidian f
 - [ISO-8601] OPERATION key=value key="string value" ...
 ```
 
-Operations: INGEST, CAPTURE, LINT, ARCHIVE, REBUILD, RESTORE, PROJECT, QUERY, STATUS, CROSS-LINK, RESEARCH, UPDATE, INGEST-URL, INGEST-CLAUDE.
+Operations: INGEST, CAPTURE, LINT, ARCHIVE, REBUILD, RESTORE, PROJECT, QUERY, STATUS, CROSS-LINK, RESEARCH, UPDATE, INGEST-CLAUDE.
+
+URL sources ingested via `/ingest` log as `INGEST` with `source_type=url`.
 
 ### _service/.manifest.json
 Tracks every source that has been ingested.
@@ -218,6 +220,10 @@ Tracks every source that has been ingested.
 ```
 
 If the SHA-256 in the manifest matches the file, the agent skips it. If it differs, the file is re-processed. If the file is not in the manifest, it is treated as new.
+
+**Canonical source keys**: file-based source keys must always be stored as absolute paths (no `~`, no relative paths). The same file referenced as `~/vault/file.md` and `/home/user/vault/file.md` would otherwise produce duplicate manifest entries and be re-ingested. Run `python scripts/manifest.py normalize <manifest-path>` to repair any existing manifest with tilde-relative or non-absolute file keys; the helper merges collision duplicates (keeps newest `ingested_at`, unions `wiki_pages`).
+
+**WIKI_SKIP_PROJECTS**: set this env var to a comma-separated list of project slugs to exclude those projects from ingest delta computation. Example: `WIKI_SKIP_PROJECTS=archive,scratch`. The `scripts/manifest.py delta` subcommand respects this variable.
 
 ### _service/hot.md
 Recent activity tracker. Updated by every write operation. Contains the last 20 touched pages with timestamps and operation type. Format:
@@ -351,7 +357,7 @@ When a command creates a page, use these defaults unless the formula yields a di
 |---|---|---|
 | /ingest (single source) | per-source formula | Computed from source quality |
 | /ingest (multi-source) | `min(N/3,1)×0.5 + avg_q×0.5` | Standard formula |
-| /ingest-url | `0.17 + 0.5 × source_quality` | Single source, URL-classified |
+| /ingest (URL source) | `0.17 + 0.5 × source_quality` | Single URL, classified at fetch |
 | /capture | 0.42 | 1 source at session_transcript 0.5 |
 | /ingest-claude | 0.42 | 1 source at claude-chat 0.3, rounded up |
 | /research | varies, often 0.85+ | Multiple high-quality sources |
