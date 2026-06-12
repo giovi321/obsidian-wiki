@@ -21,7 +21,7 @@ Args: $ARGUMENTS
    a. Read the current `<wiki-root>/CLAUDE.md` if it exists, and compute its SHA-256.
    b. Read `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl` and compute its SHA-256.
    c. If the hashes match, log "up to date" for this wiki and skip the write.
-   d. If they differ, copy `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl` to `<wiki-root>/CLAUDE.md`, overwriting. Log the old hash, new hash, and number of lines changed.
+   d. If they differ, copy `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl` to `<wiki-root>/CLAUDE.md`, overwriting. Append to that wiki's `<wiki-root>/_service/log.md`: `- [ISO-8601] UPGRADE old=<hash8> new=<hash8> lines_changed=<n>`.
 
 4. Refresh the shared docs at `<vault_root>/_service/docs/`:
    - Copy `${CLAUDE_PLUGIN_ROOT}/README.md` to `<vault_root>/_service/docs/README.md`. Overwrite. **Rewrite paths**: replace every `docs/diagrams/` in the README with `diagrams/`. The README in the plugin repo references diagrams as `docs/diagrams/<name>.svg` because it sits at the repo root; the local copy sits inside `_service/docs/`, so the prefix must be stripped for the relative paths to resolve.

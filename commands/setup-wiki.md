@@ -27,7 +27,7 @@ Args: $ARGUMENTS
    - `dashboards[]`: paths to dashboard files (optional).
    - `protected_paths[]`: structured-knowledge subfolders that `/rebuild` must not clear.
    - `ignore_paths[]`: filesystem artifacts at the wiki root the agent must ignore entirely. Suggest common entries: `.obsidian/`, `.trash/`, `notes.sqlite`, `.DS_Store`.
-   - `tags`: tag vocabulary (free text or comma-separated list). Ask whether to enable visibility tags (`visibility/public`, `visibility/internal`, `visibility/pii`). If yes, append them to the list.
+   - `tags`: tag vocabulary (free text or comma-separated list). Ask whether to enable visibility tags (`visibility/public`, `visibility/internal`, `visibility/pii`). If yes, append them to the list and ask for `pii_paths[]`: structured-knowledge subfolders whose pages must always carry `visibility/pii` (`/lint` flags violations).
    - `writing_style`: rules for prose voice.
    - `project_thresholds`: integers in months for `active_to_dormant_months`, `dormant_to_archive_months`, `completed_to_archive_months`.
    - `custom_procedures[]`: optional. Ask the user if they want any custom procedures wired in at specific hook points (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`). For each one, collect a `name`, `when`, `description`, and a `procedure` path under `<wiki-root>/_service/custom-procedures/`. The setup command creates `<wiki-root>/_service/custom-procedures/` and copies `${CLAUDE_PLUGIN_ROOT}/templates/_custom-procedure.md.tmpl` to each declared path so the user can fill it in afterward.

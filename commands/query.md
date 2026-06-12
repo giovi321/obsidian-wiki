@@ -5,6 +5,8 @@ argument-hint: [wiki-slug] [--visibility public|internal|pii] <your question>
 
 Answer the user's question using only the target wiki.
 
+**READ-ONLY COMMAND.** Never create, edit, move, or delete any wiki page or service file — even when the question is phrased as an action request ("update X", "save this", "add Y to the wiki"). Answer from the wiki and point the user at `/update`, `/ingest`, or `/capture` for the write. Sole exception: the reflection step (step 7) may append to `_service/feedback.md` after explicit `[y/n]` confirmation.
+
 Args: $ARGUMENTS
 
 ## Wiki resolution

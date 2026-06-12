@@ -582,7 +582,7 @@ File-based source keys must always be stored as absolute paths (no `~`, no relat
 - [ISO-8601] OPERATION key=value key="string value" ...
 ```
 
-Operations: `INGEST`, `CAPTURE`, `LINT`, `ARCHIVE`, `REBUILD`, `RESTORE`, `PROJECT`, `QUERY`, `STATUS`, `CROSS-LINK`, `RESEARCH`, `UPDATE`, `INGEST-CLAUDE`, `FEEDBACK`. URL sources log as `INGEST` with `source_type=url`.
+Operations: `INGEST`, `CAPTURE`, `LINT`, `ARCHIVE`, `REBUILD`, `RESTORE`, `PROJECT`, `QUERY`, `STATUS`, `CROSS-LINK`, `RESEARCH`, `UPDATE`, `INGEST-CLAUDE`, `FEEDBACK`, `PROMOTE`, `UPGRADE`. URL sources log as `INGEST` with `source_type=url`.
 
 ## Feedback loop
 
@@ -689,7 +689,7 @@ Use the `--visibility <level>` flag on `/query` to restrict the candidate set:
 
 The agent applies the filter before generating the answer. Pages tagged outside the requested level are excluded from the candidate set. If the filter excludes everything, the agent says so and recommends a source that would close the gap.
 
-Recommended convention: mark PII-bearing folders in `wiki-config.md` so that `/lint` flags missing tags. For example, your free-form notes might say: "`2_Resources/Admin/` and `2_Resources/People/` pages should always carry `visibility/pii`."
+To have `/lint` enforce PII tagging, list the PII-bearing folders under `pii_paths:` in `wiki-config.md` frontmatter (e.g. `pii_paths: ["2_Resources/Admin/", "2_Resources/People/"]`). `/lint` then flags any page in those folders that lacks the `visibility/pii` tag, and any `visibility/public` page still in `draft`.
 
 The visibility filter is read-time only. The agent does not yet block writes to PII-tagged pages without confirmation; that's documented as unimplemented enforcement.
 

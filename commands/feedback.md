@@ -45,7 +45,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
    On `n`: continue with steps 5 onward.
 
 5. **Classify scope**: pick one of:
-   - A specific command name without any per-wiki suffix (`ingest`, `lint`, `cross-linker`, `update`, `research`, `query`, `capture`, `ingest-claude`, `ingest-url`, `project`, `status`, `archive`, `rebuild`, `restore`, `daily-note`).
+   - A specific command name without any per-wiki suffix (`ingest`, `lint`, `cross-linker`, `update`, `research`, `query`, `capture`, `ingest-claude`, `project`, `status`, `archive`, `rebuild`, `restore`, `daily-note`). Rules about URL ingestion are scoped `ingest` — `/ingest-url` is an alias that runs under `/ingest`.
    - `global` if the rule applies to every command.
    If ambiguous, ask the user to pick.
 
