@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="obsidian-wiki">
+  <rect width="128" height="128" rx="26" fill="#14171f"/>
+  <rect x="0.5" y="0.5" width="127" height="127" rx="25.5" fill="none" stroke="rgba(232,234,239,0.14)"/>
+  <line x1="40" y1="44" x2="64" y2="80" stroke="#8e96aa" stroke-width="3" stroke-linecap="round"/>
+  <line x1="88" y1="44" x2="64" y2="80" stroke="#f08254" stroke-width="3" stroke-linecap="round"/>
+  <line x1="40" y1="44" x2="88" y2="44" stroke="#8e96aa" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="40" cy="44" r="12" fill="#1d2030" stroke="#e8eaef" stroke-width="3"/>
+  <circle cx="88" cy="44" r="12" fill="#1d2030" stroke="#e8eaef" stroke-width="3"/>
+  <circle cx="64" cy="84" r="14" fill="rgba(240,130,84,0.18)" stroke="#f08254" stroke-width="3"/>
+</svg>

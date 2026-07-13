@@ -1,0 +1,22 @@
+/* obsidian-wiki docs theme: accent tuned to the diagram palette (#f08254) */
+:root {
+  --sl-color-accent-low: #3a1d10;
+  --sl-color-accent: #f08254;
+  --sl-color-accent-high: #f7b79a;
+  --sl-font: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --sl-font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #fbdfd2;
+  --sl-color-accent: #cf5a2c;
+  --sl-color-accent-high: #5a2410;
+}
+
+/* Instrument Serif for the site title and page H1 gives the editorial feel */
+.site-title span,
+.content-panel h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
