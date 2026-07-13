@@ -16,10 +16,8 @@ A source dropped into an entry point goes through seven steps, from a hash check
       <polygon points="0 0, 8 3, 0 6" fill="#f08254"/>
     </marker>
   </defs>
-
   <!-- Eyebrow -->
   <text x="300" y="28" fill="#6c7587" font-size="10" font-family="'Geist Mono', monospace" letter-spacing="0.14em">INGEST ONE SOURCE</text>
-
   <!-- Arrows first (render behind boxes) -->
   <path d="M 400 80 L 400 108" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
   <path d="M 400 168 L 400 196" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
@@ -29,64 +27,53 @@ A source dropped into an entry point goes through seven steps, from a hash check
   <path d="M 400 432 L 400 460" stroke="#f08254" stroke-width="1.2" fill="none" marker-end="url(#arrow-accent)"/>
   <path d="M 400 520 L 400 548" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
   <path d="M 400 608 L 400 636" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
-
   <!-- Arrow label: hash match -->
   <rect x="512" y="208" width="76" height="16" rx="2" fill="#14171f"/>
   <text x="550" y="220" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.10em">HASH MATCH</text>
-
   <!-- Node 1: file dropped -->
   <rect x="300" y="40" width="200" height="40" rx="6" fill="#14171f"/>
   <rect x="300" y="40" width="200" height="40" rx="6" fill="rgba(232,234,239,0.06)" stroke="#6c7587"/>
   <text x="400" y="64" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">file dropped in entry point</text>
-
   <!-- Node 2: SHA-256 -->
   <rect x="300" y="112" width="200" height="56" rx="6" fill="#14171f"/>
   <rect x="300" y="112" width="200" height="56" rx="6" fill="#1d2030" stroke="#e8eaef"/>
   <text x="400" y="136" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">compute SHA-256</text>
   <text x="400" y="154" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">compare to manifest</text>
-
   <!-- Node 3: skip (right offshoot) -->
   <rect x="600" y="200" width="160" height="56" rx="6" fill="#14171f"/>
   <rect x="600" y="200" width="160" height="56" rx="6" fill="rgba(232,234,239,0.06)" stroke="rgba(232,234,239,0.30)" stroke-dasharray="4,3"/>
   <text x="680" y="224" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">skip</text>
   <text x="680" y="242" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">no-op</text>
-
   <!-- Node 4: classify source -->
   <rect x="300" y="200" width="200" height="56" rx="6" fill="#14171f"/>
   <rect x="300" y="200" width="200" height="56" rx="6" fill="#1d2030" stroke="#e8eaef"/>
   <text x="400" y="224" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">classify source</text>
   <text x="400" y="242" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">assign source_quality</text>
-
   <!-- Node 5: extract items -->
   <rect x="300" y="288" width="200" height="56" rx="6" fill="#14171f"/>
   <rect x="300" y="288" width="200" height="56" rx="6" fill="#1d2030" stroke="#e8eaef"/>
   <text x="400" y="312" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">extract knowledge items</text>
   <text x="400" y="330" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">discard low-signal</text>
-
   <!-- Node 6: route per config -->
   <rect x="300" y="376" width="200" height="56" rx="6" fill="#14171f"/>
   <rect x="300" y="376" width="200" height="56" rx="6" fill="#1d2030" stroke="#e8eaef"/>
   <text x="400" y="400" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">route per CLAUDE.md</text>
   <text x="400" y="418" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">structured-knowledge folder</text>
-
   <!-- Node 7: write or update page (FOCAL) -->
   <rect x="300" y="460" width="200" height="60" rx="6" fill="#14171f"/>
   <rect x="300" y="460" width="200" height="60" rx="6" fill="rgba(240,130,84,0.18)" stroke="#f08254" stroke-width="1.2"/>
   <text x="400" y="484" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">write or update page</text>
   <text x="400" y="500" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">frontmatter, provenance</text>
-
   <!-- Node 8: post-ingest -->
   <rect x="300" y="548" width="200" height="56" rx="6" fill="#14171f"/>
   <rect x="300" y="548" width="200" height="56" rx="6" fill="#1d2030" stroke="#e8eaef"/>
   <text x="400" y="572" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">post-ingest rule</text>
   <text x="400" y="590" fill="#8e96aa" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">move or keep</text>
-
   <!-- Node 9: update tracking -->
   <rect x="280" y="636" width="240" height="40" rx="6" fill="#14171f"/>
   <rect x="280" y="636" width="240" height="40" rx="6" fill="rgba(232,234,239,0.06)" stroke="#8e96aa"/>
   <text x="400" y="656" fill="#e8eaef" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">update manifest, log, hot.md</text>
   <text x="400" y="670" fill="#8e96aa" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">append + push</text>
-
   <!-- Legend strip -->
   <line x1="40" y1="700" x2="760" y2="700" stroke="rgba(232,234,239,0.12)" stroke-width="1"/>
   <rect x="200" y="712" width="16" height="12" rx="2" fill="#1d2030" stroke="#e8eaef"/>

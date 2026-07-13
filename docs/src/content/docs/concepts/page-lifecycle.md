@@ -16,98 +16,77 @@ Every page carries a `lifecycle` field, and it answers one question: can I trust
       <polygon points="0 0, 8 3, 0 6" fill="#f08254"/>
     </marker>
   </defs>
-
   <!-- Eyebrow -->
   <text x="40" y="48" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">PAGE LIFECYCLE — STATE MACHINE</text>
-
   <!-- ============ ARROWS (drawn before boxes) ============ -->
-
   <!-- ingest/capture -> draft (agent, accent) -->
   <path d="M 108 156 L 200 156" stroke="#f08254" stroke-width="1" fill="none" marker-end="url(#arrow-accent)"/>
   <rect x="112" y="136" width="84" height="16" fill="#14171f"/>
   <text x="154" y="147" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">INGEST/CAPTURE</text>
-
   <!-- draft -> reviewed (human edit) -->
   <path d="M 340 156 L 420 156" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
   <rect x="344" y="136" width="72" height="16" fill="#14171f"/>
   <text x="380" y="147" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">HUMAN EDIT</text>
-
   <!-- reviewed -> verified (human edit) -->
   <path d="M 560 156 L 640 156" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
   <rect x="564" y="136" width="72" height="16" fill="#14171f"/>
   <text x="600" y="147" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">HUMAN EDIT</text>
-
   <!-- draft -> disputed (human, sources contradict) -->
   <path d="M 306 188 L 306 288" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
   <rect x="266" y="224" width="80" height="16" fill="#14171f"/>
   <text x="306" y="235" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CONTRADICTION</text>
-
   <!-- update: any state -> draft (dashed return) -->
   <path d="M 250 288 L 250 188" stroke="#8e96aa" stroke-width="1" fill="none" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
   <rect x="226" y="246" width="48" height="16" fill="#14171f"/>
   <text x="250" y="257" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">UPDATE</text>
-
   <!-- reviewed/verified -> archived (superseded) -->
   <path d="M 490 188 L 490 288" stroke="#8e96aa" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
   <rect x="444" y="230" width="92" height="16" fill="#14171f"/>
   <text x="490" y="241" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">SUPERSEDED_BY</text>
-
   <!-- ============ STATES ============ -->
-
   <!-- initial node -->
   <circle cx="96" cy="156" r="10" fill="#e8eaef"/>
   <text x="96" y="184" fill="#8e96aa" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">new source</text>
-
   <!-- draft (focal: only agent-writable state) -->
   <rect x="200" y="124" width="140" height="64" rx="6" fill="#14171f"/>
   <rect x="200" y="124" width="140" height="64" rx="6" fill="rgba(240,130,84,0.18)" stroke="#f08254"/>
   <text x="270" y="152" fill="#e8eaef" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">draft</text>
   <text x="270" y="172" fill="#8e96aa" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">agent-written</text>
-
   <!-- reviewed -->
   <rect x="420" y="124" width="140" height="64" rx="6" fill="#14171f"/>
   <rect x="420" y="124" width="140" height="64" rx="6" fill="#1d2030" stroke="#e8eaef"/>
   <text x="490" y="152" fill="#e8eaef" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">reviewed</text>
   <text x="490" y="172" fill="#8e96aa" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">human-edited</text>
-
   <!-- verified -->
   <rect x="640" y="124" width="140" height="64" rx="6" fill="#14171f"/>
   <rect x="640" y="124" width="140" height="64" rx="6" fill="#1d2030" stroke="#e8eaef"/>
   <text x="710" y="152" fill="#e8eaef" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">verified</text>
   <text x="710" y="172" fill="#8e96aa" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">human-confirmed</text>
-
   <!-- disputed -->
   <rect x="200" y="288" width="140" height="64" rx="6" fill="#14171f"/>
   <rect x="200" y="288" width="140" height="64" rx="6" fill="#1d2030" stroke="#e8eaef"/>
   <text x="270" y="316" fill="#e8eaef" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">disputed</text>
   <text x="270" y="336" fill="#8e96aa" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">sources disagree</text>
-
   <!-- archived (terminal) -->
   <rect x="420" y="288" width="140" height="64" rx="6" fill="#14171f"/>
   <rect x="420" y="288" width="140" height="64" rx="6" fill="rgba(232,234,239,0.06)" stroke="#8e96aa"/>
   <text x="490" y="316" fill="#e8eaef" font-size="16" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">archived</text>
   <text x="490" y="336" fill="#8e96aa" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">terminal</text>
-
   <!-- ============ BOTTOM STRIP: legend + stale overlay ============ -->
   <line x1="40" y1="440" x2="800" y2="440" stroke="rgba(232,234,239,0.12)" stroke-width="0.8"/>
   <text x="40" y="432" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">READ-TIME OVERLAY</text>
-
   <!-- stale overlay badge (not a state) -->
   <rect x="40" y="456" width="372" height="72" rx="6" fill="#14171f"/>
   <rect x="40" y="456" width="372" height="72" rx="6" fill="rgba(232,234,239,0.06)" stroke="rgba(232,234,239,0.30)" stroke-dasharray="4,3"/>
   <text x="64" y="484" fill="#e8eaef" font-size="16" font-weight="600" font-family="'Geist', sans-serif">stale</text>
   <text x="64" y="504" fill="#8e96aa" font-size="12" font-family="'Geist Mono', monospace">is_stale = (today − updated) &gt; 90 days</text>
   <text x="64" y="520" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace">computed at read time · any state can be stale</text>
-
   <!-- transitions legend -->
   <text x="452" y="468" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">TRANSITIONS</text>
-
   <line x1="452" y1="484" x2="484" y2="484" stroke="#f08254" stroke-width="1" marker-end="url(#arrow-accent)"/>
   <text x="496" y="487" fill="#8e96aa" font-size="8" font-family="'Geist Mono', monospace">agent — ingest / capture / update</text>
-
   <line x1="452" y1="504" x2="484" y2="504" stroke="#8e96aa" stroke-width="1" marker-end="url(#arrow)"/>
   <text x="496" y="507" fill="#8e96aa" font-size="8" font-family="'Geist Mono', monospace">human edit — review / verify / dispute / archive</text>
-
   <line x1="452" y1="524" x2="484" y2="524" stroke="#8e96aa" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
   <text x="496" y="527" fill="#8e96aa" font-size="8" font-family="'Geist Mono', monospace">update — any state returns to draft</text>
 </svg>
