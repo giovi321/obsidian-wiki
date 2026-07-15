@@ -22,11 +22,15 @@ All verbs take an optional wiki slug as the first argument. If the slug is omitt
 | `/ingest-url [wiki]` | Alias for `/ingest <URL>`. |
 | `/update [wiki]` | Update a specific page with new information. |
 | `/query [wiki]` | Answer a question using only wiki contents. |
+| `/narrate [wiki]` | Render a cited readout of a topic in a briefing, plain-language, or lecturer voice. `--save` writes to `_readouts/`. |
 | `/capture [wiki]` | Save knowledge from the current conversation. Add `--quick` to stage findings to `_raw/` in under 60 s (no manifest writes). |
 | `/status [wiki]` | Show wiki health summary and ingest recommendations. |
+| `/insights [wiki]` | Analyze the link graph (hubs, bridges, cohesion) into `_service/insights.md`. |
 | `/lint [wiki]` | Audit for orphans, broken links, stale pages. |
 | `/cross-linker [wiki]` | Audit and fix wikilinks. |
+| `/taxonomy [wiki]` | Audit or normalize the tag vocabulary. `audit` (default) is read-only; `normalize` writes. |
 | `/research [wiki]` | Research a topic via web and create or enrich pages. |
+| `/synthesize [wiki]` | Discover co-occurring concepts and write cross-cutting synthesis pages. |
 | `/project [wiki]` | Manage projects: `list`, `new`, `archive`, `reactivate`, `status`. |
 | `/archive [wiki]` | Snapshot structured knowledge to `_archives/`. |
 | `/rebuild [wiki]` | Archive and rebuild from all sources. |

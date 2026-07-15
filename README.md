@@ -84,12 +84,16 @@ The plugin ships one canonical file per verb. Every command takes the wiki slug 
 | `/ingest-claude` | Ingest the current LLM session or saved conversation exports |
 | `/capture` | Save durable knowledge from the current conversation. Add `--quick` to stage findings to `_raw/` in under 60 seconds without touching the manifest |
 | `/query` | Answer using only the wiki contents; path questions traverse typed relationships |
+| `/narrate` | Render a cited readout of a topic from the wiki in a briefing, plain-language, or lecturer voice; `--save` writes to `_readouts/` |
 | `/update` | Targeted update of one page with new info |
 | `/research` | Search the web for a topic and distill 3 to 5 sources into pages |
+| `/synthesize` | Find concepts that co-occur across pages but lack a synthesis page and write cross-cutting synthesis pages |
 | `/lint` | Audit for orphans, broken links, stale pages, contradictions |
 | `/cross-linker` | Audit and repair wikilinks across the wiki |
+| `/taxonomy` | Audit or normalize the tag vocabulary against `wiki-config.md` `tags:` |
 | `/project` | List, create, archive, reactivate, or update project status |
 | `/status` | Health summary plus an ingest recommendation |
+| `/insights` | Analyze the wiki's link graph (hubs, bridges, cohesion) into `_service/insights.md` |
 | `/archive` | Snapshot structured knowledge into `_archives/` |
 | `/rebuild` | Archive, then reprocess every source from scratch |
 | `/restore` | Restore from a previous archive |
@@ -108,7 +112,7 @@ Every command appends one structured line to the wiki's `_service/log.md`, insid
 - [ISO-8601] OPERATION key=value key="string value" ...
 ```
 
-Operations: `INGEST`, `CAPTURE`, `LINT`, `ARCHIVE`, `REBUILD`, `RESTORE`, `PROJECT`, `QUERY`, `STATUS`, `CROSS-LINK`, `RESEARCH`, `UPDATE`, `INGEST-CLAUDE`, `FEEDBACK`, `PROMOTE`, `UPGRADE`. URL sources log as `INGEST` with `source_type=url`.
+Operations: `INGEST`, `CAPTURE`, `LINT`, `ARCHIVE`, `REBUILD`, `RESTORE`, `PROJECT`, `QUERY`, `STATUS`, `CROSS-LINK`, `RESEARCH`, `UPDATE`, `INGEST-CLAUDE`, `FEEDBACK`, `PROMOTE`, `UPGRADE`, `TAXONOMY`, `NARRATE`, `SYNTHESIZE`, `INSIGHTS`. URL sources log as `INGEST` with `source_type=url`.
 
 ## Documentation
 

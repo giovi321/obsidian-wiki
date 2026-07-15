@@ -11,5 +11,9 @@ Thumbs.db
 tmp/
 test_write
 
+# Python
+__pycache__/
+*.pyc
+
 # Don't track local wiki registries (per-user)
 wiki-registry.local.json
