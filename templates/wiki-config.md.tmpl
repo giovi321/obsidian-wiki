@@ -26,7 +26,13 @@ structured_knowledge:
 {{structured_knowledge_block}}
 
 # Dashboard files. The agent may rewrite these only on an explicit
-# restructure request, never as a side effect of another command.
+# restructure request, never as a side effect of another command. Each entry:
+#   path:  file name relative to root
+#   type:  free-form label describing how the dashboard renders, e.g.
+#          todo (Tasks queries), canvas (Obsidian Canvas), dataviewjs-board
+#          (a DataviewJS view stored in the vault). Not validated; it exists so
+#          a wiki with several dashboards can tell them apart. Use one label per
+#          mechanism and reuse it across wikis.
 dashboards:
 {{dashboards_block}}
 

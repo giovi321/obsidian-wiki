@@ -24,7 +24,7 @@ Args: $ARGUMENTS
    - `root`: absolute filesystem path to the wiki root. Create the folder if missing.
    - `entry_points[]`: each with `path`, `source_type`, `default_quality?`, `post_ingest` (`move`, `keep`, or `read_only`), `naming_convention`, optional `exclude` glob list. The setup skill provides a standard catalog of suggestions; the user picks which to enable, may override paths, and may add custom entry points.
    - `structured_knowledge[]`: each with `path`, `purpose` (one of `projects`, `documentation`, `resources`, `people`, `concepts`, `custom`), `routing_hint` (free text).
-   - `dashboards[]`: paths to dashboard files (optional).
+   - `dashboards[]`: dashboard files (optional). Each entry takes `path` (relative to the wiki root) and `type`, a free-form label for how it renders (`todo`, `canvas`, `dataviewjs-board`). The label is not validated; it exists so a wiki with more than one dashboard can tell them apart.
    - `protected_paths[]`: structured-knowledge subfolders that `/rebuild` must not clear.
    - `ignore_paths[]`: filesystem artifacts at the wiki root the agent must ignore entirely. Suggest common entries: `.obsidian/`, `.trash/`, `notes.sqlite`, `.DS_Store`.
    - `tags`: tag vocabulary (free text or comma-separated list). Ask whether to enable visibility tags (`visibility/public`, `visibility/internal`, `visibility/pii`). If yes, append them to the list and ask for `pii_paths[]`: structured-knowledge subfolders whose pages must always carry `visibility/pii` (`/lint` flags violations).

@@ -3,7 +3,28 @@ title: Schemas
 description: Entry-point, source ID, manifest, registry, and log schemas that define the wiki's on-disk state
 ---
 
-The wiki's operating state lives in a handful of well-defined structures on disk. This page collects the entry-point schema, source ID canonicalization rules, the manifest and registry schemas, and the log format.
+The wiki's operating state lives in a handful of well-defined structures on disk. This page collects the wiki-config field list, the entry-point and dashboard schemas, source ID canonicalization rules, the manifest and registry schemas, and the log format.
+
+## wiki-config field list
+
+Every field the generated `wiki-config.md` declares. See [the two config files](/obsidian-wiki/concepts/config-files/) for what the file is and why it is separate from `CLAUDE.md`.
+
+| Field | Type | Purpose |
+|---|---|---|
+| `name`, `slug`, `root` | string | Display name, short command argument, absolute path |
+| `created` | date | Set once at setup |
+| `entry_points` | list | Folders read as sources. Schema below |
+| `structured_knowledge` | list | Folders written to, each with `path`, `purpose`, `routing_hint` |
+| `dashboards` | list | Dashboard files. Schema below |
+| `protected_paths` | list | Knowledge subfolders `/rebuild` must not clear |
+| `ignore_paths` | list | Files and folders the agent ignores entirely |
+| `pii_paths` | list | Folders whose pages must carry `visibility/pii`. Optional |
+| `project_thresholds` | map | `active_to_dormant_months`, `dormant_to_archive_months`, `completed_to_archive_months` |
+| `tags` | list | The only tags the agent puts on new pages |
+| `writing_style` | block string | Prose rules applied to every page written |
+| `custom_procedures` | list | Hooks into the command flow, each with `name`, `when`, `procedure`, `description` |
+
+Unset optional fields are written as an empty list. The plugin never rewrites this file on update, so adding a field the documented schema gained later is a manual edit.
 
 ## Entry-point schema
 
@@ -19,6 +40,28 @@ entry_points:
 ```
 
 `post_ingest` takes three values. `move` relocates the file to `_service/entry-points/<entry-point>/<YYYY-MM>/` after adding `processed: true` frontmatter. `keep` adds the frontmatter only. `read_only` adds no frontmatter and never moves the file; the source is deduplicated by hash but otherwise left untouched.
+
+## Dashboard schema
+
+```yaml
+dashboards:
+  - path: "0_To-do.md"
+    type: todo
+  - path: "0_Board.md"
+    type: dataviewjs-board
+```
+
+`path` is relative to the wiki root. `type` is a free-form label describing how the dashboard renders; it is not validated and no command branches on it. It exists so a wiki with more than one dashboard can tell them apart, and so the labels stay comparable across wikis. Labels in use: `todo` for a page of Tasks queries, `canvas` for an Obsidian Canvas, `dataviewjs-board` for a DataviewJS view.
+
+The agent rewrites a listed dashboard only on an explicit restructure request, never as a side effect of another command. That is the whole reason to declare them: a dashboard is a hand-shaped page, and listing it marks it as one.
+
+### Dashboards the plugin does not ship
+
+`/setup-wiki` installs a todo dashboard and, optionally, a canvas dashboard. Anything else is yours to build, and the sensible place to build it is a Dataview or DataviewJS block in an ordinary vault note rather than a custom Obsidian plugin.
+
+The reason is sync. Obsidian sync mechanisms differ in whether they carry `.obsidian/`; Self-hosted LiveSync, for one, can be configured with `syncInternalFiles: false` and `usePluginSync: false`, in which case a community plugin has to be installed and updated by hand on every device, while a note and a sibling script replicate for free. Check how your own sync is configured before choosing.
+
+Two consequences worth knowing if you go that way. Dataview's JavaScript Queries setting is per-device, so it needs enabling once on each; when it is off the note shows a raw code block instead of a board. And a `dv.view()` script gets the same `app` object a plugin gets, so anything a plugin could do to the vault, the script can do too — including writing to your notes. Treat it with the same suspicion as a plugin.
 
 ## Source ID canonicalization
 

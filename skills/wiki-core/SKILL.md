@@ -43,7 +43,7 @@ Resolution order for a command invocation:
 Every wiki has two top-level config files at its root:
 
 - `CLAUDE.md`: generic boilerplate, identical across every wiki this plugin manages. Describes the three-zone architecture, hard boundary, folder permissions, routing rules, page types, and the reading order. The agent reads this on every command but never modifies it. To upgrade the boilerplate, `/setup-wiki` (or `/upgrade`) refreshes it from `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl`.
-- `wiki-config.md`: wiki-specific data. Frontmatter holds `name`, `slug`, `root`, `entry_points`, `structured_knowledge`, `dashboards`, `protected_paths`, `project_thresholds`, `tags`, `writing_style`. The agent reads this on every command to know what folders to operate on. To change configuration, edit this file (or re-run `/setup-wiki <slug>`).
+- `wiki-config.md`: wiki-specific data. Frontmatter holds `name`, `slug`, `root`, `created`, `entry_points`, `structured_knowledge`, `dashboards`, `protected_paths`, `ignore_paths`, `pii_paths`, `project_thresholds`, `tags`, `writing_style`, `custom_procedures`. The agent reads this on every command to know what folders to operate on. To change configuration, edit this file (or re-run `/setup-wiki <slug>`).
 
 Every command reads the registry, resolves the target wiki, then reads both `<wiki-root>/CLAUDE.md` and `<wiki-root>/wiki-config.md` before doing anything else.
 

@@ -90,6 +90,8 @@ structured_knowledge:
 dashboards:
   - path: "0_To-do.md"
     type: todo
+  - path: "0_Board.md"
+    type: dataviewjs-board
 protected_paths:
   - "2_Resources/Recipes/"
 tags:
@@ -147,7 +149,7 @@ Setup writes two files at the wiki root and several inside `_service/`:
 | `{{completed_to_archive_months}}` | `project_thresholds.completed_to_archive_months` |
 | `{{entry_points_block}}` | YAML-rendered `entry_points` array (`-` items, two-space indent). Includes `exclude` when set. |
 | `{{structured_knowledge_block}}` | YAML-rendered `structured_knowledge` array |
-| `{{dashboards_block}}` | YAML-rendered `dashboards` array (empty list `[]` if none) |
+| `{{dashboards_block}}` | YAML-rendered `dashboards` array (empty list `[]` if none). Each entry carries `path` and a free-form `type` label (`todo`, `canvas`, `dataviewjs-board`); the label is not validated |
 | `{{protected_paths_block}}` | YAML-rendered `protected_paths` array (empty list `[]` if none) |
 | `{{ignore_paths_block}}` | YAML-rendered `ignore_paths` array (empty list `[]` if none) |
 | `{{pii_paths_block}}` | YAML-rendered `pii_paths` array (empty list `[]` if none) |

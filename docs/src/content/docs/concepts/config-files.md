@@ -15,14 +15,17 @@ Setup writes it from the plugin's template (`templates/CLAUDE.md.tmpl`), copied 
 
 `wiki-config.md` is your wiki's configuration and the file you actually edit. Its frontmatter holds:
 
-- `name`, `slug`, `root`
+- `name`, `slug`, `root`, `created`
 - `entry_points`: each with a path, source type, default quality, post-ingest rule, naming convention, and optional exclude list
 - `structured_knowledge`: knowledge folders with paths and routing hints
-- `dashboards`
-- `protected_paths`
+- `dashboards`: each with a path and a type label
+- `protected_paths`: knowledge subfolders `/rebuild` must not clear
+- `ignore_paths`: files and folders the agent ignores entirely
+- `pii_paths`: folders whose pages must carry `visibility/pii`
 - `project_thresholds`: months to dormant, to archive
 - `tags`: your tag vocabulary
 - `writing_style`
+- `custom_procedures`: hooks into the command flow, described below
 
 The body holds free-form prose about page types, naming conventions, and any wiki-specific rules. Entry points and all wiki-specific config live here, not in `CLAUDE.md`.
 
