@@ -1,5 +1,5 @@
 ---
-description: Audit a wiki for orphans, broken links, stale pages, and more
+description: Audit a wiki for orphans, broken links, stale pages, structural drift, and more
 argument-hint: [wiki-slug]
 ---
 
@@ -65,8 +65,34 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
      - Longer than 30 words.
      For each flagged entry, report: "this entry looks procedural; consider promoting to `_service/custom-procedures/` via `/feedback` with the same text, or move it by hand." Do not auto-promote.
 
+   **Structural findings**: whether the wiki's own description of itself still matches the disk. These are the cheapest findings to compute and the easiest to leave rotting, because nothing else ever reads a stale declaration back to you.
+
+   *Declared but missing.* Every path a config key declares must exist. Report grouped by key, because the consequence differs per key:
+   - `entry_points[].path`: folder must exist. Missing means `/ingest` has nowhere to read from
+   - `structured_knowledge[].path`: folder must exist. Missing means `/ingest` has nowhere to write to
+   - `dashboards[].path`: file must exist
+   - `protected_paths[]`: folder must exist. Missing means the protection is silently inert, so `/rebuild` is less safe than the config implies
+   - `pii_paths[]`: folder must exist. Missing means the visibility check silently covers nothing
+   - `custom_procedures[].procedure`: file must exist at the path relative to the wiki root
+   - `root`: must equal the registry's `root` for this slug. A mismatch is what happens when a `wiki-config.md` is copied from another wiki, and it makes every relative path in the file resolve against the wrong tree
+
+   *Present but undeclared.* List the top-level entries under the wiki root, files and folders. Each must be accounted for by one of: an `entry_points[].path`, a `structured_knowledge[].path`, a `dashboards[].path`, `_service/`, the three plugin-owned files (`CLAUDE.md`, `wiki-config.md`, `index.md`), or an `ignore_paths` entry. Report anything left as undeclared, and say which of the three lists it probably belongs in.
+
+   Top level only, never recursive: recursing would flag every project subfolder and bury the report. The top level is where a new zone actually appears. Skip entries whose name starts with `.` without reporting them; they are editor and app artifacts, not wiki zones, and flagging them on every wiki would be noise. Include top-level *files*, since that is what makes a stray database or export file earn its `ignore_paths` entry.
+
+   *Pages naming paths that no longer exist.* For every page in the structured-knowledge folders, extract the backticked strings and treat one as a path reference when all of these hold:
+   - it contains two or more non-empty `/`-separated segments, or it ends with `/`
+   - it contains none of `<`, `>`, `*`, `|`, `?`
+   - it is not a URL (no `://`, does not start with `http`)
+   - it is not absolute or home-relative (does not start with `/`, `~`, or a drive letter such as `C:`)
+
+   Resolve each candidate against the wiki root, then against the vault root. If neither resolves, flag it with the page and the path. Group findings by page, and when one page yields more than ten, report the count and the first ten only, so a single badly drifted page cannot swamp the report.
+
+   This finds paths that do not exist. It cannot find a path that exists but is described wrongly: a file named correctly and characterised as something it stopped being will pass every check here. Say so in the report rather than implying the section proves the docs are accurate.
+
+   *CLAUDE.md drift.* Compute the SHA-256 of `<wiki-root>/CLAUDE.md` and of `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl`. If they differ, emit one finding telling the user to run `/upgrade`. Report only: `/upgrade` owns that file and `/lint` must never write it. This is here because `/lint` gets run on a schedule and `/upgrade` gets run when someone remembers.
+
    **Config-level findings**:
-   - Each `custom_procedures[].procedure` path: verify the file exists at the path relative to the wiki root. Flag missing procedure files.
    - Each `entry_points[].exclude` glob: verify it matches at least one historical file in the entry point or in `_service/entry-points/`. Flag glob patterns that have never matched anything (likely a typo).
    - Each `ignore_paths` entry: verify the path or glob is well-formed.
    - Tags used on pages that are not in the `tags` vocabulary in `wiki-config.md`. Flag as "unknown tags".
@@ -84,4 +110,5 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 ## Constraints
 
 - Read-only on wiki content except the lint report, log, and hot.md.
+- Structural findings read the registry and `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl`. Both are read-only here; `/upgrade` is the only command that writes `CLAUDE.md`.
 - All shared rules from SKILL.md apply.

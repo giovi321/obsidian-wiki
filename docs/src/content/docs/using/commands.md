@@ -22,7 +22,7 @@ See [Two or more wikis](/obsidian-wiki/using/multiple-wikis/) for how the slug a
 | `/update` | Targeted update of one page with new info |
 | `/research` | Search the web for a topic and distill 3 to 5 sources into pages |
 | `/synthesize` | Find concepts that co-occur across pages but lack a synthesis page and write cross-cutting synthesis pages |
-| `/lint` | Audit for orphans, broken links, stale pages, contradictions |
+| `/lint` | Audit for orphans, broken links, stale pages, contradictions, and structural drift between `wiki-config.md` and the disk |
 | `/cross-linker` | Audit and repair wikilinks across the wiki |
 | `/taxonomy` | Audit or normalize the tag vocabulary against `wiki-config.md` `tags:` |
 | `/project` | List, create, archive, reactivate, or update project status |
