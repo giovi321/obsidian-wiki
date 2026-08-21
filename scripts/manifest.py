@@ -3,11 +3,23 @@
 
 Usage:
   python scripts/manifest.py normalize <manifest-path>
-      Expand tilde and relative file paths to absolute; merge duplicate source keys.
+      Expand tilde paths to absolute and merge duplicate source keys. Wiki-root-relative
+      keys are left alone: see "Key styles" below.
 
   python scripts/manifest.py delta <manifest-path> <entry-point-dir>...
       Print tab-separated (reason, path) lines for sources that are new or hash-changed.
       Respects WIKI_SKIP_PROJECTS env var: comma-separated project slugs to exclude.
+
+Key styles
+----------
+A manifest may key its file-based sources either as absolute paths or as wiki-root-relative
+POSIX paths ("2_Plaud/2026-08-19.md"), as long as one style is used consistently. Both are
+valid; the relative style is what a wiki's source pages usually record as `source_id`, so
+rewriting it to absolute would orphan those references. `delta` therefore looks a walked
+file up under every plausible key spelling instead of assuming one, and `normalize` only
+canonicalizes the keys it can safely rewrite (tilde-prefixed ones).
+
+Run `delta` from the wiki root so relative keys resolve.
 """
 import hashlib
 import json
@@ -27,13 +39,36 @@ def _sha256(path: str) -> str | None:
         return None
 
 
-def _is_file_key(key: str) -> bool:
-    """Return True if the key looks like a file path rather than a URL/DOI/etc."""
-    return key.startswith("~") or key.startswith("/") or (len(key) > 2 and key[1] == ":")
+def _is_tilde_key(key: str) -> bool:
+    """Return True if the key is a tilde-prefixed file path, which normalize can rewrite."""
+    return key.startswith("~")
+
+
+def _key_candidates(file: pathlib.Path) -> list[str]:
+    """Every spelling a manifest might use for this walked file, cheapest first.
+
+    Covers both key styles: absolute (either separator) and wiki-root-relative POSIX.
+    Order matters only for speed; the first hit wins and they all denote the same file.
+    """
+    candidates = [str(file), file.as_posix()]
+    try:
+        resolved = file.resolve()
+    except OSError:
+        return list(dict.fromkeys(candidates))
+
+    candidates += [str(resolved), resolved.as_posix()]
+    try:
+        rel = resolved.relative_to(pathlib.Path.cwd())
+    except (ValueError, OSError):
+        pass
+    else:
+        candidates += [str(rel), rel.as_posix()]
+
+    return list(dict.fromkeys(candidates))
 
 
 def normalize(manifest_path: str) -> None:
-    """Rewrite file-based source keys to absolute paths; merge collision duplicates."""
+    """Expand tilde-prefixed source keys; merge collision duplicates."""
     p = pathlib.Path(manifest_path)
     with open(p, encoding="utf-8") as f:
         manifest = json.load(f)
@@ -42,7 +77,7 @@ def normalize(manifest_path: str) -> None:
     normalized: dict = {}
 
     for key, entry in manifest.get("sources", {}).items():
-        canon = str(pathlib.Path(key).expanduser().resolve()) if _is_file_key(key) else key
+        canon = str(pathlib.Path(key).expanduser().resolve()) if _is_tilde_key(key) else key
 
         if canon in normalized:
             existing = normalized[canon]
@@ -94,23 +129,31 @@ def delta(manifest_path: str, entry_point_dirs: list[str],
         for file in sorted(ep.rglob("*")):
             if not file.is_file():
                 continue
-            abs_path = str(file.resolve())
-            norm_path = abs_path.replace("\\", "/")
-            if any(f"/projects/{slug}/" in norm_path for slug in skip_projects):
+            keys = _key_candidates(file)
+            if any(f"/projects/{slug}/" in k for slug in skip_projects for k in keys):
                 continue
-            sha = _sha256(abs_path)
+            sha = _sha256(str(file))
             if sha is None:
                 continue
-            entry = sources.get(abs_path) or sources.get(str(file))
+            entry = next((sources[k] for k in keys if k in sources), None)
+            reported = file.as_posix()
             if entry is None:
-                result.append((abs_path, "new"))
+                result.append((reported, "new"))
             elif entry.get("sha256") != sha:
-                result.append((abs_path, "changed"))
+                result.append((reported, "changed"))
 
     return result
 
 
 def main() -> None:
+    # Source paths routinely carry non-ASCII characters; the Windows console defaults to
+    # cp1252 and would abort the whole run on the first one.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, OSError):
+            pass
+
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)

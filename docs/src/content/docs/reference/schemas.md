@@ -108,7 +108,7 @@ Rules: strip protocol (`https://`), trailing slashes, query params. For GitHub, 
 }
 ```
 
-File-based source keys must always be stored as absolute paths (no `~`, no relative paths). Run `python scripts/manifest.py normalize <manifest-path>` to repair an existing manifest and merge duplicates. Set `WIKI_SKIP_PROJECTS=slug1,slug2` to exclude specific projects from the delta computation (`scripts/manifest.py delta` respects this).
+File-based source keys use one style per manifest, consistently: either absolute paths or wiki-root-relative POSIX paths (`2_Plaud/2026-08-19.md`). Tilde-prefixed keys are never valid, since `~` resolves differently per machine; run `python scripts/manifest.py normalize <manifest-path>` to expand them and merge duplicates. `normalize` leaves relative keys as they are, because they are what source pages record as `source_id`. `scripts/manifest.py delta` matches a walked file against every plausible key spelling, so it works under either style as long as it is run from the wiki root. Set `WIKI_SKIP_PROJECTS=slug1,slug2` to exclude specific projects from the delta computation (`delta` respects this).
 
 ## Registry schema
 
