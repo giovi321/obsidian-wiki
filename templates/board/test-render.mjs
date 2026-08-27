@@ -996,11 +996,18 @@ console.log("\nAdd-task button");
   if (wiki.newTask && wiki.newTask.journalFolder) {
     ok("a journal-filing wiki writes to today's journal",
        wrote.path === `${wiki.newTask.journalFolder}/${TODAY}.md`, wrote.path);
-    ok("the line sits under the new-tasks heading",
+    // The contract is "after the last task already there", not "immediately after
+    // the heading". Those coincide only while the section is empty, which is why
+    // the weaker form passed until the journal it writes into had tasks in it.
+    ok("the line is the last task in the new-tasks section",
        (() => {
          const lines = wrote.content.split(/\r?\n/);
          const h = lines.findIndex((l) => l.trim() === "# New tasks");
-         return h !== -1 && lines.slice(h + 1, h + 2).some((l) => l.includes("harness probe"));
+         if (h === -1) return false;
+         let end = lines.findIndex((l, i) => i > h && /^#\s/.test(l));
+         if (end === -1) end = lines.length;
+         const tasks = lines.slice(h + 1, end).filter((l) => /^\s*- \[.\]/.test(l));
+         return tasks.length > 0 && tasks[tasks.length - 1].includes("harness probe");
        })(),
        "# New tasks");
     // Today's journal does not exist until it is opened, and the button must
