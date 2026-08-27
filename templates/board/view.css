@@ -1,0 +1,771 @@
+/*
+ * Project board styling.
+ * Loaded explicitly by view.js as a sibling file, not by dv.view().
+ * All colour comes from Obsidian theme variables, so the board follows light
+ * and dark without a second palette.
+ */
+
+/* Full pane width, scoped to the board note via its cssclasses frontmatter. */
+.wkb-board-page {
+  --file-line-width: 100%;
+  --wkb-col-width: 280px;
+  --wkb-gap: 12px;
+}
+.wkb-board-page .markdown-preview-sizer,
+.wkb-board-page .cm-sizer {
+  max-width: none;
+}
+
+/* Do not inherit the host's box model. With content-box sizing the column
+   padding would add to its width and push it past the container. */
+.wkb-wrap,
+.wkb-wrap *,
+.wkb-wrap *::before,
+.wkb-wrap *::after {
+  box-sizing: border-box;
+}
+
+.wkb-wrap {
+  margin: 0 -8px;
+  max-width: none;
+}
+
+/* ------------------------------------------------------------ per-wiki look */
+
+/* One stylesheet serves every board. Structure is written once above and below;
+   only these blocks differ per wiki, keyed by the `is-<slug>` class the script
+   puts on the board root. A second wiki costs one block, not a second file.
+
+   Anything wiki-specific must resolve through a token declared here, so the
+   shared rules never need a second selector. A per-wiki class *prefix* was
+   considered and rejected: CSS cannot parameterise a prefix, so every one of
+   roughly 200 shared rules would have to list both, and a third wiki would mean
+   editing all of them. */
+.wkb-wrap.is-demo {
+  --wkb-accent: var(--text-accent);
+}
+/* Fallback for a wiki with no block of its own, so a new slug renders plain
+   rather than unstyled. */
+.wkb-wrap {
+  --wkb-accent: var(--text-accent);
+}
+
+/* Fallback surface for messages when Notice is unreachable in the sandbox. */
+.wkb-banner {
+  margin: 0 8px 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--text-error);
+  color: var(--text-error);
+  font-size: var(--font-smaller);
+}
+
+/* ---------------------------------------------------------- settings panel */
+
+.wkb-settings {
+  margin: 0 8px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  font-size: var(--font-smaller);
+}
+
+.wkb-settings__summary {
+  cursor: pointer;
+  padding: 7px 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  list-style-position: inside;
+  -webkit-tap-highlight-color: transparent;
+}
+.wkb-settings[open] .wkb-settings__summary {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.wkb-settings__warn {
+  margin-left: 8px;
+  font-weight: 400;
+  color: var(--color-orange);
+}
+
+.wkb-settings__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 12px 10px;
+}
+
+.wkb-settings__group {
+  min-width: 190px;
+}
+
+.wkb-settings__grouphead {
+  font-size: var(--font-smallest);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+
+/* Whole row is a <label>, so the text is part of the checkbox hit area. */
+.wkb-set {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  cursor: pointer;
+  color: var(--text-normal);
+}
+.wkb-set__label {
+  flex: 1;
+}
+.wkb-set input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  margin: 0;
+}
+.wkb-set input[type="number"] {
+  width: 72px;
+}
+.wkb-set select,
+.wkb-set input[type="number"] {
+  font-size: var(--font-smaller);
+  padding: 2px 6px;
+  color: var(--text-normal);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+}
+
+.wkb-set--stacked {
+  display: block;
+  min-height: 0;
+  margin-bottom: 8px;
+}
+.wkb-set__list {
+  display: block;
+  width: 100%;
+  min-width: 200px;
+  margin-top: 4px;
+  padding: 4px 6px;
+  font-family: var(--font-monospace);
+  font-size: var(--font-smallest);
+  line-height: 1.4;
+  resize: vertical;
+  color: var(--text-normal);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+}
+
+.wkb-settings__reset {
+  align-self: flex-end;
+  font-size: var(--font-smallest);
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--text-muted);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+.wkb-settings__reset:hover:not(:disabled) {
+  color: var(--text-error);
+  border-color: var(--text-error);
+}
+
+/* ---------------------------------------------------------------- toolbar */
+
+/* Sits above the board and outside .wkb-board, so it is not clipped by the
+   scroll container and does not scroll away with the columns. Wraps rather than
+   overflows, which is what keeps it usable at phone width. */
+.wkb-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 8px 8px;
+  font-size: var(--font-smaller);
+}
+
+.wkb-toolbar__label {
+  font-size: var(--font-smallest);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.wkb-toolbar__mode {
+  font-size: var(--font-smaller);
+  padding: 2px 6px;
+  color: var(--text-normal);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+}
+
+/* The filter leads the toolbar and takes the space the sort controls leave.
+   type="search" brings the native clear button on both Chromium and WebKit. */
+.wkb-toolbar__filter {
+  flex: 1 1 140px;
+  max-width: 280px;
+  font-size: var(--font-smaller);
+  padding: 2px 8px;
+  color: var(--text-normal);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+}
+
+.wkb-toolbar__filter:focus {
+  border-color: var(--wkb-accent);
+  outline: none;
+}
+
+/* Full-width line inside the board when a query matches nothing. */
+.wkb-nomatch {
+  padding: 24px 12px;
+  font-size: var(--font-smaller);
+  color: var(--text-faint);
+}
+
+.wkb-toolbar__hint {
+  font-size: var(--font-smallest);
+  color: var(--text-faint);
+}
+
+/* The two arrows sit between the count and the menu, so the menu keeps its
+   margin-left: auto and stays at the header's trailing edge. */
+.wkb-moves {
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+/* 18px visual, 44 by 44 hit area via the ::after overlay, matching the card
+   controls so every touch target on the board behaves the same. */
+.wkb-toolbar__dir,
+.wkb-add,
+.wkb-move {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.wkb-toolbar__dir::after,
+.wkb-add::after,
+.wkb-move::after {
+  content: "";
+  position: absolute;
+  inset: -13px;
+}
+.wkb-toolbar__dir:hover:not(:disabled),
+.wkb-add:hover:not(:disabled),
+.wkb-move:hover:not(:disabled) {
+  color: var(--wkb-accent);
+  border-color: var(--wkb-accent);
+}
+.wkb-toolbar__dir:active:not(:disabled),
+.wkb-add:active:not(:disabled),
+.wkb-move:active:not(:disabled) {
+  background: var(--background-modifier-hover);
+}
+.wkb-toolbar__dir:disabled,
+.wkb-add:disabled,
+.wkb-move:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* Add task. Shares the control rules above and overrides nothing about the
+   box: no font-size, no align-self. Weight only, so the plus reads as a plus at
+   10px next to the solid triangles.
+
+   .wkb-col__head aligns its children on the baseline, and a column title that
+   wraps to two lines contributes its *first* line's baseline, which is what
+   keeps the count and the arrows level with the top line. A grid box with a
+   centred glyph derives its baseline from that glyph, so any font-size of its
+   own moves it off the row, and align-self: center drops it to the middle of a
+   two-line title. Both were tried and both were wrong; any column whose name
+   is long enough to wrap shows it immediately. */
+.wkb-add {
+  flex: 0 0 auto;
+  font-weight: 700;
+}
+
+.wkb-board {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wkb-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 8px 12px;
+  /* Keep horizontal swipes out of the note's vertical scroll, and stop the
+     board from triggering browser back-navigation on overscroll. */
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+/* ------------------------------------------------------------------ column */
+
+.wkb-col {
+  flex: 0 0 var(--wkb-col-width);
+  max-width: var(--wkb-col-width);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  padding: 8px;
+}
+
+/* Identity surface: takes the per-wiki accent so the two boards are
+   distinguishable at a glance. Interactive colours stay on the theme accent. */
+.wkb-col--unassigned {
+  border-color: var(--wkb-accent);
+}
+
+/* Pinned triage inbox, when board_pin_unassigned is on. Dropped below the
+   phone breakpoint regardless, where a pinned column would consume the whole
+   screen. The opaque background is what the other columns scroll behind. */
+.wkb-col--unassigned.is-pinned {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--background-primary);
+  box-shadow: 2px 0 6px -2px var(--background-modifier-box-shadow);
+}
+
+.wkb-col__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 2px 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: 8px;
+}
+
+/* -------------------------------------------------------------- col menu */
+
+/* Expands inline rather than as an absolute dropdown: .wkb-board clips on the
+   y axis, so a positioned popover would be cut off. Open takes a full row of
+   the wrapped header. */
+.wkb-menu {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+.wkb-menu[open] {
+  flex-basis: 100%;
+  margin-left: 0;
+}
+
+.wkb-menu__button {
+  cursor: pointer;
+  padding: 0 4px;
+  border-radius: 4px;
+  color: var(--text-faint);
+  font-size: var(--font-smaller);
+  line-height: 1.1;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.wkb-menu__button::-webkit-details-marker {
+  display: none;
+}
+.wkb-menu__button:hover {
+  color: var(--text-accent);
+  background: var(--background-modifier-hover);
+}
+
+.wkb-menu__body {
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+}
+
+.wkb-menu__head {
+  font-size: var(--font-smallest);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+
+.wkb-menu__item,
+.wkb-status__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 5px 8px;
+  margin-bottom: 2px;
+  font-size: var(--font-smaller);
+  cursor: pointer;
+  color: var(--text-normal);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.wkb-menu__item:hover:not(:disabled),
+.wkb-status__item:hover:not(:disabled) {
+  background: var(--background-modifier-hover);
+  border-color: var(--background-modifier-border-hover);
+}
+.wkb-menu__item.is-current,
+.wkb-status__item.is-current {
+  color: var(--text-accent);
+  font-weight: 600;
+  cursor: default;
+}
+.wkb-menu__item.is-current::before {
+  content: "• ";
+}
+
+.wkb-menu__archive {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.wkb-menu__hint {
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.wkb-menu__cmd {
+  display: block;
+  padding: 4px 6px;
+  font-size: var(--font-smallest);
+  word-break: break-all;
+  color: var(--text-normal);
+  background: var(--background-secondary);
+  border-radius: 4px;
+  -webkit-user-select: all;
+  user-select: all;
+}
+
+.wkb-menu__copy {
+  margin-top: 6px;
+  padding: 3px 10px;
+  font-size: var(--font-smallest);
+  cursor: pointer;
+  color: var(--text-muted);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wkb-col__title {
+  flex: 1;
+  font-weight: 600;
+  font-size: var(--font-smaller);
+  color: var(--text-normal);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+a.wkb-col__title {
+  cursor: pointer;
+}
+a.wkb-col__title:hover {
+  color: var(--text-accent);
+}
+
+.wkb-col__count {
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+  background: var(--background-modifier-hover);
+  border-radius: 10px;
+  padding: 1px 7px;
+}
+
+/* ---------------------------------------------------------- status menu */
+
+/* Right-click a card's checkbox to open this. Inline inside the card for the
+   same reason the column menu is inline: .wkb-board sets overflow-y: hidden,
+   so an absolutely positioned popover is clipped by the scroll container.
+
+   The summary is the disclosure triangle a <details> would draw, and there is
+   nothing to draw it for: the checkbox's contextmenu handler owns the toggle,
+   so the card carries no extra visible control. Hidden rather than removed,
+   because <details> needs a summary to be toggleable at all. */
+.wkb-status__summary {
+  display: none;
+}
+
+.wkb-status[open] {
+  margin-top: 6px;
+  padding: 6px 6px 4px;
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 6px;
+  background: var(--background-primary);
+}
+
+/* Monospaced so the four [ ] [/] [x] [-] boxes line up under each other and
+   read as a column of statuses rather than four unrelated labels. */
+.wkb-status__item {
+  font-family: var(--font-monospace);
+  white-space: pre;
+}
+
+/* -------------------------------------------------------------------- lane */
+
+.wkb-lane {
+  margin-bottom: 10px;
+}
+.wkb-lane:last-child {
+  margin-bottom: 0;
+}
+
+.wkb-lane__head {
+  font-size: var(--font-smallest);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+
+.wkb-lane--done {
+  opacity: 0.6;
+}
+
+/* -------------------------------------------------------------------- card */
+
+.wkb-card {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+  padding: 6px 8px;
+  margin-bottom: 6px;
+}
+
+.wkb-card--done .wkb-card__desc {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.wkb-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.wkb-card__desc {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-smaller);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  /* Long-press selection stays available where it is wanted. */
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.wkb-link {
+  color: var(--text-accent);
+  cursor: pointer;
+}
+
+/* Checkbox and edit affordance. Visually 18px, but both carry a 44 by 44
+   hit area via the ::after overlay so touch targets meet the iOS minimum
+   without changing the layout. */
+.wkb-check,
+.wkb-edit {
+  position: relative;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin-top: 1px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+  color: var(--text-muted);
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.wkb-check::after,
+.wkb-edit::after {
+  content: "";
+  position: absolute;
+  inset: -13px;
+}
+.wkb-check:hover:not(:disabled):not(.is-done),
+.wkb-edit:hover {
+  border-color: var(--text-accent);
+  color: var(--text-accent);
+}
+.wkb-check:active:not(:disabled):not(.is-done),
+.wkb-edit:active {
+  background: var(--background-modifier-hover);
+}
+/* .is-done is the resting done state and :disabled is the in-flight one.
+   They look identical on purpose; only .is-done still takes a right-click. */
+.wkb-check:disabled,
+.wkb-check.is-done {
+  cursor: default;
+  opacity: 0.5;
+}
+.wkb-edit {
+  border-color: transparent;
+  background: transparent;
+}
+
+/* -------------------------------------------------------------------- meta */
+
+.wkb-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 0 24px;
+}
+
+.wkb-chip {
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+  background: var(--background-modifier-hover);
+  border-radius: 4px;
+  padding: 0 5px;
+  white-space: nowrap;
+}
+
+.wkb-due--late {
+  color: var(--text-error);
+  background: transparent;
+  font-weight: 600;
+}
+.wkb-due--today {
+  color: var(--color-orange);
+  background: transparent;
+  font-weight: 600;
+}
+.wkb-prio {
+  text-transform: lowercase;
+}
+.wkb-prio--high,
+.wkb-prio--highest {
+  color: var(--text-error);
+  background: transparent;
+  border: 1px solid var(--text-error);
+}
+.wkb-who {
+  color: var(--text-faint);
+  white-space: normal;
+}
+.wkb-src {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+/* Compact: drop the meta line entirely. The blunt instrument; the chip
+   toggles are the fine one, so they have no visible effect here. */
+.wkb-wrap--compact .wkb-meta {
+  display: none;
+}
+.wkb-wrap--compact .wkb-card {
+  padding: 4px 8px;
+}
+.wkb-wrap--compact .wkb-card + .wkb-card {
+  margin-top: -1px;
+}
+
+/* ------------------------------------------------------------------- empty */
+
+.wkb-empty {
+  font-size: var(--font-smaller);
+  color: var(--text-faint);
+  font-style: italic;
+  padding: 8px 2px;
+}
+.wkb-empty__sub {
+  font-style: normal;
+  font-size: var(--font-smallest);
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------- position strip */
+
+/* Desktop shows the whole board, so the strip is phone-only. */
+.wkb-strip {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 6px;
+}
+.wkb-strip__label {
+  font-size: var(--font-smaller);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.wkb-strip__dots {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.wkb-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--background-modifier-border);
+}
+.wkb-dot.is-active {
+  background: var(--wkb-accent);
+}
+
+/* -------------------------------------------------------------- phone */
+
+@media (max-width: 600px) {
+  .wkb-strip {
+    display: flex;
+  }
+
+  /* The negative bleed is a desktop nicety. On a phone it pushes the board
+     under the note's edge, where an ancestor clips it. */
+  .wkb-wrap {
+    margin: 0;
+  }
+
+  .wkb-board {
+    scroll-snap-type: x mandatory;
+  }
+
+  /* Percentages, not vw. vw measures the viewport, but the board sits inside
+     the note's content area, which is narrower by the note margins. Sizing
+     columns against the viewport made every column overflow its container and
+     get clipped on both sides. */
+  .wkb-col {
+    flex-basis: 88%;
+    max-width: 88%;
+    scroll-snap-align: start;
+  }
+
+  /* Pinning a column on a 390pt screen leaves nothing for the board, and
+     sticky fights momentum scrolling in WebKit. Unassigned keeps its first
+     position but scrolls with everything else, whatever the setting says. */
+  .wkb-col--unassigned.is-pinned {
+    position: static;
+    box-shadow: none;
+  }
+}

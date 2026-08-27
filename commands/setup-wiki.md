@@ -24,14 +24,14 @@ Args: $ARGUMENTS
    - `root`: absolute filesystem path to the wiki root. Create the folder if missing.
    - `entry_points[]`: each with `path`, `source_type`, `default_quality?`, `post_ingest` (`move`, `keep`, or `read_only`), `naming_convention`, optional `exclude` glob list. The setup skill provides a standard catalog of suggestions; the user picks which to enable, may override paths, and may add custom entry points.
    - `structured_knowledge[]`: each with `path`, `purpose` (one of `projects`, `documentation`, `resources`, `people`, `concepts`, `custom`), `routing_hint` (free text).
-   - `dashboards[]`: dashboard files (optional). Each entry takes `path` (relative to the wiki root) and `type`, a free-form label for how it renders (`todo`, `canvas`, `dataviewjs-board`). The label is not validated; it exists so a wiki with more than one dashboard can tell them apart.
+   - `dashboards[]`: dashboard files (optional). Each entry takes `path` (relative to the wiki root) and `type`, a free-form label for how it renders (`todo`, `dataviewjs-board`). The label is not validated; it exists so a wiki with more than one dashboard can tell them apart.
    - `protected_paths[]`: structured-knowledge subfolders that `/rebuild` must not clear.
    - `ignore_paths[]`: filesystem artifacts at the wiki root the agent must ignore entirely. Suggest common entries: `.obsidian/`, `.trash/`, `notes.sqlite`, `.DS_Store`.
    - `tags`: tag vocabulary (free text or comma-separated list). Ask whether to enable visibility tags (`visibility/public`, `visibility/internal`, `visibility/pii`). If yes, append them to the list and ask for `pii_paths[]`: structured-knowledge subfolders whose pages must always carry `visibility/pii` (`/lint` flags violations).
    - `writing_style`: rules for prose voice.
    - `project_thresholds`: integers in months for `active_to_dormant_months`, `dormant_to_archive_months`, `completed_to_archive_months`.
    - `custom_procedures[]`: optional. Ask the user if they want any custom procedures wired in at specific hook points (`pre-ingest`, `during-ingest`, `post-ingest`, `pre-lint`, `post-lint`). For each one, collect a `name`, `when`, `description`, and a `procedure` path under `<wiki-root>/_service/custom-procedures/`. The setup command creates `<wiki-root>/_service/custom-procedures/` and copies `${CLAUDE_PLUGIN_ROOT}/templates/_custom-procedure.md.tmpl` to each declared path so the user can fill it in afterward.
-   - `templates_to_install[]`: subset of `todo-dashboard`, `daily-note`, `canvas-dashboard`. For each, ask where to install it (default paths derived from the entry-point and dashboard answers above).
+   - `templates_to_install[]`: subset of `todo-dashboard`, `daily-note`, `project-board`. Ask about each one separately rather than presenting the list: each is optional, and installing one the user did not want leaves a file in their vault they have to understand before they can delete it. For each one they accept, ask where to install it (default paths derived from the entry-point and dashboard answers above). The project board needs its own question, per "Asking about the project board" in `skills/wiki-setup/SKILL.md`.
 
 5. **Scaffold the wiki**:
    a. Create the wiki root if missing.
@@ -47,7 +47,7 @@ Args: $ARGUMENTS
 8. **Install requested templates**:
    - `todo-dashboard`: copy `templates/0_To-do.md.tmpl`, substitute `{{wiki_root}}` and project-folder paths, write to the user-chosen dashboard path.
    - `daily-note`: copy `templates/daily-note.md.tmpl`, substitute the journal entry-point path, write to `<journal-entry-point>/_template.md`.
-   - `canvas-dashboard`: copy `templates/dashboard.canvas.tmpl`, substitute all placeholders per the map in `skills/wiki-setup/SKILL.md`, applying the "Dashboard template conditional rules" there (drop filter lines or whole canvas nodes when the wiki lacks the corresponding entry point or folder), write to the user-chosen dashboard path.
+   - `project-board`: copy `templates/board/view.js` and `templates/board/view.css` into a folder of their own under the vault root, by default `_service/board/`. Add an entry for this wiki to the `WIKIS` table in the copied `view.js`, per the commented `demo` entry and the field map in `skills/wiki-setup/SKILL.md`. Then copy `templates/board/demo/Board.md` to the user-chosen dashboard path, replacing `board_wiki: demo` with this wiki's slug and the `dv.view(...)` argument with the folder the two files went into. Do not copy `templates/board/demo/`, which is a test fixture. Tell the user that Dataview's Enable JavaScript Queries must be turned on once per device, or the board renders as a raw code block.
 
 9. **Determine the vault root and install shared docs**:
     a. If this is the first wiki being registered, ask: "Where should the shared docs folder live?" Default: the parent of `<wiki-root>`. Other accepted values: any absolute path the user provides.

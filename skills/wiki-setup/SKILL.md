@@ -105,7 +105,7 @@ project_thresholds:
 templates_to_install:
   - todo-dashboard
   - daily-note
-  - canvas-dashboard
+  - project-board
 ```
 
 ## Per-wiki files written at setup
@@ -153,24 +153,83 @@ Setup writes two files at the wiki root and several inside `_service/`:
 | `{{protected_paths_block}}` | YAML-rendered `protected_paths` array (empty list `[]` if none) |
 | `{{ignore_paths_block}}` | YAML-rendered `ignore_paths` array (empty list `[]` if none) |
 | `{{pii_paths_block}}` | YAML-rendered `pii_paths` array (empty list `[]` if none) |
-| `{{projects_path_quoted}}` | `<wiki_root_basename>/<projects_path>`, trailing slash stripped (Dataview `FROM` clause) |
-| `{{transcripts_path_quoted}}` | `<wiki_root_basename>/<transcripts_path>`, trailing slash stripped (Dataview `FROM` clause) |
-| `{{transcripts_exclude_path}}` | `<wiki_root_basename>/<transcripts_path>` (Tasks `path does not include` filter) |
-| `{{conversations_exclude_path}}` | `<wiki_root_basename>/<conversations_path>` (Tasks `path does not include` filter) |
 | `{{today}}` | current date `YYYY-MM-DD` |
 | `{{iso_timestamp}}` | current timestamp ISO-8601 |
 
 Placeholders left unresolved by this map are an error: abort and report which placeholder failed.
 
-### Dashboard template conditional rules
+### Asking about the project board
 
-The canvas dashboard template references entry points and folders the wiki may not have configured. When substituting `dashboard.canvas.tmpl` (and only dashboard templates):
+The board is opt-in and must be offered as a question, never installed by
+default. It is the only template with prerequisites outside the vault, and a user
+who says yes without knowing them gets a note rendering a raw code block and no
+idea why.
 
-- If `{{transcripts_exclude_path}}` or `{{conversations_exclude_path}}` resolves empty (the corresponding entry point is not configured), delete the entire `path does not include …` line from each query rather than leaving an empty filter.
-- If `{{projects_path_quoted}}` resolves empty (no `purpose: projects` folder), remove the whole `projects_table` node from the canvas JSON and tell the user it was skipped.
-- If `{{transcripts_path_quoted}}` resolves empty (no voice-transcript entry point), remove the whole `recent_transcripts` node and tell the user it was skipped.
+Skip the question entirely, and say why in the setup summary, when either holds:
 
-These removals are not errors; report them in the setup summary.
+- the wiki declares no `purpose: projects` folder, so the board would have no
+  columns
+- the user already declined the Tasks plugin, or has no tasks in their wiki
+
+Otherwise ask whether they want it, and state these three things first, because
+they are what the answer depends on:
+
+1. It needs the Dataview plugin with **Enable JavaScript Queries** switched on.
+   That setting is per device, so it has to be switched on again on a phone or
+   tablet. Without it the board note shows a raw code block
+2. It needs the Tasks plugin for the add and edit buttons. The board reads and
+   writes Tasks syntax on its own, so everything else works without it
+3. It reads tasks from wherever they are already written. It creates no second
+   copy, and it never moves a task between notes
+
+If they accept, collect:
+
+- where `view.js` and `view.css` go, defaulting to `_service/board/` at the vault
+  root, outside any single wiki so more than one wiki can share them
+- where the board note goes, defaulting to the wiki root
+- **which folders hold checkbox lines that are not project tasks.** Ask this
+  directly rather than inferring it, and ask it even if the answer looks obvious.
+  Meeting transcripts, imported checklists, reading lists and shopping lists all
+  parse as tasks. A folder of transcripts can hold an order of magnitude more
+  checkbox lines than the wiki has real tasks. Getting this wrong does not break
+  the board, it buries every real task under the triage column, and the user has
+  no way to know that is what happened
+
+If they decline, record nothing in `templates_to_install[]` and add no
+`dashboards[]` entry for it. Do not ask again on a later reconfigure unless the
+user raises it.
+
+### Project board fields
+
+The board is configured in code rather than by placeholder substitution, because its
+settings describe a wiki's shape and are shared by every board on that wiki. When
+installing `project-board`, add one entry to the `WIKIS` table in the copied `view.js`,
+keyed by the wiki slug. Map the setup answers as follows; the commented `demo` entry in
+`templates/board/view.js` is a worked example of the same table.
+
+| Field | Value from setup |
+|---|---|
+| `slug` | the wiki slug |
+| `label` | the wiki's display name |
+| `root` | the wiki root, relative to the vault root |
+| `projectsFolder` | the `purpose: projects` folder |
+| `projectDepth` | `1` if projects sit directly under the projects folder, `2` if they are grouped in category folders |
+| `peopleFolder` | the `purpose: people` folder, or `null` for a single-user wiki |
+| `columnStatuses` | which lifecycle statuses earn a column, normally `["active"]`, plus any extra status the wiki uses |
+| `newTask.heading` | the heading new tasks are filed under |
+| `newTask.journalFolder` | the journal entry point, only if tasks belong in the daily note rather than in project pages |
+| `newTask.journalTemplate` | that journal's `_template.md`, if `journalFolder` is set |
+| `newTask.fallbackPath` | a catch-all project page, for tasks added from the triage column |
+| `settingDefaults.include_folders` | normally just the wiki root |
+| `settingDefaults.exclude_folders` | every folder holding checkbox lines that are not project tasks: transcripts, imported checklists, reading lists |
+
+`exclude_folders` is the field to get right. A folder of meeting transcripts can hold an
+order of magnitude more checkbox lines than the wiki has real tasks. Including it does
+not break the board, it buries every real task under the triage column. Ask which
+folders hold checkboxes that are not tasks, rather than inferring it.
+
+If the wiki has no `purpose: projects` folder, do not install the board: it would have
+no columns. Say so and skip it.
 
 ## Validation rules before writing to disk
 

@@ -80,6 +80,7 @@ export default defineConfig({
           items: [
             { label: 'The daily workflow', link: '/using/daily-workflow/' },
             { label: 'Commands', link: '/using/commands/' },
+            { label: 'The project board', link: '/using/project-board/' },
             { label: 'Two or more wikis', link: '/using/multiple-wikis/' },
           ],
         },

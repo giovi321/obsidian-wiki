@@ -51,13 +51,13 @@ dashboards:
     type: dataviewjs-board
 ```
 
-`path` is relative to the wiki root. `type` is a free-form label describing how the dashboard renders; it is not validated and no command branches on it. It exists so a wiki with more than one dashboard can tell them apart, and so the labels stay comparable across wikis. Labels in use: `todo` for a page of Tasks queries, `canvas` for an Obsidian Canvas, `dataviewjs-board` for a DataviewJS view.
+`path` is relative to the wiki root. `type` is a free-form label describing how the dashboard renders; it is not validated and no command branches on it. It exists so a wiki with more than one dashboard can tell them apart, and so the labels stay comparable across wikis. Labels in use: `todo` for a page of Tasks queries, `dataviewjs-board` for a DataviewJS view such as the shipped project board. `canvas` appears in wikis created before the project board replaced the canvas dashboard.
 
 The agent rewrites a listed dashboard only on an explicit restructure request, never as a side effect of another command. That is the whole reason to declare them: a dashboard is a hand-shaped page, and listing it marks it as one.
 
 ### Dashboards the plugin does not ship
 
-`/setup-wiki` installs a todo dashboard and, optionally, a canvas dashboard. Anything else is yours to build, and the sensible place to build it is a Dataview or DataviewJS block in an ordinary vault note rather than a custom Obsidian plugin.
+`/setup-wiki` installs a todo dashboard and, optionally, the project board in `templates/board/`. Anything else is yours to build, and the sensible place to build it is a Dataview or DataviewJS block in an ordinary vault note rather than a custom Obsidian plugin: a plugin has to be installed and reinstalled per device, whereas a view stored in the vault syncs with the notes.
 
 The reason is sync. Obsidian sync mechanisms differ in whether they carry `.obsidian/`; Self-hosted LiveSync, for one, can be configured with `syncInternalFiles: false` and `usePluginSync: false`, in which case a community plugin has to be installed and updated by hand on every device, while a note and a sibling script replicate for free. Check how your own sync is configured before choosing.
 
