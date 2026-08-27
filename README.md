@@ -53,6 +53,12 @@ Three things, in this order.
 2. Maintains: cross-links pages, surfaces orphans and broken links, flags stale and low-confidence content, tracks each page from `draft` to `reviewed` to `verified`, and proposes archiving projects that have gone quiet.
 3. Answers and updates: answers questions using only the wiki, folds in targeted updates from a URL or free text, captures the durable parts of the current conversation, and runs web research that gets distilled back into pages.
 
+It also ships an optional project board: a kanban of every open task in a wiki, one column per active project, rendered from a DataviewJS view stored in the vault rather than an Obsidian plugin. `/setup-wiki` offers it; see [the project board](docs/src/content/docs/using/project-board.md).
+
+<p align="center">
+  <img src="docs/diagrams/07-project-board.svg" width="800" alt="The board: a triage column beside three project columns, each a panel with lanes for in-progress and open tasks, cards carrying a checkbox, an edit pencil and chips for assignee, due date and created date, above a toolbar with a filter box and a sort control.">
+</p>
+
 ## What it is not
 
 - Not a chat-history dump. Conversation sources score 0.3 by default and are filtered hard before any content reaches a page; verbatim assistant output is never written
