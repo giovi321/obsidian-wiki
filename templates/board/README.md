@@ -8,6 +8,10 @@ Tasks are read wherever they are written, in Obsidian Tasks syntax, and routed t
 column by the wikilinks at the start of the line. Nothing is duplicated into a board
 file: the source note stays the only copy.
 
+![The board: a triage column beside three project columns, each a panel with lanes for in-progress and open tasks, cards carrying a checkbox, an edit pencil and chips for assignee, due date and created date, above a toolbar with a filter box and a sort control.](../../docs/diagrams/07-project-board.svg)
+
+Rendered from `demo/`, so every project and person shown is fictional.
+
 ## What it does
 
 - One column per project whose lifecycle status you list as column-eligible. Projects
@@ -88,6 +92,8 @@ shared by every board on that wiki.
 Appearance lives in the board note's frontmatter as `board_*` keys, and the settings
 panel on the board writes them for you. Because they are per note, two boards on the
 same wiki can look different.
+
+![The board settings panel, expanded: checkbox groups for columns, chips, lanes and density, a column-width field, and a scope section with folders to scan and folders to skip.](../../docs/diagrams/08-board-settings.svg)
 
 The one setting worth getting right before anything else is
 `settingDefaults.exclude_folders`. Any folder holding checkbox lines that are not
