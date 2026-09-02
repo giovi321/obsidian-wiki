@@ -1085,6 +1085,25 @@ console.log("\nStatus set");
   ok("every status carries a name", board.STATUSES.every((st) => !!st.name),
      board.STATUSES.map((st) => st.name).join(", "));
 
+  // The menu must offer the status a project can actually hold. A wiki that
+  // earns columns with a status of its own gets it appended: without that, a
+  // project in that status has a menu marking nothing, and the only way out of
+  // a legitimate status is to pick one of the four canonical ones.
+  for (const w of Object.values(board.WIKIS)) {
+    const offered = board.menuStatuses(w);
+    const missing = w.columnStatuses.filter((st) => !offered.includes(st));
+    ok(`${w.slug}: every column-eligible status is offered`, missing.length === 0,
+       missing.join(", ") || offered.join(", "));
+  }
+  eq("the four canonical states come first",
+     board.menuStatuses({ columnStatuses: ["planning"] }).slice(0, 4),
+     board.SHARED.projectStatuses);
+  eq("and an extra is appended once",
+     board.menuStatuses({ columnStatuses: ["active", "planning", "planning"] }),
+     [...board.SHARED.projectStatuses, "planning"]);
+  eq("a wiki with no extras offers exactly the canonical set",
+     board.menuStatuses({ columnStatuses: ["active"] }), board.SHARED.projectStatuses);
+
   // Round trip: what the menu writes is what the board reads.
   const roundTrips = board.STATUSES.filter((st) => {
     const line = board.setStatusLine("- [ ] [[x]] thing \u2795 2026-08-01", st.symbol, T);

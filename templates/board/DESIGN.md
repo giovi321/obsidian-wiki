@@ -70,8 +70,8 @@ Nothing here writes to a wiki's other dashboards.
 ## Per-wiki configuration
 
 Two objects, both in `view.js`. `SHARED` holds what does not vary: where the
-component's own files live, the archive folder name, and the four lifecycle
-states offered in the column menu. `WIKIS` holds one entry per wiki, keyed by the
+component's own files live, the archive folder name, and the four documented
+lifecycle states, which `menuStatuses` extends per wiki. `WIKIS` holds one entry per wiki, keyed by the
 slug a board note names in `board_wiki`.
 
 Folder names are configuration, not constants, because they are whatever a
@@ -574,7 +574,11 @@ Still not exposed: the projects folder, its depth, the people folder, and the co
 
 ## Project management
 
-Each project column carries a `⋯` menu with the four lifecycle states from `wiki-config.md`: active, dormant, completed, abandoned. Choosing one writes `status` and `last_activity` to that project's landing page via `processFrontMatter`, which is exactly what `/project <wiki> status <slug> <new-status>` does, with the slug taken from the column's own wiki. The current state is marked and disabled. Since columns are the projects whose status is column-eligible, anything else removes the column immediately, so the notice says so rather than letting it vanish silently.
+Each project column carries a `⋯` menu of project statuses. Choosing one writes `status` and `last_activity` to that project's landing page via `processFrontMatter`, which is exactly what `/project <wiki> status <slug> <new-status>` does, with the slug taken from the column's own wiki. The current state is marked and disabled. Since columns are the projects whose status is column-eligible, anything else removes the column immediately, so the notice says so rather than letting it vanish silently.
+
+`menuStatuses(wiki)` decides what is offered: the four documented lifecycle states from `wiki-config.md`, plus any status the wiki treats as column-eligible that is not one of them. The second half is what stops the menu lying. A wiki may earn columns with a status of its own, and a project holding one then had a menu offering four states with none marked, which reads as "this project is in no state at all", and left picking one of the four as the only way out of a status that was legitimate. Extras are appended rather than sorted into place: where they sit in a lifecycle is the wiki's business, not this component's.
+
+That bug survived a green harness for weeks because the assertion only inspected the first menu, and no project in such a status happened to sort first. The check now runs over every project column and asserts each marks exactly one status, which holds for any wiki precisely because the offered set is derived from `columnStatuses`.
 
 Category columns carry no menu. A category landing is `type: category` with no lifecycle status, so offering to set one would write a field that means nothing there. This is gated on the column's `kind`, and the render harness asserts no category column renders a menu.
 
@@ -702,6 +706,7 @@ Regression guards that must not be relaxed:
 - Card descriptions must carry actual content, tested as at least one letter or digit. A shim regression once blanked every description while leaving the element in place, and the preview looked plausible. This was a three-word minimum until real data broke it: `12-factor-agents (GitHub)` is a complete two-word task
 - No `.wkb-menu__item` may match `archive|delete|move`, so the deliberate boundary against destructive project operations cannot erode
 - No category column may render a status menu
+- Every project column's menu marks exactly one status. This holds for any wiki because the offered set is derived from `columnStatuses`, and it is asserted over every menu rather than the first: the single-menu version of this check passed while any project in a wiki's own column-eligible status had a menu marking nothing
 - A flag write must be a real boolean, exactly one key, and never `last_activity`. Pills must render only on a board declaring `board_flags`, only on project columns, and each pill must show its own column's value for its own field rather than the first column's or the first flag's. A missing value must read as off, so a consumer that fails closed on the field and the pill agree. `board_flags` must never be a `SETTINGS` member, or a reset deletes it
 - A panel flag edit must write the whole list to the board note, drop empty optional keys, delete the key when the last flag goes, and write nothing at all for a row that has only just been added
 - The add-task button must never write without a returned task line. A missing

@@ -2301,6 +2301,24 @@ async function setProjectFlag(app, column, flag, value, notice) {
   return true;
 }
 
+/*
+ * The statuses the column menu offers: the documented lifecycle states, plus
+ * any status this wiki treats as column-eligible that is not one of them.
+ *
+ * The second half is what stops a menu lying. A wiki may earn columns with a
+ * status of its own, and a project in one then had a menu offering four states
+ * with none of them marked, which reads as "this project is in no state at
+ * all", and left choosing one of the four as the only way out of a status that
+ * was legitimate. Extras are appended rather than sorted into place: their
+ * position in a lifecycle is the wiki's business, not this component's.
+ */
+function menuStatuses(wiki) {
+  const extra = [...new Set((wiki && wiki.columnStatuses) || [])].filter(
+    (s) => !SHARED.projectStatuses.includes(s)
+  );
+  return [...SHARED.projectStatuses, ...extra];
+}
+
 function renderColumnMenu(column, wiki, flags, app, notice, refresh) {
   const menu = document.createElement("details");
   menu.className = "wkb-menu";
@@ -2319,7 +2337,7 @@ function renderColumnMenu(column, wiki, flags, app, notice, refresh) {
   head.textContent = "Set status";
   body.appendChild(head);
 
-  for (const status of SHARED.projectStatuses) {
+  for (const status of menuStatuses(wiki)) {
     const item = document.createElement("button");
     const current = (column.status || "active") === status;
     item.className = "wkb-menu__item" + (current ? " is-current" : "");
@@ -2676,6 +2694,7 @@ if (typeof module !== "undefined" && module.exports) {
     completeLine,
     applyCompletion,
     STATUSES,
+    menuStatuses,
     renderStatusMenu,
     setStatusLine,
     applyStatus,

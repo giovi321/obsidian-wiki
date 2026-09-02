@@ -780,12 +780,30 @@ console.log("\nProject menu");
 
   const first = menus[0];
   const items = first.find(".wkb-menu__item");
-  ok("one item per lifecycle status", items.length === board.SHARED.projectStatuses.length,
-     String(items.length));
+  // Every documented lifecycle state, plus any column-eligible status of this
+  // wiki's own. A project can only hold a status from that set, which is what
+  // makes the "exactly one marked" assertion below hold for every column.
+  const offered = board.menuStatuses(wiki);
+  ok("one item per offered status", items.length === offered.length,
+     `${items.length} vs ${offered.length}: ${offered.join(", ")}`);
   const current = items.filter((i) => i.className.includes("is-current"));
   ok("current status marked and not clickable",
      current.length === 1 && current[0].disabled,
      current.map((i) => i.textContent).join(","));
+
+  // Every menu, not just the first. The single-menu version of this check
+  // passed for weeks while any project holding a wiki's own column-eligible
+  // status had a menu that marked nothing, because none of them sorted first.
+  const unmarked = root.find(".wkb-col")
+    .filter((col) => col.find(".wkb-menu").length > 0)
+    .map((col) => ({
+      slug: col.find(".wkb-col__title")[0].textContent,
+      marked: col.find(".wkb-menu__item").filter((i) => i.className.includes("is-current")).length,
+    }))
+    .filter((x) => x.marked !== 1);
+  ok("every project menu marks exactly one status", unmarked.length === 0,
+     unmarked.map((x) => `${x.slug}: ${x.marked}`).join(", ") ||
+       `all ${menus.length} menus`);
 
   const cmd = first.find(".wkb-menu__cmd")[0];
   ok("archive is handed off as a command, not a button",
@@ -934,7 +952,7 @@ console.log("\nFlag pills");
      `${choices.filter((i) => i.disabled).length} disabled`);
   // Must not widen the selector the status section is counted by.
   ok("choices are not lifecycle status items",
-     c.find(".wkb-menu")[0].find(".wkb-menu__item").length === board.SHARED.projectStatuses.length);
+     c.find(".wkb-menu")[0].find(".wkb-menu__item").length === board.menuStatuses(wiki).length);
   // Only the sentence is optional: a flag with no hint still gets its label and
   // its two choices. The harness flag declares none.
   ok("a flag with no hint renders no hint line",
