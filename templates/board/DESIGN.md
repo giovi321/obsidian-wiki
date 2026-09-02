@@ -27,6 +27,7 @@ This file records why each decision went the way it did, and the traps found whi
 | Per-wiki styling | One stylesheet, one class prefix, wiki identity as an `is-<slug>` scope class on the board root |
 | Phone layout | Scroll-snap carousel at 88% of the container per column, Unassigned first but never pinned |
 | Display configuration | 20 settings, stored as `board_*` frontmatter keys |
+| Per-project flags | Declared as `board_flags` on the board note, edited from the settings panel, rendered as switch pills in the column header |
 | Project lifecycle | Status changes from a per-column menu, project pages only. Archiving hands off to `/project` |
 | Task status | All four parseable statuses, from a right-click menu on the card's checkbox, acting on the task's own line rather than the editor cursor |
 | New tasks | The Tasks plugin's own modal via `apiV1`, filed per the wiki's own convention: journal on the demo wiki, project page on Personal |
@@ -45,7 +46,7 @@ board.
 
 | Path | Role |
 |---|---|
-| `view.js` | Per-wiki config, parse, discover, route, sort, render, write-back, add task, card status menu, settings, toolbar, project menu |
+| `view.js` | Per-wiki config, parse, discover, route, sort, render, write-back, add task, card status menu, settings, toolbar, project menu, project flags |
 | `view.css` | Layout and card styling for every board, plus the per-wiki scope blocks |
 | `test-board.mjs` | Node harness for the pure logic. Not loaded by Obsidian |
 | `test-render.mjs` | Node harness for the render path, using a DOM and `app` shim |
@@ -66,11 +67,41 @@ note whatever wiki the note belongs to. Its frontmatter carries `board_wiki`,
 The board is a second dashboard, not a replacement for whatever else a wiki has.
 Nothing here writes to a wiki's other dashboards.
 
+## The two copies
+
+This component exists twice: installed in a vault, where it runs, and in the
+obsidian-wiki repo, where it is the template `/setup-wiki` copies out. **The repo
+copy is the source of truth for code.** Work done while sitting in a vault is
+ported up; anything taken from the repo is copied down.
+
+Exactly three things may differ, and they are all configuration:
+
+- `SHARED` and `WIKIS` in `view.js`: the folder layout, the wikis, where the
+  stylesheet lives
+- the per-wiki token blocks in `view.css`, one `.wkb-wrap.is-<slug>` each
+- in the harnesses: `VAULT`, the board-note map, and `TEST_FLAGS`
+
+`test-board.mjs` is the one file that cannot converge beyond that. Its fixtures
+and its discovery assertions name real pages in whatever content it runs
+against, so they are that content's, not the component's.
+
+Everything else is byte-identical apart from line endings, and that is checkable
+rather than aspirational:
+
+```
+diff --strip-trailing-cr <repo>/view.js <vault>/_service/dashboard/view.js
+```
+
+should report exactly one hunk, the config block. More than one means the two
+copies have drifted and one side is behind. Comment examples belong to the repo
+copy's vocabulary, which is deliberately invented: the reasoning behind a
+decision lives in this file, where it can name the real thing that prompted it.
+
 ## Per-wiki configuration
 
 Two objects, both in `view.js`. `SHARED` holds what does not vary: where the
-component's own files live, the archive folder name, and the four lifecycle
-states offered in the column menu. `WIKIS` holds one entry per wiki, keyed by the
+component's own files live, the archive folder name, and the four documented
+lifecycle states, which `menuStatuses` extends per wiki. `WIKIS` holds one entry per wiki, keyed by the
 slug a board note names in `board_wiki`.
 
 Folder names are configuration, not constants, because they are whatever a
@@ -573,7 +604,11 @@ Still not exposed: the projects folder, its depth, the people folder, and the co
 
 ## Project management
 
-Each project column carries a `⋯` menu with the four lifecycle states from `wiki-config.md`: active, dormant, completed, abandoned. Choosing one writes `status` and `last_activity` to that project's landing page via `processFrontMatter`, which is exactly what `/project <wiki> status <slug> <new-status>` does, with the slug taken from the column's own wiki. The current state is marked and disabled. Since columns are the projects whose status is column-eligible, anything else removes the column immediately, so the notice says so rather than letting it vanish silently.
+Each project column carries a `⋯` menu of project statuses. Choosing one writes `status` and `last_activity` to that project's landing page via `processFrontMatter`, which is exactly what `/project <wiki> status <slug> <new-status>` does, with the slug taken from the column's own wiki. The current state is marked and disabled. Since columns are the projects whose status is column-eligible, anything else removes the column immediately, so the notice says so rather than letting it vanish silently.
+
+`menuStatuses(wiki)` decides what is offered: the four documented lifecycle states from `wiki-config.md`, plus any status the wiki treats as column-eligible that is not one of them. The second half is what stops the menu lying. A wiki may earn columns with a status of its own, and a project holding one then had a menu offering four states with none marked, which reads as "this project is in no state at all", and left picking one of the four as the only way out of a status that was legitimate. Extras are appended rather than sorted into place: where they sit in a lifecycle is the wiki's business, not this component's.
+
+That bug survived a green harness for weeks because the assertion only inspected the first menu, and no project in such a status happened to sort first. The check now runs over every project column and asserts each marks exactly one status, which holds for any wiki precisely because the offered set is derived from `columnStatuses`.
 
 Category columns carry no menu. A category landing is `type: category` with no lifecycle status, so offering to set one would write a field that means nothing there. This is gated on the column's `kind`, and the render harness asserts no category column renders a menu.
 
@@ -584,6 +619,57 @@ The menu expands inline, not as an absolute dropdown: `.wkb-board` sets `overflo
     - [[legacy-export]] — dormant (still deployed; superseded by [[api-migration]])
 
 A button can move that line but cannot write the annotation, which is the part that makes the index worth having. A half-applied archive also leaves the wiki inconsistent across four files. The plugin's `/project archive` is interactive for exactly these reasons, so the menu surfaces the command with a copy button instead of imitating it. The render harness asserts no menu item matches `/archive|delete|move/`, so this boundary cannot erode by accident.
+
+## Project flags
+
+A board note declares `board_flags`: a list of per-project boolean frontmatter fields, each rendered as a switch pill in the column header. An entry is `{ field, label, glyph, on_hint?, off_hint? }`, where the two hints are optional sentences saying what that state means. The settings panel's Flags group adds, edits and removes them, and the frontmatter is the store.
+
+```yaml
+board_flags:
+  - field: publish
+    label: Publish
+    glyph: P
+    on_hint: Included the next time the site is built.
+    off_hint: Kept out of the site build.
+```
+
+The hints are named `on_hint` and `off_hint` rather than `on` and `off` because YAML 1.1 reads a bare `on:` or `off:` key as a boolean. The sentence would be filed under `true:` and silently lost, and the pill would fall back to its generic wording with nothing to say what went wrong.
+
+**The board writes the field and knows nothing about what reads it.** That boundary is the whole feature, and it is what makes one mechanism serve any per-project boolean: an opt-in to an export, a publish gate, a review marker, a flag some script outside the vault greps for. The only vocabulary the code owns is "on", "off" and "click to turn it on" or "off"; everything specific to a flag comes from its declaration. Nothing about a flag lives in `view.js`, not in `WIKIS`, not in `SETTINGS`, not as a default anywhere.
+
+The pills sit in the column header, not in the `⋯` menu. A flag that lives only in frontmatter is a flag nobody remembers, and a toggle behind a disclosure triangle is barely better: the reason for putting it on the board is that the state is readable without opening anything. The menu also carries a labelled section per flag, so a pill is discoverable and its state readable in words rather than only as a colour.
+
+**Two states, and both are quiet.** `on` is an accent glyph with a neutral border and no fill; `off` is a faint struck-through glyph. Filling `on` with the accent, which is where this started, makes a board of flagged projects look like a row of alarms. A flag is a property of a project, not a warning about it, so neither state competes with the column title.
+
+Absent, unparseable and an explicit no all read as false. `flagValue` accepts `true` and a quoted `"true"`, because YAML written by hand or by an agent picks up quotes easily, and nothing else. A consumer that fails closed on the field therefore agrees with the pill: an unreadable value never shows as flagged. A tri-state read, where a missing key is its own visible "nobody has answered", only earns a third colour when something downstream treats unanswered differently from no.
+
+**Two or three pills per header is the practical ceiling.** The header wraps rather than clipping, so a fourth costs legibility rather than breaking the layout; the render harness asserts the ceiling instead of the config rejecting it. The glyph cap of two characters is enforced, because the pill takes its geometry from the shared 18px control group and a longer glyph overflows the box rather than shrinking.
+
+`resolveFlags(frontmatter)` returns the usable flags, one problem per entry dropped, and the declaration itself. `render` shows each problem as a banner over the board and the panel repeats it under the editor. A misconfigured flag has to say so twice: a pill that silently never appears looks exactly like a board that declared none, and frontmatter is the last place anyone thinks to look. An entry is dropped when it omits `field`, `label` or `glyph`, when its glyph is too long, when two entries share a field or a glyph, or when it declares `status`, `last_activity` or a `board_` settings key. Those last are fields the board already writes with different semantics, and two controls on one field with two meanings is the failure that validation exists to prevent. A `board_flags` that is not a list, the likeliest hand-editing mistake, is one problem rather than an exception.
+
+**Unlike the status menu, a flag write does not stamp `last_activity`, and there is no per-flag opt-out.** Flipping a flag is not work on the project, and `last_activity` feeds both the board's activity sort and whatever consumes the flag downstream, so stamping it would make a dormant project look alive. Off writes an explicit `false` rather than deleting the key, so a no stays readable in the frontmatter instead of looking like a question never asked. The render harness asserts the write carries exactly one key.
+
+The choice buttons use `.wkb-menu__choice`, not `.wkb-menu__item`. That class means "a lifecycle status" to anything selecting inside the menu, and widening it to mean "any button in the menu" makes the status section uncountable. The harness asserts both counts independently.
+
+### Configuring flags from the panel
+
+The Flags group in the settings panel is the editor: one block per declared flag with a text field per key, a Remove button on each, and an Add flag button under the list. Editing a field, removing a flag or filling in a new one writes `board_flags` on the board note. Hand-editing the frontmatter stays equally valid, and the panel shows whatever is there on the next render.
+
+**Every commit writes the whole list.** The frontmatter is therefore always the complete declaration and a partial list cannot drift, which is the rule the manual column order already follows. Empty optional keys are dropped rather than written as empty strings, an entirely empty entry never reaches the note, and removing the last flag deletes the key instead of leaving `board_flags: []` behind: a board with no flags should look like a board that never had any.
+
+**Add creates a row without writing.** The row exists to be typed into, and an empty entry in the note is worse than no entry: it would be a declaration that declares nothing. The first edit in that row commits the list, at which point the entry has something in it. Which is also why an entirely empty entry is neither a flag nor a problem in `resolveFlags`: complaining about a form nobody has filled in yet is noise, and the Add button creates exactly that form.
+
+**Commit is on `change`, not on input.** Every write re-renders the board, so a write per keystroke would rip the input out from under the cursor. `change` fires on blur, which means a re-render happens between one field and the next, so the editor records which entry and which key had focus and `render` puts the caret back afterwards. This is the same mechanism the search box uses and for the same reason. The record is only kept when the blur actually committed something: a field you tabbed through without editing must not pull the caret back to itself.
+
+**A rejected entry stays in the editor.** `resolveFlags` returns the declaration as well as the usable flags, and the editor binds to the declaration, so a flag that failed validation is sitting there with its problem printed under the list rather than vanishing. A flag you cannot see is a flag you cannot fix, and dropping it from the editor would leave you deleting frontmatter by hand to recover.
+
+**Removing a flag leaves its field on every project page.** That is the conservative half of the trade: the board stops offering the switch and stops reading the field, and nothing silently rewrites a field across every project on a button press. Re-adding the flag with the same field shows the old values again.
+
+### Why flags are not a setting
+
+`board_flags` carries the `board_` prefix, lives in the same frontmatter as the display settings, and is edited from the same panel, but it is not a member of `SETTINGS`. Two reasons, and the first is a hazard: **"Reset to defaults" deletes every `SETTINGS` key**, so a flag declared as a setting would be destroyed by a button whose job is to clear display preferences. The harness asserts no `SETTINGS` spec resolves to `FLAG_KEY`.
+
+The second is shape. One `SETTINGS` spec describes one scalar with one control and one default, and `resolveSettings` coerces a bad value down to that default. A flag is a record with five keys, a list of them is the setting, and a bad value cannot be coerced into a sane one: it has to be reported and left alone. So `resolveSettings` resolves the flags separately and hangs them off the same object as `flags`, `flagProblems` and `flagsDeclared`, which means every render path that already carries settings carries the flags too, with no signature change per call site.
 
 ## Mobile and iOS
 
@@ -650,6 +736,9 @@ Regression guards that must not be relaxed:
 - Card descriptions must carry actual content, tested as at least one letter or digit. A shim regression once blanked every description while leaving the element in place, and the preview looked plausible. This was a three-word minimum until real data broke it: `12-factor-agents (GitHub)` is a complete two-word task
 - No `.wkb-menu__item` may match `archive|delete|move`, so the deliberate boundary against destructive project operations cannot erode
 - No category column may render a status menu
+- Every project column's menu marks exactly one status. This holds for any wiki because the offered set is derived from `columnStatuses`, and it is asserted over every menu rather than the first: the single-menu version of this check passed while any project in a wiki's own column-eligible status had a menu marking nothing
+- A flag write must be a real boolean, exactly one key, and never `last_activity`. Pills must render only on a board declaring `board_flags`, only on project columns, and each pill must show its own column's value for its own field rather than the first column's or the first flag's. A missing value must read as off, so a consumer that fails closed on the field and the pill agree. `board_flags` must never be a `SETTINGS` member, or a reset deletes it
+- A panel flag edit must write the whole list to the board note, drop empty optional keys, delete the key when the last flag goes, and write nothing at all for a row that has only just been added
 - The add-task button must never write without a returned task line. A missing
   Tasks plugin, a cancelled modal and a non-task return are each asserted to
   leave the vault untouched, and a batch containing one bad line is refused

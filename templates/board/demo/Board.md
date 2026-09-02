@@ -7,6 +7,12 @@ cssclasses:
   - wkb-board-page
 board_show_unassigned: true
 board_show_empty_columns: false
+board_flags:
+  - field: publish
+    label: Publish
+    glyph: P
+    on_hint: Included the next time the site is built.
+    off_hint: Kept out of the site build.
 board_column_order: count
 ---
 ```dataviewjs

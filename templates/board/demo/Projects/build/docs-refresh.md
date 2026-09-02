@@ -3,6 +3,7 @@ type: project
 status: active
 created: 2026-01-08
 last_activity: 2026-01-19
+publish: true
 ---
 
 # docs-refresh

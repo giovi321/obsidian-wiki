@@ -3,6 +3,7 @@ type: project
 status: active
 created: 2026-01-03
 last_activity: 2026-01-20
+publish: true
 ---
 
 # website-redesign

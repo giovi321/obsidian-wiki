@@ -3,6 +3,7 @@ type: project
 status: active
 created: 2026-01-05
 last_activity: 2026-01-15
+publish: false
 ---
 
 # office-move
