@@ -376,15 +376,21 @@
    controls so every touch target on the board behaves the same.
 
    Every control in a column header resolves through this one group: add, the
-   reorder arrows and the flag pills. The geometry is fixed here and nowhere
-   else. `.wkb-col__head` aligns on the baseline and a centred glyph box takes
-   its baseline from the glyph, so a control that sets its own font-size or
-   padding drops off the row. Members may override colour and font-weight.
-   Nothing else. */
+   reorder arrows, the flag pills and the ⋯ menu. They used to carry four
+   different treatments (bordered square, filled pill, bare glyph) in four
+   sizes, which made the header read as a row of unrelated widgets and put the
+   loudest element next to the title rather than on the title.
+
+   The geometry is fixed here and nowhere else. `.wkb-col__head` aligns on the
+   baseline and a centred glyph box takes its baseline from the glyph, so a
+   control that sets its own font-size or padding drops off the row: that is
+   exactly what the flag pill did before it joined this group. Members may
+   override colour and font-weight. Nothing else. */
 .wkb-toolbar__dir,
 .wkb-add,
 .wkb-move,
-.wkb-flag {
+.wkb-flag,
+.wkb-menu__button {
   position: relative;
   width: 18px;
   height: 18px;
@@ -404,7 +410,8 @@
 .wkb-toolbar__dir::after,
 .wkb-add::after,
 .wkb-move::after,
-.wkb-flag::after {
+.wkb-flag::after,
+.wkb-menu__button::after {
   content: "";
   position: absolute;
   inset: -13px;
@@ -412,14 +419,17 @@
 .wkb-toolbar__dir:hover:not(:disabled),
 .wkb-add:hover:not(:disabled),
 .wkb-move:hover:not(:disabled),
-.wkb-flag:hover:not(:disabled) {
+.wkb-flag:hover:not(:disabled),
+.wkb-menu__button:hover {
   color: var(--wkb-accent);
   border-color: var(--wkb-accent);
+  background: var(--background-primary);
 }
 .wkb-toolbar__dir:active:not(:disabled),
 .wkb-add:active:not(:disabled),
 .wkb-move:active:not(:disabled),
-.wkb-flag:active:not(:disabled) {
+.wkb-flag:active:not(:disabled),
+.wkb-menu__button:active {
   background: var(--background-modifier-hover);
 }
 .wkb-toolbar__dir:disabled,
@@ -512,22 +522,20 @@
   margin-left: 0;
 }
 
+/* Geometry comes from the shared header-control group. A <summary> still needs
+   its marker suppressed twice: list-style for Firefox, the pseudo-element for
+   WebKit. Without both, a disclosure triangle sits inside the 18px box. */
 .wkb-menu__button {
-  cursor: pointer;
-  padding: 0 4px;
-  border-radius: 4px;
-  color: var(--text-faint);
-  font-size: var(--font-smaller);
-  line-height: 1.1;
   list-style: none;
-  -webkit-tap-highlight-color: transparent;
 }
 .wkb-menu__button::-webkit-details-marker {
   display: none;
 }
-.wkb-menu__button:hover {
-  color: var(--text-accent);
-  background: var(--background-modifier-hover);
+/* Open is a state worth showing: the menu occupies a full header row, and an
+   unchanged button leaves nothing indicating which control opened it. */
+.wkb-menu[open] .wkb-menu__button {
+  color: var(--wkb-accent);
+  border-color: var(--wkb-accent);
 }
 
 .wkb-menu__body {

@@ -1682,8 +1682,9 @@ function renderSettingsPanel(wiki, s, hiddenUnassigned, app, dv, notice, refresh
   // globalThis, not window: view.js also runs under node in the test harness,
   // where window does not exist.
   //
-  // Keyed per wiki, so two boards open side by side do not share one flag and
-  // opening one panel does not spring the other's open on its next re-render.
+  // Keyed per wiki, so two boards open side by side do not share one open
+  // state and opening one panel does not spring the other's open on its next
+  // re-render.
   const panelState = (globalThis.__wkbPanelOpen ||= {});
   panel.open = !!panelState[wiki.slug];
   panel.addEventListener("toggle", () => {

@@ -67,6 +67,36 @@ note whatever wiki the note belongs to. Its frontmatter carries `board_wiki`,
 The board is a second dashboard, not a replacement for whatever else a wiki has.
 Nothing here writes to a wiki's other dashboards.
 
+## The two copies
+
+This component exists twice: installed in a vault, where it runs, and in the
+obsidian-wiki repo, where it is the template `/setup-wiki` copies out. **The repo
+copy is the source of truth for code.** Work done while sitting in a vault is
+ported up; anything taken from the repo is copied down.
+
+Exactly three things may differ, and they are all configuration:
+
+- `SHARED` and `WIKIS` in `view.js`: the folder layout, the wikis, where the
+  stylesheet lives
+- the per-wiki token blocks in `view.css`, one `.wkb-wrap.is-<slug>` each
+- in the harnesses: `VAULT`, the board-note map, and `TEST_FLAGS`
+
+`test-board.mjs` is the one file that cannot converge beyond that. Its fixtures
+and its discovery assertions name real pages in whatever content it runs
+against, so they are that content's, not the component's.
+
+Everything else is byte-identical apart from line endings, and that is checkable
+rather than aspirational:
+
+```
+diff --strip-trailing-cr <repo>/view.js <vault>/_service/dashboard/view.js
+```
+
+should report exactly one hunk, the config block. More than one means the two
+copies have drifted and one side is behind. Comment examples belong to the repo
+copy's vocabulary, which is deliberately invented: the reasoning behind a
+decision lives in this file, where it can name the real thing that prompted it.
+
 ## Per-wiki configuration
 
 Two objects, both in `view.js`. `SHARED` holds what does not vary: where the

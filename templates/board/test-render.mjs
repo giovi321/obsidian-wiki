@@ -926,11 +926,19 @@ console.log("\nFlag pills");
   ok("each pill shows its own project's value for its own field", wrong.length === 0,
      wrong.join("; ") || `all ${flaggable.length * TEST_FLAGS.length} match`);
 
-  // Both states have to be present in the demo data or the comparison above
-  // passes on a board where every pill happens to agree.
-  const states = new Set(c.find(".wkb-flag").map((b) => b.className.includes("wkb-flag--on")));
-  ok("the demo data exercises both states", states.size === 2,
-     [...states].join(", "));
+  // The set of states on screen must be the set of states in the data. Both
+  // halves matter: a board whose data has an on and an off must render both, so
+  // a render that ignored the field cannot pass; and a board whose data is all
+  // one way must not render the other. Asserting "both states appear" outright
+  // fails on a board where no project carries the field, which is a legitimate
+  // state of the data rather than a regression.
+  const dataStates = new Set(
+    flaggable.flatMap((x) => TEST_FLAGS.map((f) => x.flags[f.field] === true))
+  );
+  const drawnStates = new Set(c.find(".wkb-flag").map((b) => b.className.includes("wkb-flag--on")));
+  ok("the states on screen are the states in the data",
+     dataStates.size === drawnStates.size && [...dataStates].every((s) => drawnStates.has(s)),
+     `data ${[...dataStates].join("/")} vs drawn ${[...drawnStates].join("/")}`);
 
   // A field no page carries must read off everywhere. Absent is not a third
   // state: a consumer that fails closed on the field and the pill agree.
@@ -1074,7 +1082,7 @@ console.log("\nBad flag config");
 
   // A scalar where a list belongs is the likeliest hand-editing mistake. It
   // must not throw: the board renders with no pills and says what it wanted.
-  const scalar = await renderWith({ board_flags: "publish" });
+  const scalar = await renderWith({ board_flags: "not-a-list" });
   ok("a non-list declaration renders a board, not an exception",
      scalar.find(".wkb-col").length === modelVisible.length,
      `${scalar.find(".wkb-col").length} vs ${modelVisible.length}`);
@@ -1402,18 +1410,18 @@ console.log("\nStylesheet lint");
   // Every header control resolves through one geometry rule. The group is
   // located by that geometry rather than by a fixed selector list, so adding a
   // member does not break the guard and dropping one still does.
-  const HEADER_CONTROLS = [".wkb-toolbar__dir", ".wkb-add", ".wkb-move", ".wkb-flag"];
+  const HEADER_CONTROLS = [".wkb-toolbar__dir", ".wkb-add", ".wkb-move", ".wkb-flag", ".wkb-menu__button"];
   // The capture stops before the brace, so the last selector in the list has no
   // delimiter after it. Append one rather than making the delimiter optional,
   // which would let `.wkb-move` satisfy a check for `.wkb-moves`.
   const groupSelectors = (stripped.match(/([^{}]*)\{[^}]*width:\s*18px[^}]*\}/) || [, ""])[1] + ",";
-  const ungrouped = HEADER_CONTROLS.filter((sel) => new RegExp(`\\${sel}\\s*[,{]`).test(groupSelectors) === false);
+  const ungrouped = HEADER_CONTROLS.filter((sel) => !new RegExp(`\\${sel}\\s*[,{]`).test(groupSelectors));
   ok("every header control is in the shared control group", ungrouped.length === 0,
      ungrouped.join(", ") || `all ${HEADER_CONTROLS.length} grouped`);
 
   // Same trap as the add button, for every member: .wkb-col__head baseline-aligns
   // its children, so a member setting its own font-size or padding drops off the
-  // row the title and count sit on.
+  // row the title and count sit on. A header pill shipped that way once.
   const overriding = HEADER_CONTROLS.map((sel) => {
     // Anchored on a rule boundary so the shared group itself, whose list ends
     // with a member selector immediately before the brace, is not read as that
@@ -1453,7 +1461,11 @@ console.log("\nStylesheet lint");
      Object.keys(board.WIKIS).join(", "));
 }
 
-// Re-render into the same container, the path a checkbox toggle takes.
+// Re-render into the same container, the path a checkbox toggle takes. The
+// declared flags go back in first: this render is also what --html writes out,
+// and a preview built from whatever frontmatter the last assertion happened to
+// leave behind is not a preview of the board.
+state.settingsFM = { board_flags: TEST_FLAGS };
 await board.render(dv, dv.container, app);
 ok("re-render is idempotent, no duplicate board", root.find(".wkb-board").length === 1);
 ok("re-render keeps every column", root.find(".wkb-col").length === modelVisible.length,
