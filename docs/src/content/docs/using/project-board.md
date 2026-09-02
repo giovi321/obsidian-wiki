@@ -199,6 +199,8 @@ against, so every project and person in it is fictional.
   the `+` in a column header to add one through the Tasks plugin's own modal
 - 20 display settings stored as `board_*` keys in the board note's frontmatter, so two
   boards in one vault are configured independently
+- Switch pills in the column headers for any per-project boolean you declare, so a flag
+  something else reads is visible and flippable where the projects are
 
 ## Why a view, not a plugin
 
@@ -223,7 +225,7 @@ The cost is enabling Dataview's JavaScript Queries once per device.
 - A `purpose: projects` folder in the wiki. Without one the board would have no columns,
   and `/setup-wiki` will not offer it
 
-## Configuration, in two places
+## Configuration, in three places
 
 <div class="diagram-frame">
 <svg viewBox="0 0 1000 660" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, 'Segoe UI', Roboto, sans-serif">
@@ -303,6 +305,37 @@ The cost is enabling Dataview's JavaScript Queries once per device.
   <text x="44" y="500" fill="#c6c6c6" font-size="11.5" font-family="ui-monospace, monospace">demo/Archive</text>
   <path d="M 236 546 L 241 546 L 241 541 Z" fill="#4a4a4a"/>
 
+
+  <!-- ===================== FLAGS ===================== -->
+  <text x="466" y="326" fill="#8a8a8a" font-size="11" letter-spacing="0.09em">FLAGS</text>
+
+  <rect x="466" y="340" width="300" height="196" rx="6" fill="#1d1d1d" stroke="#2e2e2e"/>
+
+  <rect x="478" y="352" width="16" height="16" rx="4" fill="#1d1d1d" stroke="#3a3a3a"/>
+  <text x="482" y="364" fill="#8b6cef" font-size="9" font-weight="700">P</text>
+  <text x="502" y="364" fill="#d8d8d8" font-size="13" font-weight="600">Publish</text>
+  <rect x="676" y="350" width="66" height="21" rx="4" fill="#1d1d1d" stroke="#3a3a3a"/>
+  <text x="688" y="365" fill="#a0a0a0" font-size="11">Remove</text>
+
+  <text x="478" y="390" fill="#6b6b6b" font-size="10.5">Field</text>
+  <rect x="478" y="394" width="276" height="21" rx="4" fill="#1a1a1a" stroke="#3a3a3a"/>
+  <text x="486" y="409" fill="#c6c6c6" font-size="11.5" font-family="ui-monospace, monospace">publish</text>
+
+  <text x="478" y="431" fill="#6b6b6b" font-size="10.5">Label</text>
+  <rect x="478" y="435" width="276" height="21" rx="4" fill="#1a1a1a" stroke="#3a3a3a"/>
+  <text x="486" y="450" fill="#c6c6c6" font-size="11.5">Publish</text>
+
+  <text x="478" y="472" fill="#6b6b6b" font-size="10.5">Glyph</text>
+  <rect x="478" y="476" width="276" height="21" rx="4" fill="#1a1a1a" stroke="#3a3a3a"/>
+  <text x="486" y="491" fill="#c6c6c6" font-size="11.5">P</text>
+
+  <text x="478" y="513" fill="#6b6b6b" font-size="10.5">When on</text>
+  <rect x="478" y="517" width="276" height="21" rx="4" fill="#1a1a1a" stroke="#3a3a3a"/>
+  <text x="486" y="532" fill="#c6c6c6" font-size="11.5">Included the next time the site is built.</text>
+
+  <rect x="466" y="546" width="80" height="26" rx="5" fill="#1d1d1d" stroke="#3a3a3a"/>
+  <text x="478" y="564" fill="#c0c0c0" font-size="12.5">Add flag</text>
+
   <rect x="266" y="496" width="132" height="34" rx="6" fill="#1d1d1d" stroke="#3a3a3a"/>
   <text x="284" y="518" fill="#c0c0c0" font-size="13">Reset to defaults</text>
 
@@ -327,12 +360,59 @@ These describe a wiki's shape, so they are shared by every board on that wiki.
 Appearance lives in the board note's own frontmatter as `board_*` keys, and the settings
 panel on the board writes them for you.
 
+Flags are the third, declared on the board note as `board_flags` and edited from the
+same panel. They are neither structure nor appearance: a flag says what boolean a
+project can carry, so it gets its own section below.
+
 The setting to get right before any other is `exclude_folders`. Any folder holding
 checkbox lines that are not project tasks belongs in it: meeting transcripts, imported
 checklists, reading lists. A folder of transcripts can hold an order of magnitude more
 checkbox lines than a wiki has real tasks. Including it does not break the board, it
 buries every real task under the triage column, and nothing on screen says that is what
 happened.
+
+## Per-project flags
+
+A flag is a boolean you keep in a project's frontmatter and something else reads: an
+opt-in to an export, a publish gate, a review marker, a field a script outside the vault
+greps for. Declare it on the board note and every project column grows a switch pill for
+it.
+
+```yaml
+board_flags:
+  - field: publish
+    label: Publish
+    glyph: P
+    on_hint: Included the next time the site is built.
+    off_hint: Kept out of the site build.
+```
+
+`field`, `label` and `glyph` are required, the two hints optional. The glyph is what the
+pill shows, so one or two characters. Clicking a pill writes `field: true` or
+`field: false` to that project's landing page and nothing else, never `last_activity`:
+flipping a flag is not work on the project, and stamping the date would make a dormant
+project look active in the board's own activity sort.
+
+The settings panel's Flags group is the editor. Each declared flag gets a block with a
+field per key, a Remove button, and there is an Add flag button under the list. The
+frontmatter is the store either way, so editing it by hand works exactly as well.
+
+Two things worth knowing:
+
+- **The board does not know what reads the field.** It writes a boolean where you told
+  it to, and that is the whole contract. Whatever consumes the flag, an ingest procedure,
+  a build script, a query in another note, is on its own side of that line
+- **Absent means off.** A project with no such key in its frontmatter shows the pill
+  struck through, and so does an unparseable value. A consumer that treats a missing
+  field as "no" therefore agrees with what the board shows
+
+A flag whose declaration is wrong, no `field`, a glyph too long, two flags sharing a
+field, or one trying to write `status` or `last_activity`, is dropped with a banner over
+the board and a line in the panel saying which. It is never dropped silently: a pill that
+never appears looks exactly like a board with no flags declared.
+
+Two or three pills is as many as a column header carries comfortably. Beyond that the
+header wraps and the project name stops being the first thing you read.
 
 ## Task syntax
 
@@ -353,10 +433,16 @@ two projects in its leading run does appear in both columns; that is deliberate.
 
 ## Writes
 
-Three code paths modify notes: ticking a checkbox, setting a status from the card menu,
+Three code paths modify a task: ticking a checkbox, setting a status from the card menu,
 and adding a task. All three write one line to the task's own source note, and all three
 fail closed. If the line the board parsed is no longer there, nothing is written and the
 board says it is stale rather than guessing which line was meant.
+
+Three more write frontmatter rather than a task line: the column menu's status change,
+which writes `status` and `last_activity` to a project's landing page; a flag pill, which
+writes one boolean to a project's landing page and nothing else; and the settings panel,
+which writes `board_*` keys to the board note. Each is a single named key, so a failed
+write leaves the note as it was.
 
 Only the four statuses above are offered, because the parser reads exactly those
 characters. Writing a fifth would produce a line the board cannot read back, and the

@@ -41,6 +41,23 @@ const DASHBOARDS = {
 };
 
 /*
+ * Flags are declared per board note, so the flag assertions declare their own
+ * rather than reading whatever the note happens to carry: the behaviour under
+ * test is the render path, not the demo wiki's current configuration. Two of
+ * them, because one flag cannot catch a render that draws the first flag's
+ * state under every glyph.
+ *
+ * `publish` is the flag the demo board declares and it varies per project,
+ * which is what makes the per-column comparison meaningful. `harness_flag` is
+ * on no page at all, so it must render off everywhere.
+ */
+const TEST_FLAGS = [
+  { field: "publish", label: "Publish", glyph: "P", on_hint: "In the next build.", off_hint: "Held back." },
+  { field: "harness_flag", label: "Harness flag", glyph: "H" },
+];
+const TEST_FLAG_FIELDS = TEST_FLAGS.map((f) => f.field);
+
+/*
  * The real current date, not a fixed one.
  *
  * This harness compares a model it builds itself against a live render, and
@@ -123,11 +140,24 @@ class El {
   empty() {
     this.children = [];
   }
+  // Enough of the focus API for the caret-restore paths to be exercised rather
+  // than skipped: the flag editor commits on blur and re-renders, so putting
+  // the caret back is behaviour, not decoration.
+  focus() {
+    El.focused = this;
+  }
+  setSelectionRange(from, to) {
+    this.selection = [from, to];
+  }
   all() {
     return this.children.flatMap((c) => (c instanceof El ? [c, ...c.all()] : []));
   }
+  // A class selector or a bare tag name. One or the other, never a compound:
+  // the board's own selectors are single, and a real parser here would be a
+  // second implementation of something the browser already does.
   find(sel) {
-    const cls = sel.replace(".", "");
+    if (!sel.startsWith(".")) return this.all().filter((e) => e.tag === sel);
+    const cls = sel.slice(1);
     return this.all().filter((e) => e.className.split(" ").includes(cls));
   }
   querySelector(sel) {
@@ -269,7 +299,10 @@ function setup(wiki) {
         const content = fs.readFileSync(absOf(f.path), "utf8");
         const fm = {};
         const block = content.split("---")[1] || "";
-        for (const key of ["status", "last_activity", "created"]) {
+        // Every key the board reads off a landing page, including the fields
+        // the flag assertions declare, so those run against the real
+        // frontmatter rather than against values the harness never loaded.
+        for (const key of ["status", "last_activity", "created", ...TEST_FLAG_FIELDS]) {
           const m = new RegExp(`^${key}:\\s*(.+)$`, "m").exec(block);
           if (m) fm[key] = m[1].trim().replace(/^["']|["']$/g, "");
         }
@@ -304,7 +337,25 @@ function setup(wiki) {
     return c;
   };
 
-  return { tree, app, dv, pages, renderWith, fmWrites, state, DASHBOARD };
+  /*
+   * Run one panel action and hand back the frontmatter it wrote, plus the file
+   * it wrote to. `seed` stands in for keys the note already carries, so a write
+   * that is supposed to delete a key can be told from one that never wrote it.
+   */
+  const captureFlagWrite = async (act, seed = {}) => {
+    const fm = { ...seed };
+    let target = null;
+    const real = app.fileManager.processFrontMatter;
+    app.fileManager.processFrontMatter = async (file, fn) => {
+      target = file.path;
+      fn(fm);
+    };
+    await act();
+    app.fileManager.processFrontMatter = real;
+    return { fm, target };
+  };
+
+  return { tree, app, dv, pages, renderWith, captureFlagWrite, fmWrites, state, DASHBOARD };
 }
 
 /* ------------------------------------------------------------------ run */
@@ -312,7 +363,7 @@ function setup(wiki) {
 async function run(wiki) {
 console.log(`\n${"=".repeat(60)}\n${wiki.label} wiki (${wiki.slug})\n${"=".repeat(60)}`);
 
-const { tree, app, dv, pages, renderWith, fmWrites, state, DASHBOARD } = setup(wiki);
+const { tree, app, dv, pages, renderWith, captureFlagWrite, fmWrites, state, DASHBOARD } = setup(wiki);
 
 console.log("\nRender smoke test");
 
@@ -359,6 +410,7 @@ function modelDiscover(folderPath, depth, archived) {
       status: archived ? "archived" : fm.status || "active",
       lastActivity: fm.last_activity || null,
       created: fm.created || null,
+      flags: Object.fromEntries(TEST_FLAG_FIELDS.map((f) => [f, board.flagValue(fm[f])])),
       kind,
     };
   };
@@ -457,12 +509,17 @@ console.log("\nSettings panel");
   // The Sort group is owned by the toolbar above the board, so the panel renders
   // every other setting and nothing from Sort. One setting, one control.
   const panelSettings = board.SETTINGS.filter((s) => s.group !== "Sort");
-  const controls = root.find(".wkb-set");
+  // The flag editor's rows share .wkb-set for its geometry but are not setting
+  // controls: one flag contributes five of them and no SETTINGS spec.
+  const controls = root.find(".wkb-set").filter((r) => !r.className.includes("wkb-set--flag"));
   ok("one control per non-sort setting", controls.length === panelSettings.length,
      `${controls.length} vs ${panelSettings.length}`);
   const groups = root.find(".wkb-settings__grouphead").map((e) => e.textContent);
-  ok("every non-sort group is rendered",
-     groups.length === new Set(panelSettings.map((s) => s.group)).size, groups.join(", "));
+  // Flags is a group with no SETTINGS spec behind it: it edits a list of
+  // records rather than one scalar per control, so it is counted separately.
+  const settingGroups = new Set(panelSettings.map((s) => s.group));
+  ok("every non-sort group is rendered, plus Flags",
+     groups.length === settingGroups.size + 1 && groups.includes("Flags"), groups.join(", "));
   ok("scope group present", groups.includes("Scope"), groups.join(", "));
   ok("panel has no Sort group", !groups.includes("Sort"), groups.join(", "));
   ok("reset button present", root.find(".wkb-settings__reset").length === 1);
@@ -802,6 +859,254 @@ console.log("\nStatus write targets the project note");
   ok("writes no board_ keys", !Object.keys(written).some((k) => k.startsWith(board.SETTING_PREFIX)));
 }
 
+console.log("\nFlag pills");
+{
+  // Declared on the board note, so the no-flags case is a board that declares
+  // none rather than a wiki that cannot have any.
+  const none = await renderWith({});
+  ok("no pill on a board that declares none",
+     none.find(".wkb-flag").length === 0 && none.find(".wkb-menu__flag").length === 0);
+  ok("and the panel offers to add one",
+     none.find(".wkb-settings__flag").length === 0 &&
+       none.find(".wkb-settings__add").length === 1);
+
+  const c = await renderWith({ board_flags: TEST_FLAGS });
+  const flaggable = modelVisible.filter((x) => !x.unassigned && x.kind === "project");
+
+  ok("one pill per flag per project column, none on categories",
+     c.find(".wkb-flag").length === flaggable.length * TEST_FLAGS.length,
+     `${c.find(".wkb-flag").length} vs ${flaggable.length} x ${TEST_FLAGS.length}`);
+  ok("unassigned has no pill",
+     c.find(".wkb-col")[0].find(".wkb-flag").length === 0);
+
+  // Colour alone must never carry the state, so every pill says it in words.
+  ok("every pill is labelled for screen readers and hover",
+     c.find(".wkb-flag").every((b) => b.title && b.attrs["aria-label"] && b.attrs["aria-pressed"]));
+
+  // The header wraps rather than clipping, so a fourth pill costs legibility
+  // rather than breaking: an assertion, not a validation rule.
+  ok("no header carries more than three pills",
+     c.find(".wkb-col").every((col) => col.find(".wkb-flag").length <= 3),
+     `${Math.max(...c.find(".wkb-col").map((col) => col.find(".wkb-flag").length))} at most`);
+
+  // Pair each rendered pill back to its column's model value, read by glyph: a
+  // single-column check would pass with every pill stuck on the first project's
+  // state, and a single-flag check would pass with one flag drawn twice.
+  const bySlug = new Map(flaggable.map((x) => [x.slug, x]));
+  const wrong = [];
+  for (const col of c.find(".wkb-col")) {
+    const slug = col.find(".wkb-col__title")[0].textContent;
+    if (!bySlug.has(slug)) continue;
+    for (const flag of TEST_FLAGS) {
+      const pill = col.find(".wkb-flag").find((b) => b.textContent === flag.glyph);
+      const want = bySlug.get(slug).flags[flag.field] === true ? "on" : "off";
+      if (!pill) wrong.push(`${slug}: no ${flag.glyph} pill`);
+      else if (!pill.className.includes(`wkb-flag--${want}`))
+        wrong.push(`${slug}/${flag.field}: ${pill.className} want ${want}`);
+    }
+  }
+  ok("each pill shows its own project's value for its own field", wrong.length === 0,
+     wrong.join("; ") || `all ${flaggable.length * TEST_FLAGS.length} match`);
+
+  // Both states have to be present in the demo data or the comparison above
+  // passes on a board where every pill happens to agree.
+  const states = new Set(c.find(".wkb-flag").map((b) => b.className.includes("wkb-flag--on")));
+  ok("the demo data exercises both states", states.size === 2,
+     [...states].join(", "));
+
+  // A field no page carries must read off everywhere. Absent is not a third
+  // state: a consumer that fails closed on the field and the pill agree.
+  const strayOn = c.find(".wkb-flag")
+    .filter((b) => b.textContent === "H" && b.className.includes("wkb-flag--on"));
+  ok("a field no page declares renders off everywhere", strayOn.length === 0,
+     `${strayOn.length} on`);
+  ok("absent reads as off", board.flagValue(undefined) === false && board.flagValue(null) === false);
+
+  const menuFlags = c.find(".wkb-menu")[0].find(".wkb-menu__flag");
+  ok("menu carries a labelled version of every pill", menuFlags.length === TEST_FLAGS.length,
+     `${menuFlags.length} vs ${TEST_FLAGS.length}`);
+  const choices = menuFlags[0].find(".wkb-menu__choice");
+  ok("two choices, on and off", choices.length === 2,
+     choices.map((i) => i.textContent).join(","));
+  // Always exactly one: a boolean is always answered, so one of the two is the
+  // current state and marking neither would be a lie.
+  ok("the current choice is marked", choices.filter((i) => i.disabled).length === 1,
+     `${choices.filter((i) => i.disabled).length} disabled`);
+  // Must not widen the selector the status section is counted by.
+  ok("choices are not lifecycle status items",
+     c.find(".wkb-menu")[0].find(".wkb-menu__item").length === board.SHARED.projectStatuses.length);
+  // Only the sentence is optional: a flag with no hint still gets its label and
+  // its two choices. The harness flag declares none.
+  ok("a flag with no hint renders no hint line",
+     menuFlags[1].find(".wkb-menu__hint").length === 0 &&
+       menuFlags[0].find(".wkb-menu__hint").length === 1);
+
+  // The panel is where flags are configured, so it carries one editable block
+  // per declared flag with a field per key.
+  const blocks = c.find(".wkb-settings__flag");
+  ok("the panel carries a block per declared flag", blocks.length === TEST_FLAGS.length,
+     String(blocks.length));
+  ok("every key of every flag has an input",
+     blocks.every((b2) => b2.find(".wkb-set__flagfield").length === board.FLAG_FIELDS.length),
+     blocks.map((b2) => b2.find(".wkb-set__flagfield").length).join(", "));
+  ok("the inputs carry the current declaration",
+     board.FLAG_FIELDS.every((key) => {
+       const input = blocks[0].find(`.wkb-set--flag-${key}`)[0].find("input")[0];
+       return input && input.value === (TEST_FLAGS[0][key] || "");
+     }),
+     blocks[0].find(".wkb-set__flagfield").map((i) => JSON.stringify(i.value)).join(", "));
+  ok("each block offers a remove",
+     blocks.every((b2) => b2.find(".wkb-settings__remove").length === 1));
+  ok("and the group offers an add",
+     c.find(".wkb-settings__add").length === 1);
+  ok("the glyph input cannot exceed two characters",
+     blocks.every((b2) => b2.find(".wkb-set--flag-glyph")[0].find("input")[0].maxLength === 2));
+}
+
+console.log("\nFlag editing writes the board note");
+{
+  const c = await renderWith({ board_flags: TEST_FLAGS });
+  const blocks = c.find(".wkb-settings__flag");
+
+  // Every commit writes the whole list, so the frontmatter is always the
+  // complete declaration and a partial list cannot drift.
+  const labelInput = blocks[0].find(".wkb-set--flag-label")[0].find("input")[0];
+  const edited = await captureFlagWrite(async () => {
+    // Focus, type, blur: the sequence the caret restore keys off.
+    labelInput.listeners.focus[0]();
+    labelInput.value = "Renamed";
+    await labelInput.listeners.change[0]({});
+  });
+  ok("the write targets the board note, not a project page",
+     edited.target === DASHBOARD, String(edited.target));
+  ok("editing a field writes the whole list",
+     Array.isArray(edited.fm[board.FLAG_KEY]) &&
+       edited.fm[board.FLAG_KEY].length === TEST_FLAGS.length,
+     JSON.stringify(edited.fm));
+  ok("with the edit applied", edited.fm[board.FLAG_KEY][0].label === "Renamed",
+     JSON.stringify(edited.fm[board.FLAG_KEY][0]));
+  ok("and the other flag untouched",
+     edited.fm[board.FLAG_KEY][1].field === TEST_FLAGS[1].field,
+     JSON.stringify(edited.fm[board.FLAG_KEY][1]));
+  // An empty optional key is dropped rather than written as an empty string.
+  ok("empty hints are not written",
+     !("on_hint" in edited.fm[board.FLAG_KEY][1]) &&
+       !("off_hint" in edited.fm[board.FLAG_KEY][1]),
+     JSON.stringify(edited.fm[board.FLAG_KEY][1]));
+  // The caret goes back to the field just committed. Without this, editing a
+  // flag means clicking into the panel again for every field.
+  ok("the caret returns to the field just edited",
+     El.focused && El.focused.className.includes("wkb-set__flagfield"),
+     El.focused ? El.focused.className : "nothing focused");
+
+  const removed = await captureFlagWrite(async () => {
+    await blocks[1].find(".wkb-settings__remove")[0].listeners.click[0]({ preventDefault() {} });
+  });
+  ok("remove drops that one flag",
+     removed.fm[board.FLAG_KEY].length === TEST_FLAGS.length - 1, JSON.stringify(removed.fm));
+  ok("and keeps the other", removed.fm[board.FLAG_KEY][0].field === TEST_FLAGS[0].field,
+     JSON.stringify(removed.fm));
+
+  // Adding a row must not write anything: an empty declaration in the note is
+  // worse than no declaration, and the row exists only to be typed into.
+  const one = await renderWith({ board_flags: [TEST_FLAGS[0]] });
+  let wrote = false;
+  const realProcess = app.fileManager.processFrontMatter;
+  app.fileManager.processFrontMatter = async () => { wrote = true; };
+  await one.find(".wkb-settings__add")[0].listeners.click[0]({ preventDefault() {} });
+  app.fileManager.processFrontMatter = realProcess;
+  ok("adding a row writes nothing until it is filled in", !wrote);
+  ok("but the row is there to type into",
+     one.find(".wkb-settings__flag").length === 2,
+     String(one.find(".wkb-settings__flag").length));
+
+  // Removing the last flag deletes the key: a board with no flags should look
+  // like a board that never had any, not one with an empty list.
+  const last = await renderWith({ board_flags: [TEST_FLAGS[0]] });
+  const emptied = await captureFlagWrite(async () => {
+    await last.find(".wkb-settings__remove")[0].listeners.click[0]({ preventDefault() {} });
+  }, { [board.FLAG_KEY]: "still here" });
+  ok("removing the last flag deletes the key", !(board.FLAG_KEY in emptied.fm),
+     JSON.stringify(emptied.fm));
+}
+
+console.log("\nBad flag config");
+{
+  // Every drop reaches the reader twice: a banner over the board, and a line in
+  // the panel beside the declaration that has to be fixed.
+  const c = await renderWith({
+    board_flags: [
+      { field: "status", label: "Collides", glyph: "C" },
+      { field: "ok_flag", label: "Fine", glyph: "F" },
+    ],
+  });
+  ok("the good flag still renders", c.find(".wkb-flag").length > 0);
+  ok("and the bad one does not",
+     c.find(".wkb-flag").every((b) => b.textContent === "F"));
+  ok("the board carries a banner", c.find(".wkb-banner").length === 1,
+     c.find(".wkb-banner").map((b) => b.textContent).join(" | "));
+  ok("the banner names the field",
+     c.find(".wkb-banner")[0].textContent.includes("status"),
+     c.find(".wkb-banner")[0].textContent);
+  ok("the panel repeats it", c.find(".wkb-settings__flagproblem").length === 1,
+     c.find(".wkb-settings__flagproblem").map((b) => b.textContent).join(" | "));
+  ok("and the rejected flag is still there to fix",
+     c.find(".wkb-settings__flag").length === 2,
+     String(c.find(".wkb-settings__flag").length));
+
+  // A scalar where a list belongs is the likeliest hand-editing mistake. It
+  // must not throw: the board renders with no pills and says what it wanted.
+  const scalar = await renderWith({ board_flags: "publish" });
+  ok("a non-list declaration renders a board, not an exception",
+     scalar.find(".wkb-col").length === modelVisible.length,
+     `${scalar.find(".wkb-col").length} vs ${modelVisible.length}`);
+  ok("and says what shape it wanted", scalar.find(".wkb-banner").length === 1,
+     scalar.find(".wkb-banner").map((b) => b.textContent).join(" | "));
+}
+
+console.log("\nFlag write targets the project note");
+{
+  const cfg = TEST_FLAGS[0];
+  const c = await renderWith({ board_flags: TEST_FLAGS });
+  const col = c.find(".wkb-col").find((x) => x.find(".wkb-flag").length > 0);
+  const pill = col.find(".wkb-flag").find((b) => b.textContent === cfg.glyph);
+  const wasOn = pill.className.includes("wkb-flag--on");
+
+  let target = null;
+  let written = {};
+  const realProcess = app.fileManager.processFrontMatter;
+  app.fileManager.processFrontMatter = async (file, fn) => {
+    target = file.path;
+    fn(written);
+  };
+  await pill.listeners.click[0]({ preventDefault() {} });
+  app.fileManager.processFrontMatter = realProcess;
+
+  ok("writes to a project landing page, not the dashboard",
+     target && target.startsWith(wiki.projectsFolder + "/") && target !== DASHBOARD, String(target));
+  ok("writes the declared field", cfg.field in written, JSON.stringify(written));
+  ok("writes a real boolean, not a string",
+     typeof written[cfg.field] === "boolean", JSON.stringify(written));
+  ok("the click flips the state", written[cfg.field] === !wasOn,
+     `was ${wasOn ? "on" : "not on"}, wrote ${written[cfg.field]}`);
+  // A flag is not activity. Stamping it would make a dormant project look
+  // alive to both the board's activity sort and whatever consumes the flag.
+  ok("does not stamp last_activity", !("last_activity" in written), JSON.stringify(written));
+  ok("touches nothing else", Object.keys(written).length === 1, JSON.stringify(written));
+  ok("writes no board_ keys",
+     !Object.keys(written).some((k) => k.startsWith(board.SETTING_PREFIX)));
+
+  // Pressing the second pill must write the second field. One pill handler
+  // closing over the first flag is the bug this catches.
+  const second = col.find(".wkb-flag").find((b) => b.textContent === TEST_FLAGS[1].glyph);
+  let secondWritten = {};
+  app.fileManager.processFrontMatter = async (file, fn) => fn(secondWritten);
+  await second.listeners.click[0]({ preventDefault() {} });
+  app.fileManager.processFrontMatter = realProcess;
+  ok("each pill writes its own field", TEST_FLAGS[1].field in secondWritten,
+     JSON.stringify(secondWritten));
+}
+
 console.log("\nCard status menu");
 {
   const k = await renderWith({});
@@ -1076,9 +1381,30 @@ console.log("\nStylesheet lint");
   ok("the add button overrides no control geometry",
      !/font-size|align-self|width|height|padding|display/.test(addRule),
      addRule.replace(/\s+/g, " ").trim() || "no rule found");
-  ok("the add button is in the shared control group",
-     /\.wkb-add,\s*\n?\s*\.wkb-move\s*\{/.test(css),
-     "grouped with .wkb-move");
+  // Every header control resolves through one geometry rule. The group is
+  // located by that geometry rather than by a fixed selector list, so adding a
+  // member does not break the guard and dropping one still does.
+  const HEADER_CONTROLS = [".wkb-toolbar__dir", ".wkb-add", ".wkb-move", ".wkb-flag"];
+  // The capture stops before the brace, so the last selector in the list has no
+  // delimiter after it. Append one rather than making the delimiter optional,
+  // which would let `.wkb-move` satisfy a check for `.wkb-moves`.
+  const groupSelectors = (stripped.match(/([^{}]*)\{[^}]*width:\s*18px[^}]*\}/) || [, ""])[1] + ",";
+  const ungrouped = HEADER_CONTROLS.filter((sel) => new RegExp(`\\${sel}\\s*[,{]`).test(groupSelectors) === false);
+  ok("every header control is in the shared control group", ungrouped.length === 0,
+     ungrouped.join(", ") || `all ${HEADER_CONTROLS.length} grouped`);
+
+  // Same trap as the add button, for every member: .wkb-col__head baseline-aligns
+  // its children, so a member setting its own font-size or padding drops off the
+  // row the title and count sit on.
+  const overriding = HEADER_CONTROLS.map((sel) => {
+    // Anchored on a rule boundary so the shared group itself, whose list ends
+    // with a member selector immediately before the brace, is not read as that
+    // member's own rule.
+    const own = (stripped.match(new RegExp(`(?:^|\\})\\s*\\${sel}\\s*\\{([^}]*)\\}`)) || [, ""])[1];
+    return { sel, own: own.replace(/\s+/g, " ").trim() };
+  }).filter((r) => /font-size|align-self|width|height|padding|display|border-radius/.test(r.own));
+  ok("no header control overrides the shared geometry", overriding.length === 0,
+     overriding.map((r) => `${r.sel} { ${r.own} }`).join("; ") || "none");
 
   // The status menu must stay inline. .wkb-board sets overflow-y: hidden, so
   // positioning it absolutely would clip it inside the scroll container, which

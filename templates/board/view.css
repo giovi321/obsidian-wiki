@@ -160,6 +160,134 @@
   border-radius: 4px;
 }
 
+/* ------------------------------------------------------------ flags group */
+
+/* The one panel group that edits a list of records rather than a scalar, so it
+   is the one that needs a shape of its own. Wider than the setting groups
+   because a hint is a sentence, and stacked rather than columnar because the
+   panel wraps to one column on a phone anyway. */
+.wkb-settings__group--flags {
+  min-width: 240px;
+  flex: 1 1 260px;
+  max-width: 340px;
+}
+
+.wkb-settings__flag {
+  margin-bottom: 8px;
+  padding: 6px 8px 4px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+}
+
+.wkb-settings__flaghead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.wkb-settings__flagname {
+  flex: 1;
+  font-weight: 600;
+  color: var(--text-normal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Echoes the header pill's shape at panel scale, so the glyph in the editor is
+   recognisably the glyph on the column. Not a member of the header control
+   group: it is not a control and never gets pressed. */
+.wkb-settings__glyph {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--wkb-accent);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+}
+
+/* Destructive, so it says what it does in words and turns red only on hover:
+   a row of red buttons in a settings panel reads as a warning about the
+   settings rather than as an action available on each one. */
+.wkb-settings__remove,
+.wkb-settings__add {
+  flex: 0 0 auto;
+  font-size: var(--font-smallest);
+  padding: 2px 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+.wkb-settings__remove:hover:not(:disabled) {
+  color: var(--text-error);
+  border-color: var(--text-error);
+}
+.wkb-settings__add:hover:not(:disabled) {
+  color: var(--wkb-accent);
+  border-color: var(--wkb-accent);
+}
+.wkb-settings__remove:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* Label above the input, not beside it: beside it, five rows of two columns in
+   a 240px panel leaves a hint field too narrow to read what you typed. */
+.wkb-set--flag {
+  display: block;
+  min-height: 0;
+  margin-bottom: 4px;
+  cursor: default;
+}
+
+.wkb-set__flaglabel {
+  display: block;
+  font-size: var(--font-smallest);
+  color: var(--text-faint);
+}
+
+.wkb-set__flagfield {
+  display: block;
+  width: 100%;
+  font-size: var(--font-smaller);
+  padding: 2px 6px;
+  color: var(--text-normal);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border-hover);
+  border-radius: 4px;
+}
+.wkb-set__flagfield:focus {
+  border-color: var(--wkb-accent);
+  outline: none;
+}
+
+/* Sits under the blocks rather than inside one: a duplicate field is a problem
+   with the pair, and the text names the flag it belongs to. */
+.wkb-settings__flagproblem {
+  margin-bottom: 4px;
+  font-size: var(--font-smallest);
+  line-height: 1.4;
+  color: var(--text-error);
+}
+
+.wkb-settings__note {
+  max-width: 320px;
+  margin-top: 6px;
+  font-size: var(--font-smallest);
+  line-height: 1.4;
+  color: var(--text-faint);
+}
+
 .wkb-settings__reset {
   align-self: flex-end;
   font-size: var(--font-smallest);
@@ -245,10 +373,18 @@
 }
 
 /* 18px visual, 44 by 44 hit area via the ::after overlay, matching the card
-   controls so every touch target on the board behaves the same. */
+   controls so every touch target on the board behaves the same.
+
+   Every control in a column header resolves through this one group: add, the
+   reorder arrows and the flag pills. The geometry is fixed here and nowhere
+   else. `.wkb-col__head` aligns on the baseline and a centred glyph box takes
+   its baseline from the glyph, so a control that sets its own font-size or
+   padding drops off the row. Members may override colour and font-weight.
+   Nothing else. */
 .wkb-toolbar__dir,
 .wkb-add,
-.wkb-move {
+.wkb-move,
+.wkb-flag {
   position: relative;
   width: 18px;
   height: 18px;
@@ -267,25 +403,29 @@
 }
 .wkb-toolbar__dir::after,
 .wkb-add::after,
-.wkb-move::after {
+.wkb-move::after,
+.wkb-flag::after {
   content: "";
   position: absolute;
   inset: -13px;
 }
 .wkb-toolbar__dir:hover:not(:disabled),
 .wkb-add:hover:not(:disabled),
-.wkb-move:hover:not(:disabled) {
+.wkb-move:hover:not(:disabled),
+.wkb-flag:hover:not(:disabled) {
   color: var(--wkb-accent);
   border-color: var(--wkb-accent);
 }
 .wkb-toolbar__dir:active:not(:disabled),
 .wkb-add:active:not(:disabled),
-.wkb-move:active:not(:disabled) {
+.wkb-move:active:not(:disabled),
+.wkb-flag:active:not(:disabled) {
   background: var(--background-modifier-hover);
 }
 .wkb-toolbar__dir:disabled,
 .wkb-add:disabled,
-.wkb-move:disabled {
+.wkb-move:disabled,
+.wkb-flag:disabled {
   cursor: default;
   opacity: 0.4;
 }
@@ -407,6 +547,7 @@
 }
 
 .wkb-menu__item,
+.wkb-menu__choice,
 .wkb-status__item {
   display: block;
   width: 100%;
@@ -423,21 +564,62 @@
   -webkit-tap-highlight-color: transparent;
 }
 .wkb-menu__item:hover:not(:disabled),
+.wkb-menu__choice:hover:not(:disabled),
 .wkb-status__item:hover:not(:disabled) {
   background: var(--background-modifier-hover);
   border-color: var(--background-modifier-border-hover);
 }
 .wkb-menu__item.is-current,
+.wkb-menu__choice.is-current,
 .wkb-status__item.is-current {
   color: var(--text-accent);
   font-weight: 600;
   cursor: default;
 }
-.wkb-menu__item.is-current::before {
+.wkb-menu__item.is-current::before,
+.wkb-menu__choice.is-current::before {
   content: "• ";
 }
 
 .wkb-menu__archive {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* ------------------------------------------------------------- flag pills */
+
+/* One pill per flag the board declares. Geometry comes from the shared
+   header-control group; only colour and weight are set here, so a pill cannot
+   drift out of the row.
+
+   Quiet on purpose, both states. A flag is a property of the project, not a
+   warning about it, and a header of pills competing with the column title
+   turns the board into a dashboard of its own settings. Two or three pills per
+   header is the practical ceiling: the header wraps rather than clipping, but
+   at four the title stops being the thing you read first.
+
+   Colour is never the only signal. Both states carry a title and an aria-label
+   in words, `on` is bold, and `off` is struck through, so they are separable
+   without relying on hue. */
+
+.wkb-flag {
+  font-weight: 700;
+}
+
+/* On: accent glyph, neutral border, no fill. Distinct from the plain controls
+   beside it without competing with the column title. */
+.wkb-flag--on {
+  color: var(--wkb-accent);
+}
+
+.wkb-flag--off {
+  color: var(--text-faint);
+  font-weight: 400;
+  text-decoration: line-through;
+}
+
+.wkb-menu__flag {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--background-modifier-border);

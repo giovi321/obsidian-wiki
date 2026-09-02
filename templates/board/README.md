@@ -26,6 +26,9 @@ Rendered from `demo/`, so every project and person shown is fictional.
   the `+` in a column header to add one through the Tasks plugin's own modal
 - 20 display settings, stored as `board_*` keys in the board note's own frontmatter, so
   two boards in one vault are configured independently
+- Switch pills in the column headers for any per-project boolean you declare as
+  `board_flags`, so a flag something else reads is visible and flippable where the
+  projects are
 
 Writes go to the task's own source note, one line at a time, and fail closed: if the
 line the board parsed is no longer there, nothing is written and the board says it is
@@ -93,7 +96,11 @@ Appearance lives in the board note's frontmatter as `board_*` keys, and the sett
 panel on the board writes them for you. Because they are per note, two boards on the
 same wiki can look different.
 
-![The board settings panel, expanded: checkbox groups for columns, chips, lanes and density, a column-width field, and a scope section with folders to scan and folders to skip.](../../docs/diagrams/08-board-settings.svg)
+Flags live there too, as `board_flags`, and the panel's Flags group adds, edits and
+removes them. A flag declares a boolean a project can carry; the board writes the field
+and knows nothing about what reads it. See `DESIGN.md`, Project flags.
+
+![The board settings panel, expanded: checkbox groups for columns, chips, lanes and density, a column-width field, a scope section with folders to scan and folders to skip, and a flags section with one editable block per declared flag.](../../docs/diagrams/08-board-settings.svg)
 
 The one setting worth getting right before anything else is
 `settingDefaults.exclude_folders`. Any folder holding checkbox lines that are not

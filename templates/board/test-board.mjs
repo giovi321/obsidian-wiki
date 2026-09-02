@@ -82,6 +82,33 @@ function collectTasks(wiki, settings) {
   return tasks;
 }
 
+const BOARD_NOTES = {
+  demo: "demo/Board.md",
+};
+
+/*
+ * Parse just enough of a board note's frontmatter to hand resolveFlags its
+ * board_flags list. There is no YAML parser here, and adding a dependency to a
+ * harness that runs under bare node is not worth one block: this reads the one
+ * shape the docs describe, `- key: value` lines indented under the key, and
+ * stops at the next top-level key.
+ */
+function boardFrontmatter(notePath) {
+  const block = fs.readFileSync(path.join(VAULT, notePath), "utf8").split("---")[1] || "";
+  const lines = block.split(/\r?\n/);
+  const start = lines.findIndex((l) => l.trim() === `${board.FLAG_KEY}:`);
+  if (start < 0) return {};
+  const entries = [];
+  for (const line of lines.slice(start + 1)) {
+    const item = /^\s*-\s*(\w+):\s*(.+)$/.exec(line);
+    const more = /^\s+(\w+):\s*(.+)$/.exec(line);
+    if (item) entries.push({ [item[1]]: item[2].trim() });
+    else if (more && entries.length) entries[entries.length - 1][more[1]] = more[2].trim();
+    else break;
+  }
+  return { [board.FLAG_KEY]: entries };
+}
+
 function frontmatterValue(content, key) {
   const m = new RegExp(`^${key}:\\s*(.+)$`, "m").exec(content.split("---")[1] || "");
   return m ? m[1].trim().replace(/^["']|["']$/g, "") : null;
@@ -467,7 +494,11 @@ console.log("\nDone window");
 console.log("\nSettings resolution");
 {
   const d = board.resolveSettings(null, wiki);
-  eq("no frontmatter yields every default", Object.keys(d).length, board.SETTINGS.length);
+  // Every SETTINGS key, plus the three flag keys resolveSettings resolves
+  // separately: the usable flags, the problems from validating them, and the
+  // declaration the panel editor binds to.
+  eq("no frontmatter yields every default", Object.keys(d).length, board.SETTINGS.length + 3);
+  eq("and no flags", [d.flags.length, d.flagProblems.length], [0, 0]);
   eq("default: unassigned shown", d.show_unassigned, true);
   eq("default: source chip off", d.chip_source, false);
   eq("default: done window", d.done_window_days, 7);
@@ -948,6 +979,95 @@ const JOURNAL_WIKI = {
   },
   settingDefaults: { include_folders: ["demo"], exclude_folders: ["demo/Archive"] },
 };
+
+console.log("\nProject flags");
+{
+  // Only a real yes is a yes. Everything else, including an unreadable value,
+  // reads as off, so a consumer that fails closed on the field keeps doing so.
+  const yes = [true, "true", "True", " true "];
+  const no = [false, "false", undefined, null, "", "yes", "1", 1, {}, []];
+  ok("a yes is read as on", yes.every((v) => board.flagValue(v) === true),
+     yes.filter((v) => board.flagValue(v) !== true).map((v) => JSON.stringify(v)).join(", ") || "all read on");
+  ok("everything else is read as off", no.every((v) => board.flagValue(v) === false),
+     no.filter((v) => board.flagValue(v) !== false).map((v) => JSON.stringify(v)).join(", ") || "all read off");
+
+  // Flags are declared on the board note, under the same board_ prefix as
+  // every display setting, so resolveFlags reads a note's frontmatter.
+  eq("the declaration key is a board_ key", board.FLAG_KEY, board.SETTING_PREFIX + "flags");
+  const declare = (...entries) => board.resolveFlags({ [board.FLAG_KEY]: entries });
+
+  const good = { field: "publish", label: "Publish", glyph: "P" };
+  const one = declare(good);
+  eq("a valid flag passes through", one.flags.length, 1);
+  eq("no problems to report", one.problems.length, 0);
+  ok("the hints default to null rather than undefined",
+     one.flags[0].onHint === null && one.flags[0].offHint === null, JSON.stringify(one.flags[0]));
+  // Named on_hint and off_hint, not on and off: YAML 1.1 reads a bare `on:` or
+  // `off:` key as a boolean, which would silently lose the sentence.
+  const hinted = declare({ ...good, on_hint: "Yes.", off_hint: "No." });
+  ok("the hints are read from on_hint and off_hint",
+     hinted.flags[0].onHint === "Yes." && hinted.flags[0].offHint === "No.",
+     JSON.stringify(hinted.flags[0]));
+
+  eq("a note declaring nothing has no flags", board.resolveFlags({}).flags.length, 0);
+  eq("and no problems either", board.resolveFlags({}).problems.length, 0);
+  eq("no frontmatter at all is not an error", board.resolveFlags(null).problems.length, 0);
+  // A scalar where a list belongs is the likeliest hand-editing mistake.
+  eq("a non-list declaration is one problem, not a crash",
+     board.resolveFlags({ [board.FLAG_KEY]: "publish" }).problems.length, 1);
+
+  // Reset to defaults deletes every SETTINGS key. Flags are a declaration, not
+  // a display preference, so they must not be a member of that list.
+  ok("flags are not a SETTINGS spec, so a reset cannot delete them",
+     !board.SETTINGS.some((spec) => board.SETTING_PREFIX + spec.key === board.FLAG_KEY),
+     board.SETTINGS.map((spec) => spec.key).join(", "));
+
+  // Each of these drops the entry and says why. A pill that silently never
+  // renders is indistinguishable from a board that declared no flags.
+  const bad = [
+    ["no field", { label: "X", glyph: "X" }],
+    ["no label", { field: "x", glyph: "X" }],
+    ["no glyph", { field: "x", label: "X" }],
+    ["a glyph too long to fit", { field: "x", label: "X", glyph: "PUB" }],
+    ["the status field", { field: "status", label: "X", glyph: "X" }],
+    ["the last_activity field", { field: "last_activity", label: "X", glyph: "X" }],
+    ["a board_ setting key", { field: "board_compact", label: "X", glyph: "X" }],
+  ];
+  const accepted = bad.filter(([, entry]) => declare(entry).flags.length !== 0);
+  ok("every invalid flag is dropped", accepted.length === 0,
+     accepted.map(([name]) => name).join(", ") || `all ${bad.length} dropped`);
+  const silent = bad.filter(([, entry]) => declare(entry).problems.length !== 1);
+  ok("every dropped flag reports one problem", silent.length === 0,
+     silent.map(([name]) => name).join(", ") || `all ${bad.length} explained`);
+
+  // An entirely empty entry is the row the Add button just created. It is
+  // neither a flag nor a problem until something is typed into it.
+  const blank = declare(board.flagEntry(null));
+  eq("an empty entry is not a flag", blank.flags.length, 0);
+  eq("nor a problem", blank.problems.length, 0);
+  eq("but the editor still sees it", blank.declared.length, 1);
+
+  // Two pills writing one field, or wearing one glyph, is a config error and
+  // not a rendering one: the second is dropped rather than drawn.
+  eq("a duplicate field is dropped", declare(good, { ...good, glyph: "B" }).flags.length, 1);
+  eq("a duplicate glyph is dropped", declare(good, { ...good, field: "other" }).flags.length, 1);
+
+  // The guard that matters day to day: what the board notes declare is valid,
+  // so no board is quietly running without a pill it thinks it has.
+  const broken = [];
+  for (const [slug, notePath] of Object.entries(BOARD_NOTES)) {
+    const problems = board.resolveFlags(boardFrontmatter(notePath)).problems;
+    if (problems.length) broken.push(`${slug}: ${problems.join("; ")}`);
+  }
+  ok("every board note's own flags are valid", broken.length === 0,
+     broken.join(" | ") || Object.keys(BOARD_NOTES).join(", "));
+  // And the guard is not vacuous: a typo in the key, or a declaration deleted
+  // by hand, would otherwise pass as "no problems" on every board.
+  const declaring = Object.entries(BOARD_NOTES)
+    .filter(([, notePath]) => board.resolveFlags(boardFrontmatter(notePath)).flags.length > 0);
+  ok("at least one board note declares a flag", declaring.length > 0,
+     declaring.map(([slug]) => slug).join(", ") || `no ${board.FLAG_KEY} found in any board note`);
+}
 
 console.log("\nStatus set");
 {

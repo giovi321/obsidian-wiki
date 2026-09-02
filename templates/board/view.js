@@ -253,6 +253,15 @@ function resolveSettings(frontmatter, wiki) {
           : def
         : coerceSetting(spec, raw, def);
   }
+  // Flags ride along here so every render path that already carries settings
+  // carries them too, but they are resolved separately: they are not a SETTINGS
+  // spec and they survive a reset. See FLAG_KEY.
+  const flags = resolveFlags(fm);
+  out.flags = flags.flags;
+  out.flagProblems = flags.problems;
+  // What the panel editor binds to: every declared entry, including the ones
+  // validation rejected, because a flag you cannot see is one you cannot fix.
+  out.flagsDeclared = flags.declared;
   return out;
 }
 
@@ -284,6 +293,128 @@ function coerceSetting(spec, raw, def) {
     return clean;
   }
   return def;
+}
+
+/*
+ * Read a flag field out of frontmatter as a boolean. Absent, unparseable, and
+ * an explicit no all read as false, so a consumer that fails closed on the
+ * field keeps doing so, and the board never shows a project as flagged on the
+ * strength of a value it could not read.
+ *
+ * A quoted "true" is tolerated, because YAML written by hand or by an agent
+ * picks up quotes easily. Anything else is not a yes.
+ */
+function flagValue(raw) {
+  if (typeof raw === "boolean") return raw;
+  if (raw === undefined || raw === null) return false;
+  return String(raw).trim().toLowerCase() === "true";
+}
+
+/*
+ * Frontmatter the board already writes with different semantics: the status
+ * menu writes both of these and stamps the date, a flag writes neither. A flag
+ * declaring one would put two controls on one field with two meanings.
+ */
+const RESERVED_FLAG_FIELDS = ["status", "last_activity"];
+
+/*
+ * Which flags a board carries is declared on the board note, as `board_flags`:
+ * a list of `{ field, label, glyph, on_hint?, off_hint? }`. The hints are named
+ * that way rather than `on` and `off` because YAML 1.1 reads a bare `on:` or
+ * `off:` key as a boolean, which would silently lose the sentence.
+ *
+ * It carries the `board_` prefix and the settings panel edits it, but it is not
+ * a member of SETTINGS: one spec describes one scalar and one control, and this
+ * is a list of records. Keeping it out is also what stops "Reset to defaults",
+ * which deletes every SETTINGS key, from wiping the declaration along with the
+ * display preferences.
+ *
+ * Nothing about a flag lives in WIKIS or anywhere else in this file. The board
+ * writes the field and knows nothing about what reads it, which is what makes
+ * one mechanism serve any per-project boolean: an opt-in to an export, a
+ * publish gate, a review marker.
+ */
+const FLAG_KEY = SETTING_PREFIX + "flags";
+
+const FLAG_FIELDS = ["field", "label", "glyph", "on_hint", "off_hint"];
+
+// One declared entry, every key present as a trimmed string. The editor binds
+// to this shape, so a half-filled flag survives a re-render instead of losing
+// the keys nobody has typed yet.
+function flagEntry(raw) {
+  const out = {};
+  for (const key of FLAG_FIELDS) {
+    const v = raw ? raw[key] : null;
+    out[key] = v === undefined || v === null ? "" : String(v).trim();
+  }
+  return out;
+}
+
+function flagEntryEmpty(entry) {
+  return FLAG_FIELDS.every((key) => !entry[key]);
+}
+
+/*
+ * Validate the declared flags. Returns the usable ones, one problem per entry
+ * dropped, and the declaration itself as normalised entries.
+ *
+ * `declared` is what the panel editor binds to, and it deliberately includes
+ * the entries validation rejected: a flag you cannot see is a flag you cannot
+ * fix, and the whole point of editing in the panel is that the invalid one is
+ * sitting there with its problem printed under it.
+ *
+ * An entirely empty entry is neither a flag nor a problem. That is the row the
+ * Add button just created, and complaining about a form you have not filled in
+ * yet is noise.
+ *
+ * The glyph cap is two characters. The header pill takes its geometry from the
+ * shared 18px control group, so a longer glyph does not shrink the text, it
+ * overflows the box.
+ */
+function resolveFlags(frontmatter) {
+  const flags = [];
+  const problems = [];
+  const fields = new Set();
+  const glyphs = new Set();
+  const raw = (frontmatter || {})[FLAG_KEY];
+  if (raw !== undefined && raw !== null && !Array.isArray(raw)) {
+    return { flags, problems: [`${FLAG_KEY} must be a list of flags`], declared: [] };
+  }
+  const declared = (raw || []).map(flagEntry);
+  for (const entry of declared) {
+    const { field, label, glyph } = entry;
+    if (flagEntryEmpty(entry)) continue;
+    if (!field || !label || !glyph) {
+      problems.push(`${label || field || "a new flag"} needs a field, a label and a glyph`);
+      continue;
+    }
+    if (glyph.length > 2) {
+      problems.push(`"${label}" has a ${glyph.length}-character glyph; two is the most that fits`);
+      continue;
+    }
+    if (RESERVED_FLAG_FIELDS.includes(field) || field.startsWith(SETTING_PREFIX)) {
+      problems.push(`"${label}" cannot write ${field}, which the board already owns`);
+      continue;
+    }
+    if (fields.has(field)) {
+      problems.push(`two flags write ${field}; each flag needs its own field`);
+      continue;
+    }
+    if (glyphs.has(glyph)) {
+      problems.push(`two flags use the glyph ${glyph}; the pills would be indistinguishable`);
+      continue;
+    }
+    fields.add(field);
+    glyphs.add(glyph);
+    flags.push({
+      field,
+      label,
+      glyph,
+      onHint: entry.on_hint || null,
+      offHint: entry.off_hint || null,
+    });
+  }
+  return { flags, problems, declared };
 }
 
 // Vault-relative, no leading or trailing slash, so prefix matching is exact.
@@ -707,6 +838,9 @@ function makeColumn(slug, project, tasks) {
     // "project" or "category". Only a project page carries a lifecycle status,
     // so only a project column offers the status menu.
     kind: project.kind || null,
+    // One boolean per flag the board declares, keyed by field. Empty on a board
+    // that declares none.
+    flags: project.flags || {},
     unassigned: !!project.unassigned,
     lanes: lanes.filter((l) => l.tasks.length > 0),
     openCount: openTasks.length,
@@ -753,7 +887,8 @@ async function collectTasks(dv, app, s) {
  * columns, but buildColumns needs to know they exist so a task linking one
  * leaves the board instead of falling into the Unassigned triage column.
  */
-async function collectProjects(app, wiki) {
+async function collectProjects(app, wiki, flags) {
+  const declared = flags || [];
   const meta = (landingPath, archived, kind) => {
     const landing = app.vault.getAbstractFileByPath(landingPath);
     const fm = landing ? app.metadataCache.getFileCache(landing)?.frontmatter || {} : {};
@@ -762,6 +897,7 @@ async function collectProjects(app, wiki) {
       status: archived ? "archived" : fm.status || "active",
       lastActivity: fm.last_activity ? String(fm.last_activity).slice(0, 10) : null,
       created: fm.created ? String(fm.created).slice(0, 10) : null,
+      flags: Object.fromEntries(declared.map((f) => [f.field, flagValue(fm[f.field])])),
       kind,
     };
   };
@@ -1475,6 +1611,15 @@ function renderColumn(column, wiki, people, today, app, dv, notice, refresh, s, 
 
   head.appendChild(renderAddButton(wiki, column, app, notice, refresh, today));
 
+  // Only a project landing carries flags, and only on a board that declares
+  // some. A category landing and the unassigned column are not projects, so
+  // writing a project flag to them would be wrong.
+  if (!column.unassigned && column.kind === "project") {
+    for (const flag of s.flags) {
+      head.appendChild(renderFlagPill(column, flag, app, notice, refresh));
+    }
+  }
+
   // Unassigned is not a project, so it has no lifecycle to manage. The menu
   // lives inside the header and expands inline: .wkb-board sets
   // overflow-y: hidden, so an absolutely positioned dropdown would be clipped.
@@ -1487,7 +1632,7 @@ function renderColumn(column, wiki, people, today, app, dv, notice, refresh, s, 
   // A category landing is not a project page and has no lifecycle to manage, so
   // writing `status` to it would be wrong. Only project columns get the menu.
   if (!column.unassigned && column.kind === "project") {
-    head.appendChild(renderColumnMenu(column, wiki, app, notice, refresh));
+    head.appendChild(renderColumnMenu(column, wiki, s.flags, app, notice, refresh));
   }
 
   el.appendChild(head);
@@ -1579,6 +1724,8 @@ function renderSettingsPanel(wiki, s, hiddenUnassigned, app, dv, notice, refresh
     body.appendChild(section);
   }
 
+  body.appendChild(renderFlagEditor(s, app, dv, notice, refresh));
+
   const reset = document.createElement("button");
   reset.className = "wkb-settings__reset";
   reset.textContent = "Reset to defaults";
@@ -1591,6 +1738,216 @@ function renderSettingsPanel(wiki, s, hiddenUnassigned, app, dv, notice, refresh
 
   panel.appendChild(body);
   return panel;
+}
+
+/*
+ * Session-only focus memory for the flag editor, for the same reason the search
+ * box has one: every commit re-renders the whole board, which replaces the
+ * input being typed into. The handler records which entry and which key had
+ * focus, and render() puts the caret back afterwards.
+ *
+ * Keyed by nothing: one editor is open at a time, inside one panel, and a
+ * second board's panel replaces the record rather than fighting over it.
+ */
+function flagFocusState() {
+  return (globalThis.__wkbFlagFocus ||= { index: null, key: null, committing: false });
+}
+
+/*
+ * The flags group: the one group in the panel not backed by a SETTINGS spec.
+ * One block per declared flag with its five fields, a Remove button each, and
+ * an Add flag button under the list.
+ *
+ * Every commit writes the whole `board_flags` list, so the frontmatter is
+ * always the complete declaration and a partial list cannot drift, which is
+ * the same rule the manual column order follows.
+ */
+function renderFlagEditor(s, app, dv, notice, refresh) {
+  const section = document.createElement("div");
+  section.className = "wkb-settings__group wkb-settings__group--flags";
+
+  const title = document.createElement("div");
+  title.className = "wkb-settings__grouphead";
+  title.textContent = "Flags";
+  section.appendChild(title);
+
+  // The working copy. Add pushes to it without writing, so a row you have not
+  // typed into yet costs the note nothing; the first edit commits the lot.
+  const entries = s.flagsDeclared.map((e) => ({ ...e }));
+
+  const commit = async () => {
+    const ok = await writeFlags(app, dv, entries, notice);
+    if (ok) await refresh();
+  };
+
+  const list = document.createElement("div");
+  entries.forEach((entry, i) => {
+    list.appendChild(renderFlagFields(entry, i, entries, commit));
+  });
+  section.appendChild(list);
+
+  // Problems sit under the blocks rather than inside one: a duplicate field is
+  // a problem with the pair, and naming the flag in the text is what points at
+  // the block to fix.
+  for (const problem of s.flagProblems) {
+    const row = document.createElement("div");
+    row.className = "wkb-settings__flagproblem";
+    row.textContent = problem;
+    section.appendChild(row);
+  }
+
+  const add = document.createElement("button");
+  add.className = "wkb-settings__add";
+  add.textContent = "Add flag";
+  add.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    const entry = flagEntry(null);
+    entries.push(entry);
+    const block = renderFlagFields(entry, entries.length - 1, entries, commit);
+    list.appendChild(block);
+    const first = block.querySelector("input");
+    if (first) first.focus();
+  });
+  section.appendChild(add);
+
+  const note = document.createElement("div");
+  note.className = "wkb-settings__note";
+  note.textContent = entries.length
+    ? `Stored as ${FLAG_KEY} in this note's frontmatter. Reset to defaults leaves them alone.`
+    : `A flag puts a switch on every project column and writes a boolean to that project's page. Nothing here knows what reads it.`;
+  section.appendChild(note);
+
+  return section;
+}
+
+const FLAG_LABELS = {
+  field: "Field",
+  label: "Label",
+  glyph: "Glyph",
+  on_hint: "When on",
+  off_hint: "When off",
+};
+
+const FLAG_PLACEHOLDERS = {
+  field: "publish",
+  label: "Publish",
+  glyph: "P",
+  on_hint: "What being on means (optional)",
+  off_hint: "What being off means (optional)",
+};
+
+function renderFlagFields(entry, index, entries, commit) {
+  const block = document.createElement("div");
+  block.className = "wkb-settings__flag";
+
+  const head = document.createElement("div");
+  head.className = "wkb-settings__flaghead";
+
+  // The pill as the board draws it, so the config and the column are visibly
+  // the same thing. A glyph nobody has typed yet shows the empty box.
+  const preview = document.createElement("span");
+  preview.className = "wkb-settings__glyph";
+  preview.textContent = entry.glyph;
+  head.appendChild(preview);
+
+  const name = document.createElement("span");
+  name.className = "wkb-settings__flagname";
+  name.textContent = entry.label || entry.field || "New flag";
+  head.appendChild(name);
+
+  const remove = document.createElement("button");
+  remove.className = "wkb-settings__remove";
+  remove.textContent = "Remove";
+  remove.setAttribute("aria-label", `Remove ${entry.label || entry.field || "this flag"}`);
+  remove.addEventListener("click", async (ev) => {
+    ev.preventDefault();
+    remove.disabled = true;
+    entries.splice(index, 1);
+    // Removing a flag leaves its field on every project page. That is the
+    // conservative half of the trade: the board stops offering the switch and
+    // stops reading the field, and nothing silently rewrites every project.
+    await commit();
+  });
+  head.appendChild(remove);
+  block.appendChild(head);
+
+  const focus = flagFocusState();
+  for (const key of FLAG_FIELDS) {
+    const row = document.createElement("label");
+    row.className = `wkb-set wkb-set--flag wkb-set--flag-${key}`;
+
+    const text = document.createElement("span");
+    text.className = "wkb-set__flaglabel";
+    text.textContent = FLAG_LABELS[key];
+    row.appendChild(text);
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "wkb-set__flagfield";
+    input.value = entry[key];
+    input.placeholder = FLAG_PLACEHOLDERS[key];
+    input.spellcheck = false;
+    if (key === "glyph") input.maxLength = 2;
+    // Commit on change, which fires on blur, not on every keystroke: a write
+    // per character would re-render the board under the cursor.
+    input.addEventListener("change", async () => {
+      const value = input.value.trim();
+      if (value === entry[key]) return;
+      entry[key] = value;
+      // change fires just before blur, so this is what tells the blur handler
+      // the record is worth keeping: a field left untouched should not pull the
+      // caret back to itself on the next re-render.
+      focus.committing = true;
+      await commit();
+    });
+    input.addEventListener("focus", () => {
+      focus.index = index;
+      focus.key = key;
+    });
+    input.addEventListener("blur", () => {
+      if (focus.committing) focus.committing = false;
+      else if (focus.index === index && focus.key === key) {
+        focus.index = null;
+        focus.key = null;
+      }
+    });
+    row.appendChild(input);
+    block.appendChild(row);
+  }
+
+  return block;
+}
+
+/*
+ * Writes the flag list itself, not a prefixed setting, so it cannot go through
+ * writeSetting. An empty list deletes the key rather than leaving an empty
+ * array behind: a board with no flags should look like a board that never had
+ * any.
+ *
+ * Empty optional keys are dropped, and an entirely empty entry never reaches
+ * the note, so the frontmatter stays the shape the docs describe.
+ */
+async function writeFlags(app, dv, entries, notice) {
+  const file = dashboardFile(app, dv);
+  if (!file) {
+    notice("Cannot find the dashboard note to save flags into.");
+    return false;
+  }
+  const clean = entries.filter((e) => !flagEntryEmpty(e)).map((e) => {
+    const out = {};
+    for (const key of FLAG_FIELDS) if (e[key]) out[key] = e[key];
+    return out;
+  });
+  try {
+    await app.fileManager.processFrontMatter(file, (fm) => {
+      if (clean.length) fm[FLAG_KEY] = clean;
+      else delete fm[FLAG_KEY];
+    });
+    return true;
+  } catch (e) {
+    notice(`Could not save flags: ${e.message}`);
+    return false;
+  }
 }
 
 function renderSettingControl(spec, value, write) {
@@ -1878,7 +2235,73 @@ function writeSetting(app, dv, key, value, notice) {
  * inconsistent. The plugin command is interactive for that reason, so the menu
  * surfaces the command instead of imitating it.
  */
-function renderColumnMenu(column, wiki, app, notice, refresh) {
+/*
+ * One pill per declared flag. Two states, and the click flips it.
+ *
+ * Rendered in the column header rather than buried in the ⋯ menu, because the
+ * point of putting a frontmatter flag on the board is that its state is visible
+ * without opening anything.
+ */
+function renderFlagPill(column, flag, app, notice, refresh) {
+  const on = column.flags[flag.field] === true;
+
+  const btn = document.createElement("button");
+  btn.className = `wkb-flag wkb-flag--${on ? "on" : "off"}`;
+  btn.textContent = flag.glyph;
+
+  // Colour never carries the state on its own, so the pill also says it in
+  // words, in the config's own vocabulary where the config supplies one.
+  const detail = on ? flag.onHint : flag.offHint;
+  const explain =
+    `${flag.label} is ${on ? "on" : "off"} for ${column.slug}.` +
+    (detail ? ` ${detail}` : "") +
+    ` Click to turn it ${on ? "off" : "on"}.`;
+  btn.title = explain;
+  btn.setAttribute("aria-label", explain);
+  btn.setAttribute("aria-pressed", String(on));
+
+  btn.addEventListener("click", async (ev) => {
+    ev.preventDefault();
+    btn.disabled = true;
+    if (await setProjectFlag(app, column, flag, !on, notice)) await refresh();
+    else btn.disabled = false;
+  });
+  return btn;
+}
+
+/*
+ * Deliberately does not stamp last_activity, unlike setProjectStatus, and that
+ * holds for every flag with no per-flag opt-out. Flipping a flag is not work on
+ * the project, and last_activity feeds both the board's activity sort and
+ * whatever consumes the flag downstream: pressing a pill must never make a
+ * dormant project look alive.
+ *
+ * Off writes an explicit false rather than deleting the key, so a no stays
+ * readable in the frontmatter instead of looking like a question never asked.
+ */
+async function setProjectFlag(app, column, flag, value, notice) {
+  if (!column.path) {
+    notice(`${column.slug} has no landing page to write to.`);
+    return false;
+  }
+  const file = app.vault.getAbstractFileByPath(column.path);
+  if (!file) {
+    notice(`Cannot find ${column.path}.`);
+    return false;
+  }
+  try {
+    await app.fileManager.processFrontMatter(file, (fm) => {
+      fm[flag.field] = value;
+    });
+  } catch (e) {
+    notice(`Could not update ${column.slug}: ${e.message}`);
+    return false;
+  }
+  notice(`${flag.label} is now ${value ? "on" : "off"} for ${column.slug}.`);
+  return true;
+}
+
+function renderColumnMenu(column, wiki, flags, app, notice, refresh) {
   const menu = document.createElement("details");
   menu.className = "wkb-menu";
 
@@ -1909,6 +2332,48 @@ function renderColumnMenu(column, wiki, app, notice, refresh) {
       else item.disabled = false;
     });
     body.appendChild(item);
+  }
+
+  // The header pill is the switch. This block is the labelled version, one
+  // section per flag, so a pill is discoverable and its state readable in words
+  // rather than only as a colour.
+  for (const flag of flags) {
+    const on = column.flags[flag.field] === true;
+    const box = document.createElement("div");
+    box.className = "wkb-menu__flag";
+
+    const boxHead = document.createElement("div");
+    boxHead.className = "wkb-menu__head";
+    boxHead.textContent = flag.label;
+    box.appendChild(boxHead);
+
+    // The config's own words for what the current state means. A flag that
+    // declares none still gets its label and its two choices.
+    const detail = on ? flag.onHint : flag.offHint;
+    if (detail) {
+      const hint = document.createElement("div");
+      hint.className = "wkb-menu__hint";
+      hint.textContent = `${on ? "On" : "Off"}. ${detail}`;
+      box.appendChild(hint);
+    }
+
+    for (const choice of [true, false]) {
+      const item = document.createElement("button");
+      // Its own class, not wkb-menu__item: that one means "a lifecycle status"
+      // to anything selecting inside the menu, and widening it to mean "any
+      // button in the menu" makes the status section uncountable.
+      item.className = "wkb-menu__choice" + (on === choice ? " is-current" : "");
+      item.textContent = choice ? "On" : "Off";
+      item.disabled = on === choice;
+      item.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        item.disabled = true;
+        if (await setProjectFlag(app, column, flag, choice, notice)) await refresh();
+        else item.disabled = false;
+      });
+      box.appendChild(item);
+    }
+    body.appendChild(box);
   }
 
   const archive = document.createElement("div");
@@ -2087,7 +2552,7 @@ async function render(dv, container, app) {
   const search = searchState(wiki);
   const query = search.query.trim();
 
-  const [tasks, projects] = await Promise.all([collectTasks(dv, app, s), collectProjects(app, wiki)]);
+  const [tasks, projects] = await Promise.all([collectTasks(dv, app, s), collectProjects(app, wiki, s.flags)]);
   const people = peopleTargets(app, wiki);
   const columns = buildColumns(tasks, projects, today, s, wiki, query);
   const visible = columns.filter((c) => !c.hidden);
@@ -2108,6 +2573,16 @@ async function render(dv, container, app) {
       "Stylesheet not found. view.css must sit next to view.js, or " +
       "SHARED.componentFolder must name the folder holding them. " +
       "The board will render unstyled.";
+    wrap.appendChild(warn);
+  }
+
+  // A dropped flag has to say so. A pill that silently never appears looks
+  // exactly like a board that declared none, and the frontmatter is the last
+  // place anyone thinks to look.
+  for (const problem of s.flagProblems) {
+    const warn = document.createElement("div");
+    warn.className = "wkb-banner";
+    warn.textContent = `Flag not rendered: ${problem}.`;
     wrap.appendChild(warn);
   }
 
@@ -2147,6 +2622,22 @@ async function render(dv, container, app) {
     if (box) {
       box.focus();
       box.setSelectionRange(box.value.length, box.value.length);
+    }
+  }
+
+  // Same for the flag editor, which commits on blur and so re-renders between
+  // one field and the next. Without this, editing a flag means clicking back
+  // into the panel for every field.
+  const flagFocus = flagFocusState();
+  if (flagFocus.key !== null) {
+    const block = wrap.querySelectorAll(".wkb-settings__flag")[flagFocus.index];
+    const row = block ? block.querySelectorAll(`.wkb-set--flag-${flagFocus.key}`)[0] : null;
+    const input = row ? row.querySelector("input") : null;
+    flagFocus.index = null;
+    flagFocus.key = null;
+    if (input) {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
     }
   }
 }
@@ -2204,5 +2695,11 @@ if (typeof module !== "undefined" && module.exports) {
     insertTaskLine,
     resolveTemplateDates,
     shiftISO,
+    flagValue,
+    resolveFlags,
+    flagEntry,
+    FLAG_KEY,
+    FLAG_FIELDS,
+    RESERVED_FLAG_FIELDS,
   };
 }
