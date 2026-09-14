@@ -100,8 +100,11 @@ decision lives in this file, where it can name the real thing that prompted it.
 ## Per-wiki configuration
 
 Two objects, both in `view.js`. `SHARED` holds what does not vary: where the
-component's own files live, the archive folder name, and the four documented
-lifecycle states, which `menuStatuses` extends per wiki. `WIKIS` holds one entry per wiki, keyed by the
+component's own files live, the archive folder name, the four documented
+lifecycle states, which `menuStatuses` extends per wiki, and two roles picked
+out of those states: `defaultStatus`, what a page with no `status` counts as,
+and `parkedStatus`, the one the `show_parked` setting turns into an opt-out
+column. `WIKIS` holds one entry per wiki, keyed by the
 slug a board note names in `board_wiki`.
 
 Folder names are configuration, not constants, because they are whatever a
@@ -547,13 +550,14 @@ The `cssclasses: [wkb-board-page]` frontmatter scopes a readable-line-width over
 
 ## Settings
 
-Twenty display, sort and scope settings, stored as flat `board_*` keys in the dashboard note's frontmatter. Defaults live in the `SETTINGS` array in `view.js`, overlaid per wiki by `settingDefaults`; frontmatter only overrides. A note with no `board_*` keys renders exactly as it did before settings existed.
+Twenty-one display, sort and scope settings, stored as flat `board_*` keys in the dashboard note's frontmatter. Defaults live in the `SETTINGS` array in `view.js`, overlaid per wiki by `settingDefaults`; frontmatter only overrides. A note with no `board_*` keys renders exactly as it did before settings existed.
 
 | Key | Group | Type | Default |
 |---|---|---|---|
 | `board_show_unassigned` | Columns | bool | true |
 | `board_pin_unassigned` | Columns | bool | true |
 | `board_show_empty_columns` | Columns | bool | true |
+| `board_show_parked` | Columns | bool | true |
 | `board_column_width` | Columns | number 180-600 | 280 |
 | `board_column_order` | Sort | one of the eight modes | count |
 | `board_column_order_dir` | Sort | auto / asc / desc | auto |

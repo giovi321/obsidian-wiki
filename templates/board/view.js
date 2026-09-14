@@ -41,6 +41,13 @@ const SHARED = {
   // Lifecycle states from each wiki's wiki-config.md, offered in the column
   // menu. Which of them earns a column is per wiki, see columnStatuses.
   projectStatuses: ["active", "dormant", "completed", "abandoned"],
+  // What a page with no `status` counts as. It has to be a state that earns a
+  // column, or a project whose landing page omits the key leaves the board.
+  defaultStatus: "active",
+  // The state meaning "paused by decision", which the show_parked setting
+  // turns into an opt-out column. Leave it null in a wiki that has no such
+  // state and the setting adds nothing.
+  parkedStatus: "dormant",
 };
 
 /*
@@ -176,6 +183,11 @@ const SETTINGS = [
   // for the board, and sticky fights WebKit momentum scrolling.
   { key: "pin_unassigned", group: "Columns", label: "Pin Unassigned (desktop only)", type: "bool", def: true },
   { key: "show_empty_columns", group: "Columns", label: "Projects with no open tasks", type: "bool", def: true },
+  // A project paused by decision is still a project, so its column is opt-out
+  // rather than absent. Togglable because a parked project is exactly the
+  // thing you sometimes want out of the way. Which state counts as parked is
+  // SHARED.parkedStatus.
+  { key: "show_parked", group: "Columns", label: "Parked projects", type: "bool", def: true },
   { key: "column_width", group: "Columns", label: "Column width (px)", type: "number", def: 280, min: 180, max: 600 },
 
   // The Sort group is rendered by the toolbar above the board, not by the
@@ -684,8 +696,12 @@ function buildColumns(tasks, projects, today, settings, wiki, query) {
   const q = String(query || "").trim();
   if (q) tasks = tasks.filter((t) => taskMatchesQuery(t, q));
   // Which statuses earn a column is per wiki, since a wiki may use lifecycle
-  // states beyond the four in SHARED.projectStatuses.
+  // states beyond the four in SHARED.projectStatuses. The parked state is
+  // opt-out rather than absent, so a project paused by decision still shows
+  // unless the toggle is off. A completed or abandoned one never earns a
+  // column: leaving the board is the point, not a display preference.
   const eligible = new Set(w.columnStatuses);
+  if (s.show_parked && SHARED.parkedStatus) eligible.add(SHARED.parkedStatus);
   const active = projects.filter((p) => eligible.has(p.status));
   const activeSlugs = new Set(active.map((p) => p.slug));
   const knownSlugs = new Set(projects.map((p) => p.slug));
@@ -894,7 +910,7 @@ async function collectProjects(app, wiki, flags) {
     const fm = landing ? app.metadataCache.getFileCache(landing)?.frontmatter || {} : {};
     return {
       path: landing ? landingPath : null,
-      status: archived ? "archived" : fm.status || "active",
+      status: archived ? "archived" : fm.status || SHARED.defaultStatus,
       lastActivity: fm.last_activity ? String(fm.last_activity).slice(0, 10) : null,
       created: fm.created ? String(fm.created).slice(0, 10) : null,
       flags: Object.fromEntries(declared.map((f) => [f.field, flagValue(fm[f.field])])),
@@ -2359,14 +2375,14 @@ function renderColumnMenu(column, wiki, flags, app, notice, refresh) {
 
   for (const status of menuStatuses(wiki)) {
     const item = document.createElement("button");
-    const current = (column.status || "active") === status;
+    const current = (column.status || SHARED.defaultStatus) === status;
     item.className = "wkb-menu__item" + (current ? " is-current" : "");
     item.textContent = status;
     item.disabled = current;
     item.addEventListener("click", async (ev) => {
       ev.preventDefault();
       item.disabled = true;
-      if (await setProjectStatus(app, column, status, notice)) await refresh();
+      if (await setProjectStatus(app, column, status, notice, wiki)) await refresh();
       else item.disabled = false;
     });
     body.appendChild(item);
@@ -2452,7 +2468,7 @@ function renderColumnMenu(column, wiki, flags, app, notice, refresh) {
   return menu;
 }
 
-async function setProjectStatus(app, column, status, notice) {
+async function setProjectStatus(app, column, status, notice, wiki) {
   if (!column.path) {
     notice(`${column.slug} has no landing page to write to.`);
     return false;
@@ -2471,11 +2487,13 @@ async function setProjectStatus(app, column, status, notice) {
     notice(`Could not update ${column.slug}: ${e.message}`);
     return false;
   }
-  // Say it out loud: any non-active status removes the column, and a silent
-  // disappearance reads as a bug.
+  // Say it out loud: a status outside columnStatuses removes the column, and a
+  // silent disappearance reads as a bug. Tested against the wiki's own list
+  // rather than a single literal, since more than one status can keep a column.
+  const keeps = new Set((wiki && wiki.columnStatuses) || []);
   notice(
-    status === "active"
-      ? `${column.slug} set to active.`
+    keeps.has(status)
+      ? `${column.slug} set to ${status}.`
       : `${column.slug} set to ${status}, removed from the board.`
   );
   return true;
