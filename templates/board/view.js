@@ -30,7 +30,7 @@
  */
 const SHARED = {
   // Where this component's own files live, vault-relative. Only used to find
-  // view.css, which view.js loads itself: see injectStyles for why dv.view
+  // view.css, which view.js loads itself: see loadStylesheet for why dv.view
   // cannot be relied on to do it.
   //
   // Set it if you know it; leave it and the stylesheet is located by searching
@@ -993,9 +993,13 @@ function findStylesheet(app) {
   return null;
 }
 
-async function injectStyles(app, container) {
+/*
+ * Returns the <style> element rather than placing it, so render() can stage it
+ * with the rest of the new board and swap the whole thing in at once.
+ */
+async function loadStylesheet(app) {
   const cssPath = findStylesheet(app);
-  if (!cssPath) return false;
+  if (!cssPath) return null;
   let css = null;
   try {
     css = await app.vault.adapter.read(cssPath);
@@ -1003,12 +1007,11 @@ async function injectStyles(app, container) {
     const file = app.vault.getAbstractFileByPath(cssPath);
     if (file) css = await app.vault.cachedRead(file);
   }
-  if (!css) return false;
+  if (!css) return null;
   const style = document.createElement("style");
   style.setAttribute("data-wkb-board", "1");
   style.textContent = css;
-  container.appendChild(style);
-  return true;
+  return style;
 }
 
 function todayISO() {
@@ -2026,12 +2029,30 @@ function renderSettingControl(spec, value, write) {
  * globalThis.__wkbSearch, keyed by wiki slug, for the same reasons the panel
  * open state is: typing must never write to the note, and two boards side by
  * side must not share one query. Each keystroke re-renders (debounced), so the
- * handler records whether the box had focus and how far the board was
- * scrolled, and render() restores both afterwards.
+ * handler records whether the box had focus, and render() restores it
+ * afterwards. Scroll is not its business: boardScrollState below covers every
+ * rebuild, not just a search one.
  */
 function searchState(wiki) {
   const all = (globalThis.__wkbSearch ||= {});
-  return (all[wiki.slug] ||= { query: "", focused: false, scrollLeft: 0, timer: null });
+  return (all[wiki.slug] ||= { query: "", focused: false, timer: null });
+}
+
+/*
+ * Horizontal scroll position, kept so it survives a rebuild. render() throws
+ * the board away and builds a new one on every refresh: a task ticked, a
+ * status changed, Dataview re-running the block after a sync. A fresh
+ * .wkb-board starts at scrollLeft 0, so without this the board jumps back to
+ * the first column every time, which on a board wider than the screen means
+ * losing your place on every edit.
+ *
+ * Session-only and keyed by wiki slug, in globalThis for the same reasons as
+ * the search state: nothing here belongs in the note, and two boards side by
+ * side must keep their own positions.
+ */
+function boardScrollState(wiki) {
+  const all = (globalThis.__wkbScroll ||= {});
+  return (all[wiki.slug] ||= { left: 0 });
 }
 
 function renderToolbar(wiki, s, orderedSlugs, app, dv, notice, refresh, search) {
@@ -2047,12 +2068,10 @@ function renderToolbar(wiki, s, orderedSlugs, app, dv, notice, refresh, search) 
   const queueRefresh = (delay) => {
     clearTimeout(search.timer);
     search.timer = setTimeout(() => {
-      // Read focus and scroll off the live DOM now, before the re-render
-      // rebuilds it; a blur listener would fire mid-rebuild and lie.
+      // Read focus off the live DOM now, before the re-render rebuilds it; a
+      // blur listener would fire mid-rebuild and lie. Scroll needs no capture
+      // here: the board's own scroll listener keeps boardScrollState current.
       search.focused = document.activeElement === searchBox;
-      const wrap = searchBox.closest(".wkb-wrap");
-      const live = wrap && wrap.querySelector(".wkb-board");
-      search.scrollLeft = live ? live.scrollLeft : 0;
       refresh();
     }, delay);
   };
@@ -2551,9 +2570,19 @@ async function render(dv, container, app) {
   const fm = file ? app.metadataCache.getFileCache(file)?.frontmatter : null;
   const wiki = resolveWiki(fm, file ? file.path : "");
 
-  container.empty ? container.empty() : (container.innerHTML = "");
+  // Build the new board detached and swap it in at the end, rather than
+  // emptying the container up front. collectTasks below walks the whole wiki,
+  // so clearing first leaves the note blank for the length of that walk and
+  // every refresh reads as a flash. The old board now stays on screen until
+  // the new one is ready to replace it.
+  const staged = [];
+  const swapIn = () => {
+    container.empty ? container.empty() : (container.innerHTML = "");
+    for (const node of staged) container.appendChild(node);
+  };
 
-  const styled = await injectStyles(app, container);
+  const style = await loadStylesheet(app);
+  if (style) staged.push(style);
 
   // No wiki, no board. Guessing one would render another wiki's tasks under
   // this note's settings, so say what is missing instead.
@@ -2563,7 +2592,8 @@ async function render(dv, container, app) {
     warn.textContent =
       `Board cannot tell which wiki it belongs to. Add "board_wiki: ` +
       `${Object.keys(WIKIS).join(" or ")}" to this note's frontmatter.`;
-    container.appendChild(warn);
+    staged.push(warn);
+    swapIn();
     return;
   }
 
@@ -2585,7 +2615,7 @@ async function render(dv, container, app) {
     `wkb-wrap is-${wiki.slug}` + (s.compact ? " wkb-wrap--compact" : "");
   wrap.style.setProperty("--wkb-col-width", `${s.column_width}px`);
 
-  if (!styled) {
+  if (!style) {
     const warn = document.createElement("div");
     warn.className = "wkb-banner";
     warn.textContent =
@@ -2607,6 +2637,12 @@ async function render(dv, container, app) {
 
   const board = document.createElement("div");
   board.className = "wkb-board";
+
+  // Keep the remembered position current as the user scrolls, rather than
+  // reading it off the old board at teardown: Dataview rebuilds the block by
+  // itself after a sync and never gives this function the chance to look.
+  const scroll = boardScrollState(wiki);
+  board.addEventListener("scroll", () => (scroll.left = board.scrollLeft), { passive: true });
 
   // The project columns in current visual order. Both the reorder arrows and the
   // seed written when switching to manual mode read this, so what you see is
@@ -2631,11 +2667,13 @@ async function render(dv, container, app) {
   wrap.appendChild(renderToolbar(wiki, s, order, app, dv, notice, refresh, search));
   wrap.appendChild(renderPositionStrip(board, visible));
   wrap.appendChild(board);
-  container.appendChild(wrap);
+  staged.push(wrap);
+  swapIn();
 
-  // Restore what the search-refresh captured before the rebuild: horizontal
-  // scroll, and focus with the caret at the end of the query.
-  if (query) board.scrollLeft = search.scrollLeft;
+  // Put back what the rebuild threw away: the horizontal scroll position, and
+  // focus with the caret at the end of the query. Scroll is set after the swap
+  // because a detached element has no scrollable extent to set it on.
+  board.scrollLeft = scroll.left;
   if (search.focused) {
     const box = wrap.querySelector(".wkb-toolbar__filter");
     if (box) {
