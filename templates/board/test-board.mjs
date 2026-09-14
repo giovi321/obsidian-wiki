@@ -206,9 +206,12 @@ const projectCols = columns.filter((c) => !c.unassigned);
  * assertions below are invariants and cross-checks that hold at any vault
  * state. The current numbers are printed as information, not asserted.
  */
-// Column-eligible, not literally "active": the Personal wiki also gives a
-// column to `planning`, so hardcoding "active" would under-count its columns.
+// Column-eligible, not literally "active": a wiki may give a column to a
+// status of its own, so hardcoding "active" would under-count its columns.
+// SHARED.parkedStatus joins them whenever show_parked is on, which is the
+// default, and this has to mirror buildColumns or every count below drifts.
 const eligible = new Set(wiki.columnStatuses);
+if (board.SHARED.parkedStatus) eligible.add(board.SHARED.parkedStatus);
 const activeSlugs = new Set(projects.filter((p) => eligible.has(p.status)).map((p) => p.slug));
 const knownSlugs = new Set(projects.map((p) => p.slug));
 // routeProjects, not resolveProjects: the board routes on the leading run, so a
@@ -752,10 +755,19 @@ if (wiki.projectDepth === 2) {
   ok("planning project is column-eligible",
      projectCols.some((c) => c.slug === "api-migration"),
      projects.find((p) => p.slug === "api-migration")?.status || "missing");
-  // Dormant is the mirror case: the project exists, so its tasks leave the
-  // board rather than falling into triage.
-  ok("dormant project earns no column", !projectCols.some((c) => c.slug === "legacy-export"),
+  // Dormant is the demo's parked state, so it is opt-out rather than absent:
+  // a column by default, and gone when the setting is off. Both halves are
+  // asserted, because a toggle that only ever reads one way is not a toggle.
+  ok("parked project earns a column by default",
+     projectCols.some((c) => c.slug === "legacy-export"),
      projects.find((p) => p.slug === "legacy-export")?.status || "missing");
+  {
+    const noParked = board.resolveSettings({ board_show_parked: false }, wiki);
+    const off = board.buildColumns(tasks, projects, TODAY, noParked, wiki, "");
+    ok("parked project loses its column with show_parked off",
+       !off.some((c) => c.slug === "legacy-export"),
+       off.filter((c) => !c.unassigned).map((c) => c.slug).join(", "));
+  }
 
   eq("category landing is marked category", kinds.get("build"), "category");
   eq("flat project is marked project", kinds.get("docs-refresh"), "project");
