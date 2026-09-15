@@ -1,6 +1,6 @@
 ---
 description: Record a behavioral rule for a wiki's agent
-argument-hint: [wiki-slug] <feedback in plain English, or omit to be prompted>
+argument-hint: "[wiki-slug] <feedback in plain English, or omit to be prompted>"
 ---
 
 Append a behavioral rule to the wiki's `_service/feedback.md`.

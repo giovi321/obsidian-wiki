@@ -1,6 +1,6 @@
 ---
 description: Ingest sources into a wiki and curate changed pages
-argument-hint: [wiki-slug] <filename>, <URL>, "quick-notes", or omit for all new files
+argument-hint: '[wiki-slug] <filename>, <URL>, "quick-notes", or omit for all new files'
 ---
 
 Ingest sources into the target wiki.

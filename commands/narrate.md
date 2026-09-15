@@ -1,6 +1,6 @@
 ---
 description: Render a cited Markdown readout of a wiki topic using only wiki evidence
-argument-hint: [wiki-slug] <topic> [--voice briefing|plain-language|lecturer] [--visibility public] [--save]
+argument-hint: "[wiki-slug] <topic> [--voice briefing|plain-language|lecturer] [--visibility public] [--save]"
 ---
 
 Render a cited Markdown readout of a wiki topic using only the target wiki's evidence.

@@ -1,6 +1,6 @@
 ---
 description: Ingest LLM conversation sources (current session or saved exports) into a wiki
-argument-hint: [wiki-slug] "session", "folder [filter]", or omit for both
+argument-hint: '[wiki-slug] "session", "folder [filter]", or omit for both'
 ---
 
 Ingest LLM conversation sources into the target wiki.

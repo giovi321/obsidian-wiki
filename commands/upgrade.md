@@ -1,6 +1,6 @@
 ---
 description: Refresh plugin-managed files (CLAUDE.md and shared docs) without touching user-owned files
-argument-hint: [wiki-slug] (optional, defaults to all registered wikis)
+argument-hint: "[wiki-slug] (optional, defaults to all registered wikis)"
 ---
 
 Refresh `CLAUDE.md` in one or every registered wiki, plus the shared docs folder. Does NOT touch `wiki-config.md`, `_service/custom-procedures/`, the registry, or any wiki content.

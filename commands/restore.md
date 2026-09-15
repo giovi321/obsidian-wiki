@@ -1,6 +1,6 @@
 ---
 description: Restore a wiki from a previous archive
-argument-hint: [wiki-slug] <archive-id> or "list"
+argument-hint: '[wiki-slug] <archive-id> or "list"'
 ---
 
 Restore from a previous archive.

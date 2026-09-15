@@ -1,6 +1,6 @@
 ---
 description: Discover co-occurring concept gaps and write cross-cutting synthesis pages
-argument-hint: [wiki-slug] [domain filter]
+argument-hint: "[wiki-slug] [domain filter]"
 ---
 
 Discover concept pairs and clusters that co-occur across pages but have no synthesis page, then write cross-cutting synthesis pages for the most valuable gaps.

@@ -1,6 +1,6 @@
 ---
 description: Research a topic on the web and create or enrich wiki pages
-argument-hint: [wiki-slug] <topic or question>
+argument-hint: "[wiki-slug] <topic or question>"
 ---
 
 Research a topic and create or enrich wiki pages with findings.
