@@ -36,6 +36,7 @@ Walk the project root and the `_old/` subfolder. Report active and archived proj
 1. Confirm. Ask for status (`completed`, `abandoned`, `dormant`).
 2. Move to `<project-root>/_old/`. Update wikilinks wiki-wide.
 3. Remove from the category landing page. Update `<wiki-root>/index.md` and `<wiki-root>/_service/log.md`.
+4. Leave every dashboard alone, including a `board_column_manual` that still names this slug. A dashboard is rewritten only on an explicit restructure and never as a side effect of another command, and the stale entry is harmless: a board skips a slug with no column. `/lint` reports it under structural findings, which is where a declaration that no longer matches the disk belongs.
 
 ### reactivate <slug>
 
