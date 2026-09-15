@@ -337,9 +337,26 @@ The pane outlives every rebuild, unlike the board, so attaching per render would
 
 ### Known limitation: the rebuild is still visible
 
-Restoring the position is not the same as making the rebuild invisible. On Dataview's own path the block is emptied and the note is left without a board for the length of the wiki walk, which reads as a flash even though nothing moves afterwards. `render()` already stages the new board and swaps it in at the end so that a refresh *this file* starts never blanks, but that guarantee cannot extend to a rebuild Dataview begins by clearing the block.
+Restoring the position is not the same as making the rebuild invisible. Ticking a task still produces a visible flash a second or two later, and it is not fixable from inside this component. What follows is what instrumenting `render()` actually showed, so the same ground is not covered again.
 
-Standing the previous board back up for that window was tried and did not remove the flash, including with its stylesheet re-attached, so it was not kept. Reserving the block's height does not survive either, because on that path the block element is replaced rather than cleared in place. The cause is not yet established.
+`render()` stages the new board and swaps it in at the end, so a refresh *this file* starts never blanks. That guarantee cannot extend to Dataview's own re-run, which removes the board before the script runs again. Traced across a tick:
+
+- The container holds `STYLE, DIV.wkb-wrap` after a swap, and a bare `STYLE` at the next entry. So the board element is removed and a stylesheet is left behind, one that no longer answers to `style[data-wkb-board]`
+- Collecting the data takes 13 to 27 ms, not hundreds. There is no long blank window to cover, and the "board is missing for the length of the wiki walk" theory is wrong
+- Dataview fires more than one rebuild per edit. Two were seen 205 ms apart, and two more ran *concurrently*, each walking the whole in-scope tree and each calling `swapIn()` on the same container
+- The container is sometimes replaced rather than reused, and one render ran against a container with `isConnected === false`
+
+Three fixes were tried and none kept:
+
+- **Standing the previous board back up** for the gap, guarded on the container being empty. It never fired: the container is never empty, it holds that leftover `STYLE`, so a child-count test is always false
+- **The same, re-attaching the cached stylesheet too**, since the board would otherwise stand up unstyled. Also never fired, same guard
+- **The same again with the guard corrected** to `!container.querySelector(".wkb-board")`, which does fire. This made the flash *worse*, and that result is the useful one: by the time `render()` runs the board is already gone, so standing a copy up adds a second repaint rather than removing the first
+
+Reserving the block's height is ruled out separately, because the container is sometimes replaced and a fresh element carries no inline style.
+
+The conclusion is architectural. The teardown belongs to Dataview and happens before any of this file's code is reachable, so nothing here can prevent the first repaint; it can only add more. Removing the flash means not having Dataview re-run the block, which is outside this component.
+
+A note on method, since two of the three attempts were built on bad evidence. A `MutationObserver` on the block element reported nothing across a rebuild, which was read as the element being replaced; it had no `subtree`, so it could not have seen a change one level down either way. Instrumenting `render()` from the inside, reporting what the code itself sees at entry, settled in one pass what the DOM probes had got wrong twice.
 
 ## Card
 
@@ -819,3 +836,4 @@ the accepted fallback.
 - `build` carries 39 open tasks, making one very tall column. There is no per-lane cap
 - iOS verification is manual. Nothing in the harness exercises WebKit, so scroll-snap and touch behaviour are confirmed on device or not at all
 - A task written with a task-like line inside a fenced block in a *journal* note would still be skipped, which is correct, but a genuine task accidentally indented inside a fence would silently vanish from the board. The source note remains the truth
+- Dataview fires more than one rebuild for a single edit, and each one walks the whole in-scope tree. Two renders were traced 205 ms apart, and on another edit two concurrent ones, of which one ran against a container with `isConnected === false` and swapped into an element that was never shown. Suppressing a superseded render was considered and dropped: the only one a guard could catch is the detached one, which costs no repaint, so the whole benefit is about 20 ms of collection, against a new failure mode for the same board open in two panes. The sequential pair, which does repaint twice, is out of reach of a guard because the first completes before the second starts
