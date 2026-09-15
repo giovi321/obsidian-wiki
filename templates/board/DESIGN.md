@@ -318,6 +318,29 @@ Filtering happens inside `buildColumns`, before routing and bucketing, not in th
 
 The query is session state in `globalThis.__wkbSearch`, keyed by wiki slug, never frontmatter: typing must not write to the note, and two boards side by side must not share one query. Each keystroke re-renders, debounced 150 ms, because the alternative — toggling card visibility in the DOM — would leave column counts, lane heads and empty columns stale. Before the rebuild the handler records focus and horizontal scroll; `render()` restores both afterwards, so typing never loses the caret or the board position.
 
+## Keeping your place across a rebuild
+
+Every edit throws the whole board away and builds a new one: a task ticked, a status changed, a keystroke in the filter, Dataview re-running the block after a sync. Two positions have to survive that, and both live in `boardScrollState`, session-only in `globalThis.__wkbScroll` and keyed by wiki slug for the same reasons the search query is.
+
+**Horizontal**, `scroll.left`. A fresh `.wkb-board` starts at `scrollLeft` 0, so without this the board returns to the first column on every edit. The listener sits on the board itself, which is discarded with it, so nothing has to be detached.
+
+**Vertical**, `scroll.top`. This one is not the board's own position. `.wkb-board` is `overflow-y: hidden` and `.wkb-col` has no `max-height`, so a column taller than the window scrolls the *note*, not the board. The pane that moves is Obsidian's, `.markdown-preview-view` in reading view and `.cm-scroller` in live preview, and a theme can insert its own between them, so `findScroller` walks up from the block container to the first ancestor whose computed `overflow-y` can scroll rather than naming either class. The test is the computed style and not `scrollHeight > clientHeight`, because at the moment `render()` runs the container can already be empty, which makes the real pane momentarily unscrollable and would send the walk straight past it to the document.
+
+Two things about the vertical case are easy to get wrong, and both were, before being measured in Chromium:
+
+- **The synchronous swap is not the culprit.** `swapIn()` empties the container and refills it in one task, and the browser never flushes layout in between: scroll position measured 900 before and 900 after. What loses it is the container sitting empty across a paint, which is Dataview's own path: it clears the block, then the re-run awaits vault reads before a board exists. Measured 900, then 0 while empty, then 0 once the board is back
+- **The teardown fires the listener.** That collapse clamps `scrollTop` to the vanished maximum and reports it as a scroll: one event, value 0, arriving after the position worth keeping. An unguarded handler records it and overwrites the answer with the symptom. So a scroll is trusted only while the pane can actually scroll, `scrollHeight - clientHeight >= 1`. With the board gone a board note is short enough that the two are equal and the teardown event is rejected, while a user scroll always has room to spare
+
+The pane outlives every rebuild, unlike the board, so attaching per render would leave another listener on it for every task ticked. It is attached once and re-attached only when `scroll.el` shows the note has moved to a different pane. `pane.scrollTop` is assigned after `swapIn()`, never before: the pane's maximum only grows back once the new board is in the document, and an earlier write is clamped straight back to zero.
+
+`findScroller` returns `null` where there is no layout to read, which is the node harness. With no pane the vertical restore is inert rather than throwing, and the render tests are unaffected.
+
+### Known limitation: the rebuild is still visible
+
+Restoring the position is not the same as making the rebuild invisible. On Dataview's own path the block is emptied and the note is left without a board for the length of the wiki walk, which reads as a flash even though nothing moves afterwards. `render()` already stages the new board and swaps it in at the end so that a refresh *this file* starts never blanks, but that guarantee cannot extend to a rebuild Dataview begins by clearing the block.
+
+Standing the previous board back up for that window was tried and did not remove the flash, including with its stylesheet re-attached, so it was not kept. Reserving the block's height does not survive either, because on that path the block element is replaced rather than cleared in place. The cause is not yet established.
+
 ## Card
 
 Line 1: checkbox, then the description with the *leading run* of tags removed, meaning the project wikilink and the assignee wikilinks that precede the prose. Links appearing inside the sentence stay, clickable, routed through `app.workspace.openLinkText`. Stripping a dropped link from mid-sentence mangled the text: `Check with [[Name]] whether the old export is still used` became "Check with whether the old export is still used".
@@ -760,7 +783,7 @@ Write-back is tested against strings and a temp file: clean toggle, already-done
 
 `node test-render.mjs --html <file>` writes a standalone preview using the real markup and real stylesheet, with stand-ins for Obsidian's theme variables and a wrapper mimicking the note's margins. With more than one wiki in the run each gets its own file, `-st` and `-p` suffixed, rather than the second overwriting the first. It is the only way to see the board's actual appearance from outside Obsidian, and it is what caught the missing descriptions, the empty number inputs and the clipped phone columns.
 
-Manual check in Obsidian after any change, on both boards: board renders, horizontal scroll works, the settings panel toggles and persists, the sort toolbar changes column order and writes frontmatter, manual mode keeps the current order and the arrows reorder it, the filter box narrows the columns while typing without losing focus or scroll position and Escape restores the full board, a checkbox click marks the source line done in correct Tasks format, and the pencil opens the edit modal.
+Manual check in Obsidian after any change, on both boards: board renders, horizontal scroll works, scrolling down a column taller than the window and then ticking a task leaves the note where it was rather than at the top, the settings panel toggles and persists, the sort toolbar changes column order and writes frontmatter, manual mode keeps the current order and the arrows reorder it, the filter box narrows the columns while typing without losing focus or scroll position and Escape restores the full board, a checkbox click marks the source line done in correct Tasks format, and the pencil opens the edit modal.
 
 The `+` in a column header needs one manual pass per board, because the modal is
 the plugin's own and no harness can drive it: press it, confirm the description

@@ -2055,12 +2055,24 @@ function searchState(wiki) {
 }
 
 /*
- * Horizontal scroll position, kept so it survives a rebuild. render() throws
- * the board away and builds a new one on every refresh: a task ticked, a
- * status changed, Dataview re-running the block after a sync. A fresh
- * .wkb-board starts at scrollLeft 0, so without this the board jumps back to
- * the first column every time, which on a board wider than the screen means
- * losing your place on every edit.
+ * Scroll position, kept so it survives a rebuild. render() throws the board
+ * away and builds a new one on every refresh: a task ticked, a status changed,
+ * Dataview re-running the block after a sync.
+ *
+ * `left` is the board's own horizontal position. A fresh .wkb-board starts at
+ * scrollLeft 0, so without this the board jumps back to the first column every
+ * time, which on a board wider than the screen means losing your place on
+ * every edit.
+ *
+ * `top` is the note pane's vertical position, which is not the board's own:
+ * .wkb-board is overflow-y: hidden and .wkb-col has no max-height, so a column
+ * taller than the window makes the *note* scroll, not the board. Emptying the
+ * container collapses the note, the pane clamps scrollTop to the new maximum,
+ * and refilling it restores the height but not the position. Measured in
+ * Chromium: scrollTop 900 before the teardown, 0 while empty, 0 once the board
+ * is back. `el` is the pane the listener is on, so a second render re-uses it
+ * rather than stacking another listener on an element that, unlike the board,
+ * outlives the rebuild.
  *
  * Session-only and keyed by wiki slug, in globalThis for the same reasons as
  * the search state: nothing here belongs in the note, and two boards side by
@@ -2068,7 +2080,31 @@ function searchState(wiki) {
  */
 function boardScrollState(wiki) {
   const all = (globalThis.__wkbScroll ||= {});
-  return (all[wiki.slug] ||= { left: 0 });
+  return (all[wiki.slug] ||= { left: 0, top: 0, el: null, handler: null });
+}
+
+/*
+ * The element that actually scrolls the note. Obsidian uses
+ * .markdown-preview-view in reading view and .cm-scroller in live preview, and
+ * a theme can put its own scroller between them, so the pane is found by
+ * walking up from the block container to the first ancestor that can scroll
+ * rather than by naming either class.
+ *
+ * The test is the computed overflow, not scrollHeight > clientHeight: at the
+ * moment render() runs the container can already be empty, which makes the
+ * real pane momentarily unscrollable and would send this straight past it.
+ *
+ * Returns null where there is no layout to read, which is the node harness.
+ * With no pane the vertical restore is inert instead of throwing, and the
+ * render tests keep passing.
+ */
+function findScroller(el) {
+  if (typeof getComputedStyle !== "function") return null;
+  for (let node = el && el.parentElement; node; node = node.parentElement) {
+    const overflow = getComputedStyle(node).overflowY;
+    if (overflow === "auto" || overflow === "scroll" || overflow === "overlay") return node;
+  }
+  return document.scrollingElement || document.documentElement || null;
 }
 
 function renderToolbar(wiki, s, orderedSlugs, app, dv, notice, refresh, search) {
@@ -2662,6 +2698,35 @@ async function render(dv, container, app) {
   const scroll = boardScrollState(wiki);
   board.addEventListener("scroll", () => (scroll.left = board.scrollLeft), { passive: true });
 
+  // Same for the note pane's vertical position, with two differences that
+  // matter.
+  //
+  // First, the board element is new every render, so its listener is thrown
+  // away with it, but the pane outlives every rebuild. Attaching per render
+  // would leave one more listener on it each time a task is ticked, so the
+  // pane is attached once and re-attached only when the note has moved to a
+  // different one.
+  //
+  // Second, the teardown fires this listener. Dataview clears the block and
+  // only then re-runs it, so the pane paints with no board in it, collapses to
+  // its own height, and the browser clamps scrollTop to the vanished maximum
+  // and reports it as a scroll. Measured in Chromium: one event, value 0,
+  // arriving after the position we want to restore. Recording it would
+  // overwrite the answer with the symptom, so a scroll is only trusted while
+  // the pane can actually scroll. With the board gone a board note is short
+  // enough that scrollHeight equals clientHeight and the teardown event is
+  // rejected; a user scroll always has room to spare.
+  const pane = findScroller(container);
+  if (pane && scroll.el !== pane) {
+    if (scroll.el && scroll.handler) scroll.el.removeEventListener("scroll", scroll.handler);
+    scroll.handler = () => {
+      if (pane.scrollHeight - pane.clientHeight < 1) return;
+      scroll.top = pane.scrollTop;
+    };
+    pane.addEventListener("scroll", scroll.handler, { passive: true });
+    scroll.el = pane;
+  }
+
   // The project columns in current visual order. Both the reorder arrows and the
   // seed written when switching to manual mode read this, so what you see is
   // exactly what gets persisted.
@@ -2688,10 +2753,13 @@ async function render(dv, container, app) {
   staged.push(wrap);
   swapIn();
 
-  // Put back what the rebuild threw away: the horizontal scroll position, and
-  // focus with the caret at the end of the query. Scroll is set after the swap
-  // because a detached element has no scrollable extent to set it on.
+  // Put back what the rebuild threw away: both scroll positions, and focus with
+  // the caret at the end of the query. Scroll is set after the swap because a
+  // detached element has no scrollable extent to set it on, and the pane's own
+  // maximum only grows back once the new board is in the document, so writing
+  // scrollTop any earlier would be clamped straight back to zero.
   board.scrollLeft = scroll.left;
+  if (pane) pane.scrollTop = scroll.top;
   if (search.focused) {
     const box = wrap.querySelector(".wkb-toolbar__filter");
     if (box) {
