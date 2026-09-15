@@ -90,6 +90,12 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
    This finds paths that do not exist. It cannot find a path that exists but is described wrongly: a file named correctly and characterised as something it stopped being will pass every check here. Say so in the report rather than implying the section proves the docs are accurate.
 
+   *Dashboard settings naming projects that are gone.* For each `dashboards[].path`, read its frontmatter and check every `board_column_manual` entry against the projects on disk. Report an entry whose slug matches no project under the project root, naming the dashboard and the slug, and say which case it is: the project sits in `_old/`, which is the usual cause and means it was archived, or it is absent entirely, which means it was renamed or deleted.
+
+   Nothing breaks when this drifts, which is exactly why it needs reporting. The board skips a slug that has no column, so a dead entry is invisible until someone opens the frontmatter for an unrelated reason. One accumulates per archived project and none ever leaves.
+
+   It is reported here rather than pruned by `/project archive` on purpose. A dashboard is rewritten only on an explicit restructure and never as a side effect of another command, per the folder permissions in `CLAUDE.md`, and archiving a project is a different command with a different subject. Reporting it costs a line in the lint report; making `archive` reach into the dashboard would couple two things that are currently independent and would need that permission rule relaxed for every wiki.
+
    *CLAUDE.md drift.* Compute the SHA-256 of `<wiki-root>/CLAUDE.md` and of `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl`. If they differ, emit one finding telling the user to run `/upgrade`. Report only: `/upgrade` owns that file and `/lint` must never write it. This is here because `/lint` gets run on a schedule and `/upgrade` gets run when someone remembers.
 
    **Config-level findings**:
