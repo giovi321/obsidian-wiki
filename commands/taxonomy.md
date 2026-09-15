@@ -1,6 +1,6 @@
 ---
 description: Audit and normalize a wiki's tag vocabulary against its canonical tags
-argument-hint: [wiki-slug] [audit|normalize]
+argument-hint: "[wiki-slug] [audit|normalize]"
 ---
 
 Enforce a consistent tag vocabulary across a wiki.

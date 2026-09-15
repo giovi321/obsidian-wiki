@@ -1,6 +1,6 @@
 ---
 description: Manage projects in a wiki
-argument-hint: [wiki-slug] list | new <name> | archive <slug> | reactivate <slug> | status <slug> <new-status>
+argument-hint: "[wiki-slug] list | new <name> | archive <slug> | reactivate <slug> | status <slug> <new-status>"
 ---
 
 Manage projects.

@@ -1,6 +1,6 @@
 ---
 description: Archive a wiki and rebuild from all sources
-argument-hint: [wiki-slug] optional reason (free-text)
+argument-hint: "[wiki-slug] optional reason (free-text)"
 ---
 
 Rebuild the wiki from scratch.

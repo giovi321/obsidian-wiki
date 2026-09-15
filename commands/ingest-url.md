@@ -1,6 +1,6 @@
 ---
 description: Fetch a URL and ingest its content into a wiki
-argument-hint: [wiki-slug] <URL>
+argument-hint: "[wiki-slug] <URL>"
 ---
 
 Alias for `/ingest [wiki-slug] <URL>`. URL sources are handled directly by `/ingest` — pass the URL as the source argument.

@@ -1,6 +1,6 @@
 ---
 description: Audit and fix cross-links across a wiki
-argument-hint: [wiki-slug] optional scope (folder path or "all")
+argument-hint: '[wiki-slug] optional scope (folder path or "all")'
 ---
 
 Audit and repair wikilinks.

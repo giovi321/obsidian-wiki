@@ -1,6 +1,6 @@
 ---
 description: Answer a question using only a wiki's contents
-argument-hint: [wiki-slug] [--visibility public|internal|pii] <your question>
+argument-hint: "[wiki-slug] [--visibility public|internal|pii] <your question>"
 ---
 
 Answer the user's question using only the target wiki.

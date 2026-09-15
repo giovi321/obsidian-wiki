@@ -1,6 +1,6 @@
 ---
 description: Create a daily journal note from template
-argument-hint: [wiki-slug] optional date YYYY-MM-DD (defaults to today)
+argument-hint: "[wiki-slug] optional date YYYY-MM-DD (defaults to today)"
 ---
 
 Create a daily journal note.

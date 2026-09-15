@@ -1,6 +1,6 @@
 ---
 description: Update specific wiki pages with new information
-argument-hint: [wiki-slug] <page path or topic> <new information or source>
+argument-hint: "[wiki-slug] <page path or topic> <new information or source>"
 ---
 
 Targeted update of specific pages.

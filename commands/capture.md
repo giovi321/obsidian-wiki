@@ -1,6 +1,6 @@
 ---
 description: Save knowledge from the current conversation into a wiki
-argument-hint: [wiki-slug] [--quick] <what to capture, or omit for auto-detect>
+argument-hint: "[wiki-slug] [--quick] <what to capture, or omit for auto-detect>"
 ---
 
 Extract substantive knowledge from the current conversation and file it.

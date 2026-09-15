@@ -1,6 +1,6 @@
 ---
 description: Snapshot a wiki's structured knowledge into _archives/
-argument-hint: [wiki-slug] optional reason (free-text)
+argument-hint: "[wiki-slug] optional reason (free-text)"
 ---
 
 Create a timestamped snapshot of the wiki's structured knowledge.
