@@ -15,7 +15,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md`, `<wiki-root>/CLAUDE.md`, and `<wiki-root>/wiki-config.md`. Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `ingest-claude` and entries scoped `global`.
 
-2. Read `<wiki-root>/_service/.manifest.json`.
+2. Apply the legacy manifest rename from SKILL.md ("File name and legacy rename"), then read `<wiki-root>/_service/manifest.json`.
 
 3. **Determine the work set**: the conversation entry point is the entry point in `wiki-config.md` whose `source_type` is `claude-chat`. Abort if none is configured.
    - `session`: read the current session transcript. Save the raw transcript to `<conversation-entry-point>/<YYYY-MM-DD>-<slug>.md`. Then process it.

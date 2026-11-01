@@ -19,7 +19,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 3. Create `<wiki-root>/_service/_archives/<archive-id>/`.
 
-4. Copy each structured-knowledge folder declared in `wiki-config.md` plus service metadata (`_service/.manifest.json`, `_service/log.md`, `_service/sources/`, `<wiki-root>/index.md`) into the archive. Do NOT copy entry points, `_service/_archives/`, `_service/_attachments/`, or dashboard files.
+4. Copy each structured-knowledge folder declared in `wiki-config.md` plus service metadata (`_service/manifest.json`, `_service/log.md`, `_service/sources/`, `<wiki-root>/index.md`) into the archive. Do NOT copy entry points, `_service/_archives/`, `_service/_attachments/`, or dashboard files.
 
 5. Compute statistics for `<wiki-root>/_service/_archives/<archive-id>/info.json`:
    ```json
@@ -31,7 +31,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
      "project_count_old": int,
      "source_count": int,
      "word_count": int,
-     "manifest_hash": "sha256 of .manifest.json"
+     "manifest_hash": "sha256 of manifest.json"
    }
    ```
 

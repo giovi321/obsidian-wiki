@@ -59,7 +59,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 
 7. **Persistence**:
    - Default (no `--save`): present the readout in the conversation only. Write no file.
-   - `--save`: create `<wiki-root>/_readouts/` if needed and write `<wiki-root>/_readouts/<slug>.md`, where `<slug>` is a deterministic filesystem-safe slug of the topic (lowercase, hyphenated, non-alphanumerics collapsed to `-`). Frontmatter: `title`, `topic`, `voice`, `sources`, `created`, `updated`. A readout is DERIVED output: it is excluded from retrieval and is NEVER added to `index.md` or `.manifest.json`.
+   - `--save`: create `<wiki-root>/_readouts/` if needed and write `<wiki-root>/_readouts/<slug>.md`, where `<slug>` is a deterministic filesystem-safe slug of the topic (lowercase, hyphenated, non-alphanumerics collapsed to `-`). Frontmatter: `title`, `topic`, `voice`, `sources`, `created`, `updated`. A readout is DERIVED output: it is excluded from retrieval and is NEVER added to `index.md` or `manifest.json`.
    - If the `--save` write fails after the readout is drafted: return the readout in the conversation, report that the save failed, and continue to step 8 with `saved=false outcome=write_failed`. Do not touch `hot.md`.
 
 8. **Log** — append ONE structured line to `<wiki-root>/_service/log.md` inside the existing fenced code block:
@@ -78,6 +78,6 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
 - Read-only unless `--save`. The only writes are the log line, `hot.md` (on `--save` success), and the single `_readouts/<slug>.md` file under `--save`.
 - Never fabricate. Every factual sentence traces to a `[[wikilink]]` citation; unsupported claims are omitted and named in Coverage.
 - No web search and no model memory to fill evidence gaps.
-- Readouts are derived output: excluded from retrieval, never added to `index.md` or `.manifest.json`.
+- Readouts are derived output: excluded from retrieval, never added to `index.md` or `manifest.json`.
 - No reflection step.
 - All shared rules from SKILL.md apply.

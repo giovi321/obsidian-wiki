@@ -22,7 +22,7 @@ Same scheme as `/ingest`. The first argument is the wiki slug; the remaining arg
    - Each structured-knowledge folder (skipping `protected_paths` — never overwrite those).
    - `<wiki-root>/index.md`.
    - `_service/sources/`.
-   - `_service/.manifest.json` — required: the manifest must match the restored content, or the next `/ingest` re-processes every source.
+   - `_service/manifest.json` — required: the manifest must match the restored content, or the next `/ingest` re-processes every source.
    Do NOT restore `_service/log.md` (append-only audit trail; the archived copy stays in the archive for forensics). Do NOT touch `hot.md`, `feedback.md`, or `_service/custom-procedures/`.
 7. Append to `<wiki-root>/_service/log.md`: `- [ISO-8601] RESTORE id="<archive-id>" pages=<n>`.
 8. Report: archive restored, page count, manifest state.

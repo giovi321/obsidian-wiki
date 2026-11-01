@@ -117,7 +117,7 @@ Setup writes two files at the wiki root and several inside `_service/`:
 | `CLAUDE.md` | `templates/CLAUDE.md.tmpl` | No, copied verbatim |
 | `wiki-config.md` | `templates/wiki-config.md.tmpl` | Yes, all placeholders below |
 | `index.md` | `templates/index.md.tmpl` | `{{wiki_name}}` only |
-| `_service/.manifest.json` | `templates/manifest.json.tmpl` | `{{iso_timestamp}}` |
+| `_service/manifest.json` | `templates/manifest.json.tmpl` | `{{iso_timestamp}}` |
 | `_service/log.md` | empty | — |
 | `_service/hot.md` | `templates/hot.md.tmpl` | `{{iso_timestamp}}` |
 | `_service/feedback.md` | `templates/feedback.md.tmpl` | `{{today}}` |
