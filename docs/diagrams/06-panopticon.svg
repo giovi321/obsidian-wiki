@@ -110,7 +110,7 @@
   <rect x="660" y="316" width="280" height="244" rx="6" fill="#1d2030" stroke="#8e96aa"/>
   <text x="676" y="336" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.12em">ZONE 3 · _SERVICE</text>
   <text x="676" y="352" fill="#8e96aa" font-size="8" font-family="'Geist', sans-serif" font-style="italic">operational state</text>
-  <text x="676" y="376" fill="#e8eaef" font-size="8" font-family="'Geist Mono', monospace">.manifest.json     sha256 dedup</text>
+  <text x="676" y="376" fill="#e8eaef" font-size="8" font-family="'Geist Mono', monospace">manifest.json     sha256 dedup</text>
   <text x="676" y="392" fill="#e8eaef" font-size="8" font-family="'Geist Mono', monospace">log.md             append-only</text>
   <text x="676" y="408" fill="#e8eaef" font-size="8" font-family="'Geist Mono', monospace">hot.md             last 20 touches</text>
   <text x="676" y="424" fill="#e8eaef" font-size="8" font-family="'Geist Mono', monospace">sources/           per-source pages</text>

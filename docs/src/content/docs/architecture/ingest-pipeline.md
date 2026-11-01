@@ -87,7 +87,7 @@ A source dropped into an entry point goes through seven steps, from a hash check
 
 ## The seven steps
 
-1. The agent computes SHA-256 and compares with `_service/.manifest.json`. If the hash matches, it skips; reruns never re-process unchanged files
+1. The agent computes SHA-256 and compares with `_service/manifest.json`. If the hash matches, it skips; reruns never re-process unchanged files
 2. Classify the source by type and assign a `source_quality` score from a fixed bucket list (paper, official, documentation, article, blog, voice-transcript, claude-chat, and so on)
 3. Extract knowledge items: entities, claims, links. Discard greetings, dead-ends, and low-signal content
 4. Route each item to a knowledge folder per the routing rules in `CLAUDE.md`

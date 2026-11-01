@@ -37,7 +37,7 @@ Args: $ARGUMENTS
    a. Create the wiki root if missing.
    b. Create each declared entry point folder.
    c. Create each structured-knowledge folder. Add a stub `<folder-name>.md` index in each.
-   d. Create `<wiki-root>/_service/` with: empty `.manifest.json` (from `templates/manifest.json.tmpl`), empty `log.md`, empty `hot.md` (from `templates/hot.md.tmpl`), `feedback.md` (from `templates/feedback.md.tmpl`), and empty `_archives/`, `sources/`, `entry-points/` subfolders.
+   d. Create `<wiki-root>/_service/` with: empty `manifest.json` (from `templates/manifest.json.tmpl`), empty `log.md`, empty `hot.md` (from `templates/hot.md.tmpl`), `feedback.md` (from `templates/feedback.md.tmpl`), and empty `_archives/`, `sources/`, `entry-points/` subfolders.
    e. Write `<wiki-root>/index.md` from `templates/index.md.tmpl` with the wiki name substituted.
 
 6. **Write `<wiki-root>/CLAUDE.md`** by copying `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.tmpl` verbatim. This file is generic and identical across all wikis the plugin manages; no placeholders are substituted.

@@ -100,7 +100,7 @@
   <text x="60" y="468" fill="#6c7587" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.16em">ZONE 3, _SERVICE/, AGENT-ONLY STATE</text>
   <text x="300" y="468" fill="#8e96aa" font-size="12" font-style="italic" font-family="'Geist', sans-serif">tracking, logs, feedback; do not edit by hand unless you know why</text>
 
-  <text x="96" y="496" fill="#e8eaef" font-size="12" font-family="'Geist Mono', monospace">.manifest.json</text>
+  <text x="96" y="496" fill="#e8eaef" font-size="12" font-family="'Geist Mono', monospace">manifest.json</text>
   <text x="300" y="496" fill="#8e96aa" font-size="12" font-family="'Geist', sans-serif">sha256 ledger of every ingested source, enables incremental reruns</text>
 
   <text x="96" y="520" fill="#e8eaef" font-size="12" font-family="'Geist Mono', monospace">log.md</text>

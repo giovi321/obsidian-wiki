@@ -203,8 +203,15 @@ Operations: INGEST, CAPTURE, LINT, ARCHIVE, REBUILD, RESTORE, PROJECT, QUERY, ST
 
 URL sources ingested via `/ingest` log as `INGEST` with `source_type=url`. FEEDBACK lines are written by `/feedback` and by the reflection step of any command. PROMOTE marks a feedback entry promoted to a custom procedure. UPGRADE marks a `CLAUDE.md` refresh by `/upgrade`.
 
-### _service/.manifest.json
+### _service/manifest.json
 Tracks every source that has been ingested.
+
+**File name and legacy rename.** The manifest is `_service/manifest.json`, with no leading dot, so sync tools that skip hidden files still carry it (livesync-bridge, for one, drops every dot-path). Versions before 0.4.2 used `_service/.manifest.json`. Every command that reads or writes the manifest applies this check first, before any "if missing, treat as empty" logic:
+- `manifest.json` missing and `.manifest.json` present: rename `.manifest.json` to `manifest.json` (content unchanged) and log `- [ISO-8601] UPGRADE wiki=<slug> label="manifest renamed from .manifest.json"`
+- both present: stop and ask the user which one is current. Never merge or overwrite either silently
+- neither present: the manifest is genuinely empty
+
+Backups such as `.manifest.json.bak-*` are left alone.
 
 ```json
 {
@@ -280,7 +287,7 @@ Companion to the `tags:` vocabulary in `wiki-config.md`. The `tags:` list stays 
 Graph-shape report written by `/insights`: top hubs, bridge pages (cut vertices whose removal partitions the graph), tag-cluster cohesion, surprising cross-category connections, the graph delta since the last run, tier suggestions, and questions worth asking. Overwritten on every run. Ends with a single `<!-- GRAPH_SNAPSHOT: {...} -->` line holding a compact node and edge list so the next run can diff. Not a source: excluded from retrieval, `index.md`, and the manifest.
 
 ### _readouts/ (derived, optional)
-Holds cited narratives saved by `/narrate --save`, one `<slug>.md` per topic with `title`, `topic`, `voice`, `sources`, `created`, `updated` frontmatter. Readouts are derived output, not sources: excluded from retrieval and never added to `index.md` or `.manifest.json`. Commands that scan the wiki (`/lint`, `/query`, `/narrate`, `/synthesize`, `/insights`) skip `_readouts/`.
+Holds cited narratives saved by `/narrate --save`, one `<slug>.md` per topic with `title`, `topic`, `voice`, `sources`, `created`, `updated` frontmatter. Readouts are derived output, not sources: excluded from retrieval and never added to `index.md` or `manifest.json`. Commands that scan the wiki (`/lint`, `/query`, `/narrate`, `/synthesize`, `/insights`) skip `_readouts/`.
 
 ### Synthesis pages
 `/synthesize` writes cross-cutting pages into a `synthesis/` subfolder of the wiki's primary structured-knowledge folder, with a `synthesis/synthesis.md` folder index. Each carries `category: synthesis`, a title of the form `<A> × <B>`, inference-heavy provenance, and `base_confidence` equal to the minimum of its input pages. They are normal wiki pages (linked, linted, cross-linked), not service state.

@@ -83,7 +83,7 @@ Rules: strip protocol (`https://`), trailing slashes, query params. For GitHub, 
 
 ## Manifest schema
 
-`<wiki-root>/_service/.manifest.json`:
+`<wiki-root>/_service/manifest.json`:
 
 ```json
 {

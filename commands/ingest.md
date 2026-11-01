@@ -19,7 +19,7 @@ Resolve the target wiki:
 
 1. Read `${CLAUDE_PLUGIN_ROOT}/skills/wiki-core/SKILL.md` for shared rules. Read `<wiki-root>/CLAUDE.md` for the generic schema and `<wiki-root>/wiki-config.md` for the wiki-specific configuration (entry points, structured-knowledge folders, dashboards, thresholds, tags, writing style). Read `<wiki-root>/_service/feedback.md`. Apply entries scoped to `ingest` and entries scoped `global`.
 
-2. Read `<wiki-root>/_service/.manifest.json`. If missing, treat as empty. If it exists, first run `python "${CLAUDE_PLUGIN_ROOT}/scripts/manifest.py" normalize "<wiki-root>/_service/.manifest.json"` to canonicalize file-based source keys to absolute paths and merge duplicates (idempotent; skip silently if `python` is unavailable).
+2. Apply the legacy manifest rename from SKILL.md ("File name and legacy rename"), then read `<wiki-root>/_service/manifest.json`. If missing after that, treat as empty. If it exists, first run `python "${CLAUDE_PLUGIN_ROOT}/scripts/manifest.py" normalize "<wiki-root>/_service/manifest.json"` to canonicalize file-based source keys to absolute paths and merge duplicates (idempotent; skip silently if `python` is unavailable).
 
 3. **Pre-ingest custom procedures**: read the `custom_procedures` list from `wiki-config.md`. For each entry with `when: pre-ingest`, read the referenced procedure file (relative to wiki root) and follow its `## Procedure` section literally. If the procedure declares `requires:` tools that are not available in the current session, log a warning and skip the procedure; do not abort `/ingest`. Procedures may add files to entry points; those become part of the work set in step 4.
 
@@ -54,7 +54,7 @@ Resolve the target wiki:
       - `move`: add `processed: true` and `processed_at: YYYY-MM-DD` frontmatter, then move the file to `<wiki-root>/_service/entry-points/<entry-point-name>/<YYYY-MM>/`.
       - `keep`: add the frontmatter, leave the file in place.
       - `read_only`: do not add frontmatter, do not move. Manifest tracks the SHA-256 only.
-   j. Update `<wiki-root>/_service/.manifest.json`.
+   j. Update `<wiki-root>/_service/manifest.json`.
    k. Append a structured one-liner to `<wiki-root>/_service/log.md`.
    l. Update `<wiki-root>/_service/hot.md` with touched pages.
 
